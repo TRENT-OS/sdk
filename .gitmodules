@@ -34,3 +34,11 @@
 	path = projects/libs/seos_libs
 	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/hc/seos_libs.git
 	branch = master
+[submodule "projects/libs/seos_crypto"]
+	path = projects/libs/seos_crypto
+	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/crypto.git
+	branch = SEOS-258
+[submodule "projects/libs/seos_keystore"]
+	path = projects/libs/seos_keystore
+	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/keystore.git
+	branch = master
