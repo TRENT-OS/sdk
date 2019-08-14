@@ -42,3 +42,7 @@
 	path = projects/libs/seos_keystore
 	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/keystore.git
 	branch = master
+[submodule "projects/libs/seos_core_api"]
+	path = projects/libs/seos_core_api
+	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/core-api.git
+	branch = master

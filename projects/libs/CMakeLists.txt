@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.7.2)
 
+add_subdirectory(seos_core_api)
+
 if (SEOS_LIBS)
     add_subdirectory(seos_libs)
 endif()
