@@ -46,3 +46,6 @@
 	path = projects/libs/seos_core_api
 	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/core-api.git
 	branch = master
+[submodule "projects/libs/seos_nwstack"]
+	path = projects/libs/seos_nwstack
+	url = ssh://git@bitbucket.hensoldt-cyber.systems:7999/seos/networkstack.git

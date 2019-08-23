@@ -13,3 +13,7 @@ endif()
 if (SEOS_KEYSTORE)
     add_subdirectory(seos_keystore)
 endif()
+
+if (SEOS_NW_STACK)
+    add_subdirectory(seos_nwstack)
+endif()
