@@ -81,4 +81,30 @@ endmacro()
 # seL4 generic build system
 #-------------------------------------------------------------------------------
 
-include(tools/seL4/cmake-tool/default-CMakeLists.txt)
+# we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
+# includes all.cmake from the same folder, that does the actual job), but have
+# to do the steps manually and inject the caller's project in between.
+include("tools/seL4/cmake-tool/settings.cmake")
+include("tools/seL4/cmake-tool/base.cmake")
+include("tools/seL4/cmake-tool/projects.cmake")
+
+# inject the caller's project. It must be done before configuration.cmake is
+# called, otherwise all default configuration setttigs are missing and the
+# build fails. With BUILD_PROJECT the caller tells us, where it is. It can be a
+# location outside of the seL4/CAmkES folder, thus we have to set the output
+# folder explicitly. There is "projects/" already for the seL4/CAmkES stuff, so
+# we can add the caller's project there nicely.
+if (NOT BUILD_PROJECT)
+    message(FATAL_ERROR "missing BUILD_PROJECT")
+endif()
+
+if (NOT EXISTS "${BUILD_PROJECT}")
+    message(FATAL_ERROR "project not found: ${BUILD_PROJECT}")
+endif()
+
+get_filename_component(BUILD_PROJECT_NAME "${BUILD_PROJECT}" NAME)
+get_filename_component(BUILD_PROJECT_BASE "${BUILD_PROJECT}" DIRECTORY)
+
+add_subdirectory(${BUILD_PROJECT_BASE} projects/${BUILD_PROJECT_NAME})
+
+include("tools/seL4/cmake-tool/configuration.cmake")
