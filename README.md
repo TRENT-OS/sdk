@@ -4,7 +4,7 @@ Common base and layout for SeOS applications
 
 ## Getting Started
 
-The project does not build, it is just a collection of submodules from wich the base layout gets prepared.
+The project is just a collection of submodules from wich the base layout gets prepared. It does build only the documentation with "./build.sh doc".
 
 ### Dependencies
 
@@ -19,4 +19,8 @@ The project does not build, it is just a collection of submodules from wich the 
 * camkes
 * capdl
 * seos\_libs
+* seod\_core\_api
+* seos\_crypto
+* seos\_keystore
+* seos\_nw\_stack
 

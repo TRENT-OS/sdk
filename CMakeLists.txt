@@ -1,19 +1,5 @@
 cmake_minimum_required(VERSION 3.7.2)
 
-if (SEOS_SANDBOX_DOC)
-    set(SEOS_LIBS ON CACHE BOOL "Enable seos_libs build")
-    set(SEOS_CRYPTO ON CACHE BOOL "Enable seos_crypto_build")
-    set(SEOS_KEYSTORE ON CACHE BOOL "Enable seos_keystore build")
-    set(SEOS_NW_STACK ON CACHE BOOL "Enable seos_nw_stack build")
-
-    add_custom_target( seos_sandbox_doc )
-    add_dependencies( seos_sandbox_doc
-        seos_libs_doc
-        seos_crypto_doc
-        seos_keystore_doc
-    )
-endif()
-
 #-------------------------------------------------------------------------------
 # SEOS Libs config
 #-------------------------------------------------------------------------------
@@ -126,30 +112,55 @@ endmacro()
 # seL4 generic build system
 #-------------------------------------------------------------------------------
 
-# we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
-# includes all.cmake from the same folder, that does the actual job), but have
-# to do the steps manually and inject the caller's project in between.
-include("tools/seL4/cmake-tool/settings.cmake")
-include("tools/seL4/cmake-tool/base.cmake")
-include("tools/seL4/cmake-tool/projects.cmake")
+if (SEOS_SANDBOX_DOC)
 
-# inject the caller's project. It must be done before configuration.cmake is
-# called, otherwise all default configuration setttigs are missing and the
-# build fails. With BUILD_PROJECT the caller tells us, where it is. It can be a
-# location outside of the seL4/CAmkES folder, thus we have to set the output
-# folder explicitly. There is "projects/" already for the seL4/CAmkES stuff, so
-# we can add the caller's project there nicely.
-if (NOT BUILD_PROJECT)
-    message(FATAL_ERROR "missing BUILD_PROJECT")
+    seos_use_libs(
+        SEOS_LIBS
+        SEOS_CRYPTO
+        SEOS_KEYSTORE
+        SEOS_NW_STACK
+    )
+
+    add_subdirectory(${SEOS_LIBS_DIR})
+
+    add_custom_target( seos_sandbox_doc )
+
+    add_dependencies( seos_sandbox_doc
+        seos_core_api_doc
+        seos_libs_doc
+        seos_crypto_doc
+        seos_keystore_doc
+        seos_nw_lib_doc
+    )
+
+else()
+
+    # we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
+    # includes all.cmake from the same folder, that does the actual job), but
+    # have to do the steps manually and inject the caller's project in between.
+    include("tools/seL4/cmake-tool/settings.cmake")
+    include("tools/seL4/cmake-tool/base.cmake")
+    include("tools/seL4/cmake-tool/projects.cmake")
+
+    # inject the caller's project. It must be done before configuration.cmake
+    # is called, otherwise all default configuration setttigs are missing and
+    # the build fails. With BUILD_PROJECT the caller tells us, where it is. It
+    # can be a location outside of the seL4/CAmkES folder, thus we have to set
+    # the output folder explicitly. There is "projects/" already for the
+    # seL4/CAmkES stuff, so we can add the caller's project there nicely.
+    if (NOT BUILD_PROJECT)
+        message(FATAL_ERROR "missing BUILD_PROJECT")
+    endif()
+
+    if (NOT EXISTS "${BUILD_PROJECT}")
+        message(FATAL_ERROR "project not found: ${BUILD_PROJECT}")
+    endif()
+
+    get_filename_component(BUILD_PROJECT_NAME "${BUILD_PROJECT}" NAME)
+    get_filename_component(BUILD_PROJECT_BASE "${BUILD_PROJECT}" DIRECTORY)
+
+    add_subdirectory(${BUILD_PROJECT_BASE} projects/${BUILD_PROJECT_NAME})
+
+    include("tools/seL4/cmake-tool/configuration.cmake")
+
 endif()
-
-if (NOT EXISTS "${BUILD_PROJECT}")
-    message(FATAL_ERROR "project not found: ${BUILD_PROJECT}")
-endif()
-
-get_filename_component(BUILD_PROJECT_NAME "${BUILD_PROJECT}" NAME)
-get_filename_component(BUILD_PROJECT_BASE "${BUILD_PROJECT}" DIRECTORY)
-
-add_subdirectory(${BUILD_PROJECT_BASE} projects/${BUILD_PROJECT_NAME})
-
-include("tools/seL4/cmake-tool/configuration.cmake")
