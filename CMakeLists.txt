@@ -77,6 +77,51 @@ macro(seos_use_libs)
 endmacro()
 
 
+# provide a way how libraries can create a documentation build target. Their
+# Doxyfile use DOXYGEN_OUTPUT_DIR env variable. The macro has two string
+# parameters that accept shell script snippets that will run a pre and post
+# build steps for the doxygen run.
+macro(seos_create_doxygen_target doc_target_name pre_action post_action)
+
+    find_package(Doxygen)
+
+    if (DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+
+        set(DOXYGEN_CFG "${CMAKE_CURRENT_LIST_DIR}/Doxyfile")
+        if (NOT EXISTS ${DOXYGEN_CFG})
+            message(FATAL_ERROR "missing ${DOXYGEN_CFG}")
+        endif()
+
+        set(DOXYGEN_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/tmp-doxygen.sh")
+        # this will overwrite any existing file
+        file(WRITE ${DOXYGEN_SCRIPT}
+            "#!/bin/bash -ue\n"
+            "echo \"running doxygen pre action ...\"\n"
+            "(\n${pre_action}\n)\n"
+            "echo \"running doxygen ...\"\n"
+            "export DOXYGEN_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}\n"
+            "${DOXYGEN_EXECUTABLE} ${DOXYGEN_CFG}\n"
+            "echo \"running doxygen post action ...\"\n"
+            "(\n${post_action}\n)\n"
+            "echo \"finished with doxygen helper script\"\n"
+        )
+
+        add_custom_target( ${doc_target_name}
+            COMMAND chmod +x ${DOXYGEN_SCRIPT}
+            COMMAND ${DOXYGEN_SCRIPT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Generating Doxygen API documentation for: ${doc_target_name}"
+            VERBATIM )
+
+    else()
+
+        message("Doxygen and dot needs to be installed to generate the doxygen documentation")
+
+    endif()
+
+endmacro()
+
+
 #-------------------------------------------------------------------------------
 # seL4 generic build system
 #-------------------------------------------------------------------------------
