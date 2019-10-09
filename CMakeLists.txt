@@ -36,7 +36,7 @@ endmacro()
 macro(seos_use_libs)
 
     # we maintain a list of SEOS libs here that the sandbox provides. This
-    # allows doing a nice sanity check agains what the SEOS projects a trying
+    # allows doing a nice sanity check against what the SEOS projects a trying
     # to use. While this makes it quite impossible to sneak new lib in, there
     # is the additional effort when adding new libs. We may remove this list if
     # it turn out to cause more pain than benefit.
