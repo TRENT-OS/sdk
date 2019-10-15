@@ -17,3 +17,15 @@ endif()
 if (SEOS_NW_STACK)
     add_subdirectory(seos_nwstack)
 endif()
+
+if (SEOS_PARTITION_MANAGER)
+    add_subdirectory(seos_partition_manager)
+endif()
+
+if (SEOS_FILESYSTEM_CORE)
+    add_subdirectory(seos_filesystem_core)
+endif()
+
+if (SEOS_FILESYSTEM_FAT)
+    add_subdirectory(seos_filesystem_fat)
+endif()

@@ -47,6 +47,9 @@ macro(seos_use_libs)
             SEOS_CRYPTO
             SEOS_CRYPTO_IMPL_MBEDTLS
             SEOS_KEYSTORE
+            SEOS_PARTITION_MANAGER
+            SEOS_FILESYSTEM_CORE
+            SEOS_FILESYSTEM_FAT
             SPIFFS
     )
 
