@@ -123,6 +123,9 @@ if (SEOS_SANDBOX_DOC)
         SEOS_KEYSTORE
         SEOS_FILESYSTEM_SPIFFS
         SEOS_NW_STACK
+        SEOS_PARTITION_MANAGER
+        SEOS_FILESYSTEM_CORE
+        SEOS_FILESYSTEM_FAT
     )
 
     add_subdirectory(${SEOS_LIBS_DIR})
@@ -136,6 +139,9 @@ if (SEOS_SANDBOX_DOC)
         seos_keystore_doc
         seos_filesystem_spiffs_doc
         seos_nw_lib_doc
+        seos_filesystem_core_doc
+        seos_filesystem_fat_doc
+        seos_partition_manager_doc
     )
 
 else()
