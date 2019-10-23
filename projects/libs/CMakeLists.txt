@@ -29,3 +29,7 @@ endif()
 if (SEOS_FILESYSTEM_FAT)
     add_subdirectory(seos_filesystem_fat)
 endif()
+
+if (SEOS_FILESYSTEM_SPIFFS)
+    add_subdirectory(seos_filesystem_spiffs)
+endif()

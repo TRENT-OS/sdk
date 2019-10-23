@@ -50,7 +50,7 @@ macro(seos_use_libs)
             SEOS_PARTITION_MANAGER
             SEOS_FILESYSTEM_CORE
             SEOS_FILESYSTEM_FAT
-            SPIFFS
+            SEOS_FILESYSTEM_SPIFFS
     )
 
     foreach(seos_lib ${ARGN})
@@ -121,6 +121,7 @@ if (SEOS_SANDBOX_DOC)
         SEOS_LIBS
         SEOS_CRYPTO
         SEOS_KEYSTORE
+        SEOS_FILESYSTEM_SPIFFS
         SEOS_NW_STACK
     )
 
@@ -133,6 +134,7 @@ if (SEOS_SANDBOX_DOC)
         seos_libs_doc
         seos_crypto_doc
         seos_keystore_doc
+        seos_filesystem_spiffs_doc
         seos_nw_lib_doc
     )
 
