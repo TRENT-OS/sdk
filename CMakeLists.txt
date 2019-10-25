@@ -43,6 +43,7 @@ macro(seos_use_libs)
     set(SEOS_KNOWN_LIBS
             SEOS_LIBS
             SEOS_LIBS_LOGGER
+            SEOS_NETWORK_DRIVER_TAP_PROXY
             SEOS_NW_STACK
             SEOS_CRYPTO
             SEOS_CRYPTO_IMPL_MBEDTLS
