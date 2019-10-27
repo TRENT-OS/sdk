@@ -1,10 +1,44 @@
 cmake_minimum_required(VERSION 3.7.2)
 
+set(SEOS_SANDBOX_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+#-------------------------------------------------------------------------------
+# CAmkES
+#-------------------------------------------------------------------------------
+
+# SEOS project can use this macro to get the CAmkES environment
+macro(seos_import_camkes)
+
+    set(CAMKES_TOOLS_DIR "${SEOS_SANDBOX_DIR}/tools/camkes")
+    set(CAPDL_DIR "${SEOS_SANDBOX_DIR}/projects/camkes/capdl")
+
+    set(PYTHON_CAPDL_PATH "${CAPDL_DIR}/python-capdl-tool")
+    file(GLOB_RECURSE capdl_python ${PYTHON_CAPDL_PATH}/*.py)
+    set(python_with_capdl    "${CMAKE_COMMAND} -E env PYTHONPATH=${PYTHON_CAPDL_PATH} python")
+    set(capdl_linker_tool "${python_with_capdl} ${CAPDL_DIR}/cdl_utils/capdl_linker.py")
+    set(CAPDL_TOOL_HELPERS "${CAPDL_DIR}/capDL-tool/capDL-tool.cmake")
+
+    find_program(TPP_TOOL tpp PATHS "${CAMKES_TOOLS_DIR}/tools")
+
+    # everything below is what the ImportCamkes() macro actually does
+
+    set(CapDLLoaderMaxObjects 20000 CACHE STRING "" FORCE)
+    set(KernelRootCNodeSizeBits 17 CACHE STRING "" FORCE)
+    set(KernelNumDomains 1 CACHE STRING "" FORCE)
+
+    include("${CAMKES_TOOLS_DIR}/camkes.cmake")
+
+    add_subdirectory("${CAPDL_DIR}/capdl-loader-app" capdl-loader-app)
+    add_subdirectory("${CAMKES_TOOLS_DIR}/libsel4camkes" libsel4camkes)
+
+endmacro()
+
+
 #-------------------------------------------------------------------------------
 # SEOS Libs config
 #-------------------------------------------------------------------------------
 
-SET(SEOS_LIBS_DIR "${CMAKE_SOURCE_DIR}/projects/libs")
+SET(SEOS_LIBS_DIR "${SEOS_SANDBOX_DIR}/projects/libs")
 
 macro(seos_set_config_file seos_cfg_file)
 
