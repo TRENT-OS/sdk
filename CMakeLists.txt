@@ -218,18 +218,15 @@ else()
     # can be a location outside of the seL4/CAmkES folder, thus we have to set
     # the output folder explicitly. There is "projects/" already for the
     # seL4/CAmkES stuff, so we can add the caller's project there nicely.
-    if (NOT BUILD_PROJECT)
-        message(FATAL_ERROR "missing BUILD_PROJECT")
+    if (NOT SEOS_PROJECT_DIR)
+        message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
     endif()
 
-    if (NOT EXISTS "${BUILD_PROJECT}")
-        message(FATAL_ERROR "project not found: ${BUILD_PROJECT}")
+    if (NOT EXISTS "${SEOS_PROJECT_DIR}")
+        message(FATAL_ERROR "project not found: ${SEOS_PROJECT_DIR}")
     endif()
 
-    get_filename_component(BUILD_PROJECT_NAME "${BUILD_PROJECT}" NAME)
-    get_filename_component(BUILD_PROJECT_BASE "${BUILD_PROJECT}" DIRECTORY)
-
-    add_subdirectory(${BUILD_PROJECT_BASE} projects/${BUILD_PROJECT_NAME})
+    add_subdirectory("${SEOS_PROJECT_DIR}" seos_system)
 
     include("tools/seL4/cmake-tool/configuration.cmake")
 
