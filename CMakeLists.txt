@@ -179,6 +179,30 @@ if (SEOS_SANDBOX_DOC)
         seos_partition_manager_doc
     )
 
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/seos-api-index.html
+        "<!doctype html>\n"
+        "<html>\n"
+        "  <head></head>\n"
+        "  <body>\n"
+        "    <ul>\n"
+        "    <li><a href=\"seos_core_api/index.html\">Core API</a></li>\n"
+        "    <li><a href=\"seos_crypto/index.html\">Crypo</a></li>\n"
+        "    <li>\n"
+        "        <a href=\"seos_filesystem_core/index.html\">Filesystem Core</a>\n"
+        "        <ul>\n"
+        "        <li><a href=\"seos_filesystem_fat/index.html\">Filesystem FAT</a></li>\n"
+        "        <li><a href=\"seos_filesystem_spiffs/index.html\">Filesystem SPIFFS</a></li>\n"
+        "        </ul>\n"
+        "    </li>\n"
+        "    <li><a href=\"seos_keystore/index.html\">Keystore</a></li>\n"
+        "    <li><a href=\"seos_libs/index.html\">Libs</a></li>\n"
+        "    <li><a href=\"seos_nwstack/index.html\">Network Stack</a></li>\n"
+        "    <li><a href=\"seos_partition_manager/index.html\">Partition Manager</a></li>\n"
+        "    </ul>\n"
+        "  </body>\n"
+        "</html>\n"
+    )
+
 else()
 
     # we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
