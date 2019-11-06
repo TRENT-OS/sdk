@@ -34,6 +34,6 @@ if (SEOS_FILESYSTEM_FAT)
     add_subdirectory(seos_filesystem_fat)
 endif()
 
-if (SEOS_FILESYSTEM_SPIFFS)
+if (SEOS_FILESYSTEM_SPIFFS OR SEOS_FILESYSTEM_SPIFFS_LEGACY)
     add_subdirectory(seos_filesystem_spiffs)
 endif()
