@@ -155,8 +155,8 @@ endmacro()
 # seL4 generic build system
 #-------------------------------------------------------------------------------
 
-if (SEOS_SANDBOX_DOC)
-
+#-------------------------------------------------------------------------------
+macro(seos_sandbox_build_doc)
     seos_use_libs(
         SEOS_LIBS
         SEOS_CRYPTO
@@ -207,8 +207,11 @@ if (SEOS_SANDBOX_DOC)
         "  </body>\n"
         "</html>\n"
     )
+endmacro()
 
-else()
+
+#-------------------------------------------------------------------------------
+macro(seos_sandbox_build seos_project_dir)
 
     # we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
     # includes all.cmake from the same folder, that does the actual job), but
@@ -223,16 +226,35 @@ else()
     # can be a location outside of the seL4/CAmkES folder, thus we have to set
     # the output folder explicitly. There is "projects/" already for the
     # seL4/CAmkES stuff, so we can add the caller's project there nicely.
-    if (NOT SEOS_PROJECT_DIR)
-        message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
+
+    if (NOT EXISTS "${seos_project_dir}")
+        message(FATAL_ERROR "project not found: ${seos_project_dir}")
     endif()
 
-    if (NOT EXISTS "${SEOS_PROJECT_DIR}")
-        message(FATAL_ERROR "project not found: ${SEOS_PROJECT_DIR}")
-    endif()
-
-    add_subdirectory("${SEOS_PROJECT_DIR}" seos_system)
+    add_subdirectory("${seos_project_dir}" seos_system)
 
     include("tools/seL4/cmake-tool/configuration.cmake")
+endmacro()
+
+
+#-------------------------------------------------------------------------------
+# build script
+#-------------------------------------------------------------------------------
+
+if (NOT SEOS_SANDBOX_PASSIVE_CMAKE)
+
+    if (SEOS_SANDBOX_DOC)
+
+        seos_sandbox_build_doc()
+
+    else()
+
+        if (NOT SEOS_PROJECT_DIR)
+            message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
+        endif()
+
+        seos_sandbox_build(${SEOS_PROJECT_DIR})
+
+    endif()
 
 endif()
