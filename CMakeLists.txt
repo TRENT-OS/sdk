@@ -6,6 +6,7 @@ set(SEOS_SANDBOX_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # CAmkES
 #-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
 # SEOS project can use this macro to get the CAmkES environment
 macro(seos_import_camkes)
 
@@ -40,6 +41,7 @@ endmacro()
 
 SET(SEOS_LIBS_DIR "${SEOS_SANDBOX_DIR}/projects/libs")
 
+#-------------------------------------------------------------------------------
 macro(seos_set_config_file seos_cfg_file)
 
     # if seos_cfg_file is a relative path, we assume it to be relative to the
@@ -67,6 +69,7 @@ macro(seos_set_config_file seos_cfg_file)
 endmacro()
 
 
+#-------------------------------------------------------------------------------
 macro(seos_use_libs)
 
     # we maintain a list of SEOS libs here that the sandbox provides. This
@@ -102,6 +105,7 @@ macro(seos_use_libs)
 endmacro()
 
 
+#-------------------------------------------------------------------------------
 # provide a way how libraries can create a documentation build target. Their
 # Doxyfile use DOXYGEN_OUTPUT_DIR env variable. The macro has two string
 # parameters that accept shell script snippets that will run a pre and post
