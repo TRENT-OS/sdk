@@ -218,7 +218,7 @@ else()
     include("tools/seL4/cmake-tool/projects.cmake")
 
     # inject the caller's project. It must be done before configuration.cmake
-    # is called, otherwise all default configuration setttigs are missing and
+    # is called, otherwise all default configuration settings are missing and
     # the build fails. With BUILD_PROJECT the caller tells us, where it is. It
     # can be a location outside of the seL4/CAmkES folder, thus we have to set
     # the output folder explicitly. There is "projects/" already for the
