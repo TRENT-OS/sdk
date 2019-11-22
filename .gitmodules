@@ -1,51 +1,39 @@
 [submodule "kernel"]
 	path = kernel
 	url = ../../ext/sel4.git
-	branch = master
 [submodule "projects/musllibc"]
 	path = projects/musllibc
 	url = ../../ext/musllibc.git
-	branch = sel4
 [submodule "projects/sel4_util_libs"]
 	path = projects/sel4_util_libs
 	url = ../../ext/util_libs.git
-	branch = master
 [submodule "tools/seL4"]
 	path = tools/seL4
 	url = ../../ext/sel4_tools.git
-	branch = master
 [submodule "projects/sel4_libs"]
 	path = projects/sel4_libs
 	url = ../../ext/sel4_libs.git
-	branch = master
 [submodule "tools/camkes"]
 	path = tools/camkes
 	url = ../../ext/camkes-tool.git
-	branch = master
 [submodule "projects/camkes/capdl"]
 	path = projects/camkes/capdl
 	url = ../../ext/capdl.git
-	branch = master
 [submodule "projects/sel4_project_libs"]
 	path = projects/sel4_project_libs
 	url = ../../ext/projects_libs.git
-	branch = master
 [submodule "projects/libs/seos_libs"]
 	path = projects/libs/seos_libs
 	url = ../../hc/seos_libs.git
-	branch = master
 [submodule "projects/libs/seos_crypto"]
 	path = projects/libs/seos_crypto
 	url = ../../seos/crypto.git
-	branch = SEOS-258
 [submodule "projects/libs/seos_keystore"]
 	path = projects/libs/seos_keystore
 	url = ../../seos/keystore.git
-	branch = master
 [submodule "projects/libs/seos_core_api"]
 	path = projects/libs/seos_core_api
 	url = ../../seos/core-api.git
-	branch = master
 [submodule "projects/libs/seos_nwstack"]
 	path = projects/libs/seos_nwstack
 	url = ../../seos/networkstack.git
