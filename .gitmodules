@@ -52,3 +52,6 @@
 [submodule "projects/libs/seos_network_driver_tap_proxy"]
 	path = projects/libs/seos_network_driver_tap_proxy
 	url = ../../seos/seos_network_driver_tap_proxy_lib.git
+[submodule "projects/libs/seos_tls"]
+	path = projects/libs/seos_tls
+	url = ../../seos/tls.git

@@ -84,6 +84,8 @@ macro(seos_use_libs)
             SEOS_NW_STACK
             SEOS_CRYPTO
             SEOS_CRYPTO_IMPL_MBEDTLS
+            SEOS_TLS
+            SEOS_TLS_IMPL_MBEDTLS
             SEOS_KEYSTORE
             SEOS_PARTITION_MANAGER
             SEOS_FILESYSTEM_CORE
@@ -160,6 +162,7 @@ macro(seos_sandbox_build_doc)
     seos_use_libs(
         SEOS_LIBS
         SEOS_CRYPTO
+        SEOS_TLS
         SEOS_KEYSTORE
         SEOS_FILESYSTEM_SPIFFS
         SEOS_NW_STACK
@@ -176,6 +179,7 @@ macro(seos_sandbox_build_doc)
         seos_core_api_doc
         seos_libs_doc
         seos_crypto_doc
+        seos_tls_doc
         seos_keystore_doc
         seos_filesystem_spiffs_doc
         seos_nw_lib_doc

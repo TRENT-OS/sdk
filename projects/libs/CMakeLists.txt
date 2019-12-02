@@ -37,3 +37,7 @@ endif()
 if (SEOS_FILESYSTEM_SPIFFS OR SEOS_FILESYSTEM_SPIFFS_LEGACY)
     add_subdirectory(seos_filesystem_spiffs)
 endif()
+
+if (SEOS_TLS)
+    add_subdirectory(seos_tls)
+endif()
