@@ -10,27 +10,7 @@ set(SEOS_SANDBOX_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # SEOS project can use this macro to get the CAmkES environment
 macro(seos_import_camkes)
 
-    set(CAMKES_TOOLS_DIR "${SEOS_SANDBOX_DIR}/tools/camkes")
-    set(CAPDL_DIR "${SEOS_SANDBOX_DIR}/projects/camkes/capdl")
-
-    set(PYTHON_CAPDL_PATH "${CAPDL_DIR}/python-capdl-tool")
-    file(GLOB_RECURSE capdl_python ${PYTHON_CAPDL_PATH}/*.py)
-    set(python_with_capdl    "${CMAKE_COMMAND} -E env PYTHONPATH=${PYTHON_CAPDL_PATH} python")
-    set(capdl_linker_tool "${python_with_capdl} ${CAPDL_DIR}/cdl_utils/capdl_linker.py")
-    set(CAPDL_TOOL_HELPERS "${CAPDL_DIR}/capDL-tool/capDL-tool.cmake")
-
-    find_program(TPP_TOOL tpp PATHS "${CAMKES_TOOLS_DIR}/tools")
-
-    # everything below is what the ImportCamkes() macro actually does
-
-    set(CapDLLoaderMaxObjects 20000 CACHE STRING "" FORCE)
-    set(KernelRootCNodeSizeBits 17 CACHE STRING "" FORCE)
-    set(KernelNumDomains 1 CACHE STRING "" FORCE)
-
-    include("${CAMKES_TOOLS_DIR}/camkes.cmake")
-
-    add_subdirectory("${CAPDL_DIR}/capdl-loader-app" capdl-loader-app)
-    add_subdirectory("${CAMKES_TOOLS_DIR}/libsel4camkes" libsel4camkes)
+# ToDo: make me work again
 
 endmacro()
 
@@ -159,6 +139,7 @@ endmacro()
 
 #-------------------------------------------------------------------------------
 macro(seos_sandbox_build_doc)
+
     seos_use_libs(
         SEOS_LIBS
         SEOS_CRYPTO
@@ -211,33 +192,75 @@ macro(seos_sandbox_build_doc)
         "  </body>\n"
         "</html>\n"
     )
+
 endmacro()
 
 
 #-------------------------------------------------------------------------------
 macro(seos_sandbox_build seos_project_dir)
 
-    # we can't include tools/seL4/cmake-tool/default-CMakeLists.txt here (which
-    # includes all.cmake from the same folder, that does the actual job), but
-    # have to do the steps manually and inject the caller's project in between.
-    include("tools/seL4/cmake-tool/settings.cmake")
-    include("tools/seL4/cmake-tool/base.cmake")
-    include("tools/seL4/cmake-tool/projects.cmake")
+    list(APPEND CMAKE_MODULE_PATH
+        ${CMAKE_SOURCE_DIR}/tools/seL4/cmake-tool/helpers
+        ${CMAKE_SOURCE_DIR}/tools/camkes
+        ${CMAKE_SOURCE_DIR}/kernel
+        ${CMAKE_SOURCE_DIR}/tools/seL4/elfloader-tool
+        ${CMAKE_SOURCE_DIR}/projects/camkes/capdl
+        # seL4 and CAmkES libs
+        ${CMAKE_SOURCE_DIR}/projects/musllibc
+        ${CMAKE_SOURCE_DIR}/projects/sel4runtime
+        ${CMAKE_SOURCE_DIR}/projects/sel4_util_libs
+        ${CMAKE_SOURCE_DIR}/projects/sel4_libs
+        ${CMAKE_SOURCE_DIR}/projects/sel4_project_libs
+    )
 
-    # inject the caller's project. It must be done before configuration.cmake
-    # is called, otherwise all default configuration settings are missing and
-    # the build fails. With BUILD_PROJECT the caller tells us, where it is. It
-    # can be a location outside of the seL4/CAmkES folder, thus we have to set
-    # the output folder explicitly. There is "projects/" already for the
-    # seL4/CAmkES stuff, so we can add the caller's project there nicely.
+    set(SEL4_CONFIG_DEFAULT_ADVANCED ON)
+
+    include(application_settings)
+
+    # defaults
+    set(RELEASE OFF CACHE BOOL "Performance optimized build")
+    set(SIMULATION ON CACHE BOOL "Try and use simulable features")
+    set(VERIFICATION OFF CACHE BOOL "Only verification friendly kernel features")
+
+    correct_platform_strings()
+
+    find_package(seL4 REQUIRED)
+    sel4_configure_platform_settings()
+
+    find_package(camkes-tool REQUIRED)
+
+    # SEOS default settings for a seL4 based CAmkES system.
+
+    # we need one scheduling domain only
+    set(KernelNumDomains 1 CACHE STRING "" FORCE)
+
+    # default is 12 and thus there are 4096 (= 2^12) slots.
+    set(KernelRootCNodeSizeBits 15 CACHE STRING "" FORCE)
+
+    # defaults is 4096, but it too small for more complex systems. What must
+    # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
+    set(CapDLLoaderMaxObjects 28000 CACHE STRING "" FORCE)
+
+    # enable full debug for capdl-loader-app, e.g. to get information about the
+    # required capability slots
+    set(LibUtilsDefaultZfLogLevel 0 CACHE STRING "" FORCE)
+
+    project(camkes C CXX ASM)
+
+    camkes_tool_setup_camkes_build_environment()
+    include(simulation)
+
+    if (NOT SEOS_PROJECT_DIR)
+        message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
+    endif()
 
     if (NOT EXISTS "${seos_project_dir}")
         message(FATAL_ERROR "project not found: ${seos_project_dir}")
     endif()
 
-    add_subdirectory("${seos_project_dir}" seos_system)
+    add_subdirectory("${SEOS_LIBS_DIR}")
+    add_subdirectory("${SEOS_PROJECT_DIR}" "seos_system")
 
-    include("tools/seL4/cmake-tool/configuration.cmake")
 endmacro()
 
 

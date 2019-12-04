@@ -4,6 +4,9 @@
 [submodule "projects/musllibc"]
 	path = projects/musllibc
 	url = ../../ext/musllibc.git
+[submodule "projects/sel4runtime"]
+	path = projects/sel4runtime
+	url = ../../ext/sel4runtime
 [submodule "projects/sel4_util_libs"]
 	path = projects/sel4_util_libs
 	url = ../../ext/util_libs.git
@@ -22,6 +25,9 @@
 [submodule "projects/sel4_project_libs"]
 	path = projects/sel4_project_libs
 	url = ../../ext/projects_libs.git
+[submodule "tools/riscv-pk"]
+	path = tools/riscv-pk
+	url = ../../ext/sel4_riscv-pk.git
 [submodule "projects/libs/seos_libs"]
 	path = projects/libs/seos_libs
 	url = ../../hc/seos_libs.git
