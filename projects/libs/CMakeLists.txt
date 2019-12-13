@@ -41,3 +41,7 @@ endif()
 if (SEOS_TLS)
     add_subdirectory(seos_tls)
 endif()
+
+if (SEOS_CONFIGURATION)
+    add_subdirectory(seos_configuration)
+endif()

@@ -72,6 +72,7 @@ macro(seos_use_libs)
             SEOS_FILESYSTEM_FAT
             SEOS_FILESYSTEM_SPIFFS
             SEOS_FILESYSTEM_SPIFFS_LEGACY
+            SEOS_CONFIGURATION
     )
 
     foreach(seos_lib ${ARGN})
