@@ -200,37 +200,15 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(seos_sandbox_build seos_project_dir)
 
-    list(APPEND CMAKE_MODULE_PATH
-        ${CMAKE_SOURCE_DIR}/tools/seL4/cmake-tool/helpers
-        ${CMAKE_SOURCE_DIR}/tools/camkes
-        ${CMAKE_SOURCE_DIR}/kernel
-        ${CMAKE_SOURCE_DIR}/tools/seL4/elfloader-tool
-        ${CMAKE_SOURCE_DIR}/projects/camkes/capdl
-        # seL4 and CAmkES libs
-        ${CMAKE_SOURCE_DIR}/projects/musllibc
-        ${CMAKE_SOURCE_DIR}/projects/sel4runtime
-        ${CMAKE_SOURCE_DIR}/projects/sel4_util_libs
-        ${CMAKE_SOURCE_DIR}/projects/sel4_libs
-        ${CMAKE_SOURCE_DIR}/projects/sel4_project_libs
-    )
+    #---------------------------------------------------------------------------
+    # SEOS default settings for a seL4 based CAmkES system.
+    #---------------------------------------------------------------------------
 
     set(SEL4_CONFIG_DEFAULT_ADVANCED ON)
 
-    include(application_settings)
-
-    # defaults
     set(RELEASE OFF CACHE BOOL "Performance optimized build")
     set(SIMULATION ON CACHE BOOL "Try and use simulable features")
     set(VERIFICATION OFF CACHE BOOL "Only verification friendly kernel features")
-
-    correct_platform_strings()
-
-    find_package(seL4 REQUIRED)
-    sel4_configure_platform_settings()
-
-    find_package(camkes-tool REQUIRED)
-
-    # SEOS default settings for a seL4 based CAmkES system.
 
     # we need one scheduling domain only
     set(KernelNumDomains 1 CACHE STRING "" FORCE)
@@ -246,21 +224,60 @@ macro(seos_sandbox_build seos_project_dir)
     # required capability slots
     set(LibUtilsDefaultZfLogLevel 0 CACHE STRING "" FORCE)
 
+    #---------------------------------------------------------------------------
+    # use the seL4/CAmkES build system
+    #---------------------------------------------------------------------------
+
+    # internal helper variable
+    set(SEL4_CMAKE_TOOL "${CMAKE_SOURCE_DIR}/tools/seL4/cmake-tool")
+
+    # for CMake to work properly, a project must be defined
     project(camkes C CXX ASM)
 
-    camkes_tool_setup_camkes_build_environment()
+    # module search paths
+    list(APPEND CMAKE_MODULE_PATH
+        ${SEL4_CMAKE_TOOL}/helpers
+        ${CMAKE_SOURCE_DIR}/tools/camkes
+        ${CMAKE_SOURCE_DIR}/kernel
+        ${CMAKE_SOURCE_DIR}/tools/seL4/elfloader-tool
+        ${CMAKE_SOURCE_DIR}/projects/camkes/capdl
+        # seL4 and CAmkES libs
+        ${CMAKE_SOURCE_DIR}/projects/musllibc
+        ${CMAKE_SOURCE_DIR}/projects/sel4runtime
+        ${CMAKE_SOURCE_DIR}/projects/sel4_util_libs
+        ${CMAKE_SOURCE_DIR}/projects/sel4_libs
+        ${CMAKE_SOURCE_DIR}/projects/sel4_project_libs
+    )
+
+    # CMake interactive build debugging. Seem that set_break() does not work
+    # unless the ${SEL4_CMAKE_TOOL}/helpers/cmakerepl is renamed to *.camkes
+    include(${SEL4_CMAKE_TOOL}/helpers/debug.cmake)
+
+    # platform settings
+    include(${SEL4_CMAKE_TOOL}/helpers/application_settings.cmake)
+    correct_platform_strings()
+    find_package(seL4 REQUIRED)
+    sel4_configure_platform_settings()
+
+    # include lots of helper from tools/seL4/cmake-tool/helpers
+    include(${SEL4_CMAKE_TOOL}/common.cmake)
+
     include(simulation)
 
-    if (NOT SEOS_PROJECT_DIR)
-        message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
-    endif()
+    find_package(camkes-tool REQUIRED)
+    camkes_tool_setup_camkes_build_environment()
 
-    if (NOT EXISTS "${seos_project_dir}")
-        message(FATAL_ERROR "project not found: ${seos_project_dir}")
-    endif()
+    #---------------------------------------------------------------------------
+    # SEOS specific build process
+    #---------------------------------------------------------------------------
 
     add_subdirectory("${SEOS_LIBS_DIR}")
-    add_subdirectory("${SEOS_PROJECT_DIR}" "seos_system")
+
+    if (NOT EXISTS "${seos_project_dir}")
+        message(FATAL_ERROR "project folder not found: ${seos_project_dir}")
+    endif()
+
+    add_subdirectory("${seos_project_dir}" "seos_system")
 
 endmacro()
 
