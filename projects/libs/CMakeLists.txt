@@ -6,7 +6,7 @@ if (SEOS_LIBS)
     add_subdirectory(seos_libs)
 endif()
 
-if (SEOS_CRYPTO)
+if (SEOS_CRYPTO OR SEOS_CRYPTO_WITH_RPC_SERVER OR SEOS_CRYPTO_WITH_RPC_CLIENT)
     add_subdirectory(seos_crypto)
 endif()
 
@@ -38,7 +38,7 @@ if (SEOS_FILESYSTEM_SPIFFS OR SEOS_FILESYSTEM_SPIFFS_LEGACY)
     add_subdirectory(seos_filesystem_spiffs)
 endif()
 
-if (SEOS_TLS)
+if (SEOS_TLS OR SEOS_TLS_WITH_RPC_CLIENT OR SEOS_TLS_WITH_RPC_SERVER)
     add_subdirectory(seos_tls)
 endif()
 

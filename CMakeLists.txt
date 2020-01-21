@@ -63,8 +63,12 @@ macro(seos_use_libs)
             SEOS_NETWORK_DRIVER_TAP_PROXY
             SEOS_NW_STACK
             SEOS_CRYPTO
+            SEOS_CRYPTO_WITH_RPC_SERVER
+            SEOS_CRYPTO_WITH_RPC_CLIENT
             SEOS_CRYPTO_IMPL_MBEDTLS
             SEOS_TLS
+            SEOS_TLS_WITH_RPC_SERVER
+            SEOS_TLS_WITH_RPC_CLIENT
             SEOS_TLS_IMPL_MBEDTLS
             SEOS_KEYSTORE
             SEOS_PARTITION_MANAGER
