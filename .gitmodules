@@ -64,3 +64,6 @@
 [submodule "projects/libs/seos_configuration"]
 	path = projects/libs/seos_configuration
 	url = ../../seos/configuration_lib.git
+[submodule "projects/libs/seos_logger"]
+	path = projects/libs/seos_logger
+	url = ../../seos/logger.git

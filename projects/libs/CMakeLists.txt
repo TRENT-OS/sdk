@@ -45,3 +45,7 @@ endif()
 if (SEOS_CONFIGURATION)
     add_subdirectory(seos_configuration)
 endif()
+
+if (SEOS_LOGGER)
+    add_subdirectory(seos_logger)
+endif()

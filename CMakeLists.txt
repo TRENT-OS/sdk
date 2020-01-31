@@ -47,6 +47,7 @@ macro(seos_set_config_file seos_cfg_file)
     set(KEYSTORE_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
     set(FILESYSTEM_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
     set(PARTITION_MANAGER_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
+    set(LOGGER_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
 
 endmacro()
 
@@ -79,6 +80,7 @@ macro(seos_use_libs)
             SEOS_FILESYSTEM_SPIFFS
             SEOS_FILESYSTEM_SPIFFS_LEGACY
             SEOS_CONFIGURATION
+            SEOS_LOGGER
     )
 
     foreach(seos_lib ${ARGN})
