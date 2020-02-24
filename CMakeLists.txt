@@ -45,6 +45,8 @@ macro(seos_set_config_file seos_cfg_file)
     set(MEMORY_CONFIG_H_FILE "${seos_cfg_file_abs}" CACHE STRING "")
     set(LOGS_CONFIG_H_FILE "${seos_cfg_file_abs}" CACHE STRING "")
     set(KEYSTORE_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
+    set(FILESYSTEM_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
+    set(PARTITION_MANAGER_CONFIG_H_FILE "${seos_cfg_file_abs}" ON CACHE STRING "")
 
 endmacro()
 
