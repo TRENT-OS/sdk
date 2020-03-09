@@ -40,3 +40,9 @@
 [submodule "projects/libs/seos_logger"]
 	path = projects/libs/seos_logger
 	url = ../../seos/logger.git
+[submodule "tools/proxy"]
+	path = tools/proxy
+	url = ../../hc/mqtt_proxy_demo.git
+[submodule "tools/keystore_provisioning_tool"]
+	path = tools/keystore_provisioning_tool
+	url = ../../ss/keystore_provisioning_tool.git
