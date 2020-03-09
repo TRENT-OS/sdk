@@ -1,33 +1,6 @@
-[submodule "kernel"]
-	path = kernel
-	url = ../../ext/sel4.git
-[submodule "projects/musllibc"]
-	path = projects/musllibc
-	url = ../../ext/musllibc.git
-[submodule "projects/sel4runtime"]
-	path = projects/sel4runtime
-	url = ../../ext/sel4runtime
-[submodule "projects/sel4_util_libs"]
-	path = projects/sel4_util_libs
-	url = ../../ext/util_libs.git
-[submodule "tools/seL4"]
-	path = tools/seL4
-	url = ../../ext/sel4_tools.git
-[submodule "projects/sel4_libs"]
-	path = projects/sel4_libs
-	url = ../../ext/sel4_libs.git
-[submodule "tools/camkes"]
-	path = tools/camkes
-	url = ../../ext/camkes-tool.git
-[submodule "projects/camkes/capdl"]
-	path = projects/camkes/capdl
-	url = ../../ext/capdl.git
-[submodule "projects/sel4_project_libs"]
-	path = projects/sel4_project_libs
-	url = ../../ext/projects_libs.git
-[submodule "tools/riscv-pk"]
-	path = tools/riscv-pk
-	url = ../../ext/sel4_riscv-pk.git
+[submodule "sdk-sel4-camkes"]
+	path = sdk-sel4-camkes
+	url = ../../ssdk/sdk-sel4-camkes.git
 [submodule "projects/libs/seos_libs"]
 	path = projects/libs/seos_libs
 	url = ../../hc/seos_libs.git

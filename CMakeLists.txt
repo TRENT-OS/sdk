@@ -236,44 +236,9 @@ macro(seos_sandbox_build seos_project_dir)
     # use the seL4/CAmkES build system
     #---------------------------------------------------------------------------
 
-    # internal helper variable
-    set(SEL4_CMAKE_TOOL "${CMAKE_SOURCE_DIR}/tools/seL4/cmake-tool")
-
-    # for CMake to work properly, a project must be defined
-    project(camkes C CXX ASM)
-
-    # module search paths
-    list(APPEND CMAKE_MODULE_PATH
-        ${SEL4_CMAKE_TOOL}/helpers
-        ${CMAKE_SOURCE_DIR}/tools/camkes
-        ${CMAKE_SOURCE_DIR}/kernel
-        ${CMAKE_SOURCE_DIR}/tools/seL4/elfloader-tool
-        ${CMAKE_SOURCE_DIR}/projects/camkes/capdl
-        # seL4 and CAmkES libs
-        ${CMAKE_SOURCE_DIR}/projects/musllibc
-        ${CMAKE_SOURCE_DIR}/projects/sel4runtime
-        ${CMAKE_SOURCE_DIR}/projects/sel4_util_libs
-        ${CMAKE_SOURCE_DIR}/projects/sel4_libs
-        ${CMAKE_SOURCE_DIR}/projects/sel4_project_libs
-    )
-
-    # CMake interactive build debugging. Seem that set_break() does not work
-    # unless the ${SEL4_CMAKE_TOOL}/helpers/cmakerepl is renamed to *.camkes
-    include(${SEL4_CMAKE_TOOL}/helpers/debug.cmake)
-
-    # platform settings
-    include(${SEL4_CMAKE_TOOL}/helpers/application_settings.cmake)
-    correct_platform_strings()
-    find_package(seL4 REQUIRED)
-    sel4_configure_platform_settings()
-
-    # include lots of helper from tools/seL4/cmake-tool/helpers
-    include(${SEL4_CMAKE_TOOL}/common.cmake)
-
-    include(simulation)
-
-    find_package(camkes-tool REQUIRED)
-    camkes_tool_setup_camkes_build_environment()
+    set(SDK_SEL4_CAMKES_DIR "${SEOS_SANDBOX_DIR}/sdk-sel4-camkes")
+    include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
+    use_sdk_sel4_camkes()
 
     #---------------------------------------------------------------------------
     # SEOS specific build process
