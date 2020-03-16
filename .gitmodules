@@ -46,3 +46,6 @@
 [submodule "tools/keystore_provisioning_tool"]
 	path = tools/keystore_provisioning_tool
 	url = ../../ss/keystore_provisioning_tool.git
+[submodule "components/cryptoserver"]
+	path = components/cryptoserver
+	url = ../../sc/cryptoserver.git
