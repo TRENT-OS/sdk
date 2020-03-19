@@ -45,7 +45,11 @@ pipeline {
             steps {
                 print_step_info env.STAGE_NAME
                 cleanWs()
-                dir('scm-src') { checkout scm }
+                dir('scm-src') {
+                    checkout scm
+                }
+                // Notify Bitbucket that job is in progress
+                step([$class: 'StashNotifier'])
             }
         }
         stage('build') {
@@ -131,6 +135,8 @@ pipeline {
             print_step_info 'archive artifacts'
             sh 'tar -cjf sdk-package.bz2 sdk-package/'
             archiveArtifacts artifacts: 'sdk-package.bz2', fingerprint: true
+            // Notify Bitbucket that job is done
+            step([$class: 'StashNotifier'])
         }
     }
 }
