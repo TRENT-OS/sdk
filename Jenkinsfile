@@ -95,24 +95,27 @@ pipeline {
                 }
             }
         }
-        stage('stash_doc') {
+        stage('publish docs') {
             when {
                 expression { return (env.BRANCH_NAME in ["master", "integration"])  }
             }
-            steps {
-                stash name: "stash_doc", includes: "sdk-package/doc/, scm-src/publish_doc.sh"
-            }
-        }
-        stage('publish_doc_and_reports') {
-            agent {
-                label "publish_doc"
-            }
-            when {
-                expression { return (env.BRANCH_NAME in ["master", "integration"])  }
-            }
-            steps {
-                unstash "stash_doc"
-                sh 'scm-src/publish_doc.sh ' + env.BRANCH_NAME
+            stages {
+                stage('stash_doc') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        stash name: "stash_doc", includes: "sdk-package/doc/, scm-src/publish_doc.sh"
+                    }
+                }
+                stage('publish_doc_and_reports') {
+                    agent {
+                        label "publish_doc"
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        unstash "stash_doc"
+                        sh 'scm-src/publish_doc.sh ' + env.BRANCH_NAME
+                    }
+                }
             }
         }
     }
