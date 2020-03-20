@@ -253,6 +253,20 @@ macro(seos_sandbox_build seos_project_dir)
 
     add_subdirectory("${seos_project_dir}" "seos_system")
 
+    # dump SEOS system image for debugging purposes. It's mostly for low level
+    # debugging of specific platform issues. For debugging an actual CAmkES
+    # system that runs on top of seL4 this does not provide anything.
+    set(IMAGE_NAME "$<TARGET_PROPERTY:rootserver_image,IMAGE_NAME>")
+    add_custom_target(
+        seos_image_dump ALL
+        DEPENDS ${CMAKE_BINARY_DIR}/${IMAGE_NAME}
+        COMMAND ${CROSS_COMPILER_PREFIX}size ${IMAGE_NAME} | tee ${IMAGE_NAME}.size
+        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dht ${IMAGE_NAME} > ${IMAGE_NAME}.lst
+        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dghlsStx ${IMAGE_NAME} > ${IMAGE_NAME}.dump
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        VERBATIM
+    )
+
 endmacro()
 
 
