@@ -180,6 +180,7 @@ function build_sdk_tools()
 function build_sdk_docs()
 {
     local SDK_SRC_DIR=$1
+    local SDK_PDF_DIR=${SEOS_SDK_DIR}/sdk-pdfs
     local BUILD_DIR=$2/docs
     local OUT_DIR=$3
     shift 3
@@ -196,19 +197,20 @@ function build_sdk_docs()
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
 
-    # collect SEOS API documentation
-    echo "collecting HTML documentation in ${OUT_DIR}..."
-
     # clear folder where we collect docs
     if [[ -e ${OUT_DIR} ]]; then
         echo "removing attic SEOS API documentation collection folder"
         rm -rf ${OUT_DIR}
     fi
-    mkdir -p ${OUT_DIR}
+    mkdir -p ${OUT_DIR}/html
+    mkdir -p ${OUT_DIR}/pdf
+
+    # collect SEOS API documentation
+    echo "collecting HTML documentation in ${OUT_DIR}/html..."
 
     # we change the current directory to execute "find", because this works
     # best when processing the results
-    local ABS_OUT_DIR=$(realpath ${OUT_DIR})
+    local ABS_OUT_DIR_HTML=$(realpath ${OUT_DIR}/html)
     (
         cd ${BUILD_DIR}
         local DOC_MODULES=$(find . -name html -type d -printf "%P\n")
@@ -216,9 +218,34 @@ function build_sdk_docs()
         for module in ${DOC_MODULES[@]}; do
             local TARGET_FOLDER=$(basename $(dirname ${module}))
             echo "  ${TARGET_FOLDER} <- ${module}"
-            cp -ar ${module} ${ABS_OUT_DIR}/${TARGET_FOLDER}
+            cp -ar ${module} ${ABS_OUT_DIR_HTML}/${TARGET_FOLDER}
         done
-        cp -ar seos-api-index.html ${ABS_OUT_DIR}/index.html
+        cp -ar seos-api-index.html ${ABS_OUT_DIR_HTML}/index.html
+    )
+
+    # collect all the pdfs
+    echo "collecting PDF documentation in ${OUT_DIR}/pdf..."
+    local ABS_OUT_DIR_PDF=$(realpath ${OUT_DIR}/pdf)
+
+    cp -a ${SDK_PDF_DIR}/*.pdf ${ABS_OUT_DIR_PDF}
+    (
+        # substitute the paths to the doxygen documentation
+
+        local SUBS_DIR=${ABS_OUT_DIR_HTML}
+
+        # HOST_DIR is an environment variable that is defined in case of
+        # usage of the script with the provided docker build wrapper
+        # "seos_build_env.sh" the wrapper binds the folder /host inside the
+        # container to the current working directory from where it is called.
+        # This information is needed in order to provide correct links
+        # to the doxygen htmls inside the PDFs: /host must be replaced by
+        # $HOST_DIR
+        if [ ! -z "${HOST_DIR-}" ]; then
+            SUBS_DIR=$(echo ${SUBS_DIR} | sed 's/\/host//g')
+            SUBS_DIR=${HOST_DIR}/${SUBS_DIR}
+        fi
+        cd ${ABS_OUT_DIR_PDF}
+        ${SDK_PDF_DIR}/substitute_doxygen_path.sh ${SUBS_DIR}
     )
 }
 
