@@ -49,3 +49,6 @@
 [submodule "components/cryptoserver"]
 	path = components/cryptoserver
 	url = ../../sc/cryptoserver.git
+[submodule "sdk-pdfs"]
+	path = sdk-pdfs
+	url = ../../ssdk/sdk-pdfs.git
