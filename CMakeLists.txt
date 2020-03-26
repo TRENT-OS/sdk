@@ -20,6 +20,7 @@ endmacro()
 #-------------------------------------------------------------------------------
 
 SET(SEOS_LIBS_DIR "${SEOS_SANDBOX_DIR}/projects/libs")
+SET(SEOS_COMPONENTS_DIR "${SEOS_SANDBOX_DIR}/components")
 
 #-------------------------------------------------------------------------------
 macro(seos_set_config_file seos_cfg_file)
