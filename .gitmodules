@@ -52,3 +52,6 @@
 [submodule "sdk-pdfs"]
 	path = sdk-pdfs
 	url = ../../ssdk/sdk-pdfs.git
+[submodule "projects/libs/chanmux"]
+	path = projects/libs/chanmux
+	url = ../../seos/chanmux.git

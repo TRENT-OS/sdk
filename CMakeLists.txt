@@ -63,6 +63,7 @@ macro(seos_use_libs)
     # it turn out to cause more pain than benefit.
     set(SEOS_KNOWN_LIBS
             SEOS_LIBS
+            SEOS_CHANMUX
             SEOS_LIBS_LOGGER
             SEOS_NETWORK_DRIVER_TAP_PROXY
             SEOS_NW_STACK
@@ -152,6 +153,7 @@ macro(seos_sandbox_build_doc)
 
     seos_use_libs(
         SEOS_LIBS
+        SEOS_CHANMUX
         SEOS_CRYPTO
         SEOS_TLS
         SEOS_KEYSTORE
@@ -168,6 +170,7 @@ macro(seos_sandbox_build_doc)
 
     add_dependencies( seos_sandbox_doc
         seos_core_api_doc
+        seos_chanmux_doc
         seos_libs_doc
         seos_crypto_doc
         seos_tls_doc
@@ -187,6 +190,7 @@ macro(seos_sandbox_build_doc)
         "    <ul>\n"
         "    <li><a href=\"seos_core_api/index.html\">Core API</a></li>\n"
         "    <li><a href=\"seos_crypto/index.html\">Crypo</a></li>\n"
+        "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
         "    <li>\n"
         "        <a href=\"seos_filesystem_core/index.html\">Filesystem Core</a>\n"
         "        <ul>\n"
@@ -245,7 +249,10 @@ macro(seos_sandbox_build seos_project_dir)
     # SEOS specific build process
     #---------------------------------------------------------------------------
 
-    CAmkESAddImportPath(${SEOS_LIBS_DIR}/seos_core_api/camkes)
+    CAmkESAddImportPath(
+        ${SEOS_LIBS_DIR}/seos_core_api/camkes
+        ${SEOS_LIBS_DIR}/chanmux/camkes
+    )
     add_subdirectory("${SEOS_LIBS_DIR}")
 
     if (NOT EXISTS "${seos_project_dir}")

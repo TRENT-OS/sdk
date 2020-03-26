@@ -6,6 +6,10 @@ if (SEOS_LIBS)
     add_subdirectory(seos_libs)
 endif()
 
+if (SEOS_CHANMUX)
+    add_subdirectory(chanmux)
+endif()
+
 if (SEOS_CRYPTO OR SEOS_CRYPTO_WITH_RPC_SERVER OR SEOS_CRYPTO_WITH_RPC_CLIENT)
     add_subdirectory(seos_crypto)
 endif()
