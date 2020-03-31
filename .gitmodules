@@ -52,3 +52,6 @@
 [submodule "projects/libs/chanmux"]
 	path = projects/libs/chanmux
 	url = ../../seos/chanmux.git
+[submodule "components/CryptoServer"]
+	path = components/CryptoServer
+	url = ../../sc/cryptoserver.git
