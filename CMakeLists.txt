@@ -254,6 +254,7 @@ macro(seos_sandbox_build seos_project_dir)
 
     CAmkESAddImportPath(
         ${SEOS_LIBS_DIR}/seos_core_api/camkes
+        ${SEOS_COMPONENTS_DIR}
         ${SEOS_LIBS_DIR}/chanmux/camkes
     )
     add_subdirectory("${SEOS_LIBS_DIR}")
