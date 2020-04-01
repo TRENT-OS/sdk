@@ -17,7 +17,7 @@ SEOS_SDK_DIR=$(cd `dirname $0` && pwd)
 # directory (ie the directory where this script is invoked in)
 BUILD_DIR=$1
 BUILD_PLATFORM=$2
-shift
+shift 2
 # all remaining params will be passed to CMake
 
 echo ""
