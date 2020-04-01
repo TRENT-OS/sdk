@@ -154,6 +154,7 @@ macro(seos_sandbox_build_doc)
     seos_use_libs(
         SEOS_LIBS
         SEOS_CHANMUX
+        SEOS_CONFIGURATION
         SEOS_CRYPTO
         SEOS_TLS
         SEOS_KEYSTORE
@@ -173,6 +174,7 @@ macro(seos_sandbox_build_doc)
         seos_chanmux_doc
         seos_libs_doc
         seos_crypto_doc
+        seos_configuration_doc
         seos_tls_doc
         seos_keystore_doc
         seos_filesystem_spiffs_doc
@@ -190,6 +192,7 @@ macro(seos_sandbox_build_doc)
         "    <ul>\n"
         "    <li><a href=\"seos_core_api/index.html\">Core API</a></li>\n"
         "    <li><a href=\"seos_crypto/index.html\">Crypo</a></li>\n"
+        "    <li><a href=\"seos_configuration/index.html\">ConfigService</a></li>\n"
         "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
         "    <li>\n"
         "        <a href=\"seos_filesystem_core/index.html\">Filesystem Core</a>\n"
