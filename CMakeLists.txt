@@ -246,7 +246,6 @@ macro(seos_sandbox_build seos_project_dir)
 
     set(SDK_SEL4_CAMKES_DIR "${SEOS_SANDBOX_DIR}/sdk-sel4-camkes")
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
-    use_sdk_sel4_camkes()
 
     #---------------------------------------------------------------------------
     # SEOS specific build process
