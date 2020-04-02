@@ -256,6 +256,15 @@ macro(os_sdk_build system_project_dir)
         ${SEOS_COMPONENTS_DIR}
         ${SEOS_LIBS_DIR}/chanmux/camkes
     )
+
+    # enable linting by default
+    set(ENABLE_LINT ON CACHE BOOL "enable linting")
+
+    if (ENABLE_LINT)
+        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr")
+        set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*")
+    endif()
+
     add_subdirectory("${SEOS_LIBS_DIR}")
 
     if (NOT EXISTS "${system_project_dir}")
