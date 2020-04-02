@@ -2,28 +2,62 @@
 
 #-------------------------------------------------------------------------------
 #
-# Build script
+# SDK OS Build script
 #
 # Copyright (C) 2020, Hensoldt Cyber GmbH
 #
 #-------------------------------------------------------------------------------
+#
+# This script must be invoked as
+#
+#     <SDK>/build-system.sh
+#             <OS_PROJECT_DIR>
+#             <BUILD_PLATFORM>
+#             <BUILD_DIR>
+#             -D CMAKE_BUILD_TYPE=<Debug|Release|...>
+#             ...
+#
+# Where
+#
+#    SDK
+#       is the path to the SDK.
+#
+#    OS_PROJECT_DIR
+#       is the path to the OS project to build.
+#
+#    BUILD_PLATFORM
+#       is the target platform, refer to the seL4 build system for details.
+#
+#    BUILD_DIR
+#       is the folder where the build output will be created in, usually a
+#       sub-directory of the folder where the script is invoked in (ie. the
+#       current working directory).
+#
+#    -D CMAKE_BUILD_TYPE=<Debug|Release|...>
+#       is a CMake parameter required by the seL4/CAmkES build system, refer to
+#       the seL4 build system for details.
+#
+# Any additional parameters will be passed to CMake.
+#
+#-------------------------------------------------------------------------------
 
-# This script assumes it is located in the SDK root folder and should be invoked
-# from the desired build output directory.
-
+# This script assumes it is located in the SDK root folder, so we can determine
+# the SDK location easily by getting this script's directory.
 SEOS_SDK_DIR=$(cd `dirname $0` && pwd)
 
-# build output will be placed into a subdirectory of the current working
-# directory (ie the directory where this script is invoked in)
-BUILD_DIR=$1
+# read parameters
+OS_PROJECT_DIR=$1
 BUILD_PLATFORM=$2
-shift 2
+BUILD_DIR=$3
+shift 3
 # all remaining params will be passed to CMake
 
 echo ""
-echo "##"
-echo "## building ${BUILD_PLATFORM} into ${BUILD_DIR}"
-echo "##"
+echo "##======================================================================="
+echo "## Project:   ${OS_PROJECT_DIR}"
+echo "## Platform:  ${BUILD_PLATFORM}"
+echo "## Output:    ${BUILD_DIR}"
+echo "##-----------------------------------------------------------------------"
 
 CMAKE_PARAMS=(
     -D CMAKE_TOOLCHAIN_FILE=${SEOS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
@@ -34,6 +68,9 @@ CMAKE_PARAMS=(
     # musllibc and capDL-toolthat) that project agnostic, so we don't have
     # to rebuild them every time. This reduces the build time a lot.
     -D SEL4_CACHE_DIR=cache-${BUILD_PLATFORM}
+    # location of the OS project to be build. Since we will change the current
+    # working directory, we have to ensure this is an absolute path
+    -D OS_PROJECT_DIR=$(realpath ${OS_PROJECT_DIR})
 )
 
 case "${BUILD_PLATFORM}" in
@@ -117,3 +154,8 @@ fi
     cd ${BUILD_DIR}
     ninja all
 )
+
+echo "##-----------------------------------------------------------------------"
+echo "## build successful, output in ${BUILD_DIR}"
+echo "##======================================================================="
+
