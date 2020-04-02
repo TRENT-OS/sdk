@@ -112,7 +112,7 @@ function build_sdk_tool()
         # SDK_SRC_DIR may be a relative path to the current directory, but the
         # build will change the working directory to BUILD_DIR. Thus we must
         # pass an absolute path here
-        -D SANDBOX_SOURCE_PATH:STRING=$(realpath ${SDK_SRC_DIR})
+        -D OS_SDK_SOURCE_PATH:STRING=$(realpath ${SDK_SRC_DIR})
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
@@ -189,10 +189,10 @@ function build_sdk_docs()
 
     local BUILD_PARAMS=(
         ${BUILD_DIR}
-        seos_sandbox_doc    # ninja target
+        os_sdk_doc    # ninja target
         ${SDK_SRC_DIR}      # CMakeList file
         # params start here
-        -D SEOS_SANDBOX_DOC=ON
+        -D OS_SDK_DOC=ON
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}

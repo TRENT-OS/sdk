@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7.2)
 
-set(SEOS_SANDBOX_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 #-------------------------------------------------------------------------------
 # CAmkES
@@ -19,8 +19,8 @@ endmacro()
 # SEOS Libs config
 #-------------------------------------------------------------------------------
 
-SET(SEOS_LIBS_DIR "${SEOS_SANDBOX_DIR}/projects/libs")
-SET(SEOS_COMPONENTS_DIR "${SEOS_SANDBOX_DIR}/components")
+SET(SEOS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
+SET(SEOS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 #-------------------------------------------------------------------------------
 macro(seos_set_config_file seos_cfg_file)
@@ -149,7 +149,7 @@ endmacro()
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-macro(seos_sandbox_build_doc)
+macro(os_sdk_build_doc)
 
     seos_use_libs(
         SEOS_LIBS
@@ -167,9 +167,9 @@ macro(seos_sandbox_build_doc)
 
     add_subdirectory(${SEOS_LIBS_DIR})
 
-    add_custom_target( seos_sandbox_doc )
+    add_custom_target( os_sdk_doc )
 
-    add_dependencies( seos_sandbox_doc
+    add_dependencies( os_sdk_doc
         seos_core_api_doc
         seos_chanmux_doc
         seos_libs_doc
@@ -214,7 +214,7 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
-macro(seos_sandbox_build seos_project_dir)
+macro(os_sdk_build system_project_dir)
 
     #---------------------------------------------------------------------------
     # SEOS default settings for a seL4 based CAmkES system.
@@ -244,7 +244,7 @@ macro(seos_sandbox_build seos_project_dir)
     # use the seL4/CAmkES build system
     #---------------------------------------------------------------------------
 
-    set(SDK_SEL4_CAMKES_DIR "${SEOS_SANDBOX_DIR}/sdk-sel4-camkes")
+    set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
 
     #---------------------------------------------------------------------------
@@ -258,11 +258,11 @@ macro(seos_sandbox_build seos_project_dir)
     )
     add_subdirectory("${SEOS_LIBS_DIR}")
 
-    if (NOT EXISTS "${seos_project_dir}")
-        message(FATAL_ERROR "project folder not found: ${seos_project_dir}")
+    if (NOT EXISTS "${system_project_dir}")
+        message(FATAL_ERROR "project folder not found: ${system_project_dir}")
     endif()
 
-    add_subdirectory("${seos_project_dir}" "seos_system")
+    add_subdirectory("${system_project_dir}" "os_system")
 
     # dump SEOS system image for debugging purposes. It's mostly for low level
     # debugging of specific platform issues. For debugging an actual CAmkES
@@ -285,19 +285,19 @@ endmacro()
 # build script
 #-------------------------------------------------------------------------------
 
-if (NOT SEOS_SANDBOX_PASSIVE_CMAKE)
+if (NOT OS_SDK_PASSIVE_CMAKE)
 
-    if (SEOS_SANDBOX_DOC)
+    if (OS_SDK_DOC)
 
-        seos_sandbox_build_doc()
+        os_sdk_build_doc()
 
     else()
 
-        if (NOT SEOS_PROJECT_DIR)
-            message(FATAL_ERROR "please set SEOS_PROJECT_DIR")
+        if (NOT OS_PROJECT_DIR)
+            message(FATAL_ERROR "please set OS_PROJECT_DIR")
         endif()
 
-        seos_sandbox_build(${SEOS_PROJECT_DIR})
+        os_sdk_build(${OS_PROJECT_DIR})
 
     endif()
 
