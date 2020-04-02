@@ -15,7 +15,7 @@ fi
 TEST_NAME=${1}
 shift
 
-CON_QEMU_UART_PROXY=${1:-}
+PARAM_CON_QEMU=${1:-}
 if [[ ! -z "${1:-}" ]]; then
     shift
 fi
@@ -31,8 +31,8 @@ fi
 
 # default is the zynq7000 platform and debug build
 PLATFORM=zynq7000
-BIULD_MODE=Debug
-IMAGE_PATH=build-${PLATFORM}-${BIULD_MODE}-${TEST_NAME}/images/capdl-loader-image-arm-${PLATFORM}
+BUILD_MODE=Debug
+IMAGE_PATH=build-${PLATFORM}-${BUILD_MODE}-${TEST_NAME}/images/capdl-loader-image-arm-${PLATFORM}
 if [ ! -f ${IMAGE_PATH} ]; then
     echo "ERROR: missing test image ${IMAGE_PATH}"
     exit 1
@@ -45,19 +45,21 @@ fi
 # no Proxy communication as default
 CON_QEMU_UART_PROXY="-serial /dev/null"
 
-if [[ -z "${CON_QEMU_UART_PROXY}" ]]; then
+if [[ -z "${PARAM_CON_QEMU}" ]]; then
     echo "No QEMU connection was set."
 
-elif [[ ${CON_QEMU_UART_PROXY} == "PTY" ]]; then
-    # connect serial port to to PTY, freeze QEMU on startup to allow
+elif [[ ${PARAM_CON_QEMU} == "PTY" ]]; then
+    # QEMU connects serial port to newly created PTY, "-S" makes it freeze on
+    # startup to allow a host application to connect there
     CON_QEMU_UART_PROXY="-S -serial pty"
 
-elif [[ ${CON_QEMU_UART_PROXY} == "TCP" ]]; then
-    # wait on port 4444 for a connection, then start QEMU
+elif [[ ${PARAM_CON_QEMU} == "TCP" ]]; then
+    # QEMU waits on port 4444 for a connection, connects serial port to it and
+    # then starts the system
     CON_QEMU_UART_PROXY="-serial tcp:localhost:4444,server"
 
 else
-    echo "ERROR: invalid conection type: ${CON_QEMU_UART_PROXY}"
+    echo "ERROR: invalid conection type: ${PARAM_CON_QEMU}"
     exit 1
 
 fi
@@ -70,9 +72,9 @@ QEMU_PARAMS=(
     -machine xilinx-zynq-a9
     -m size=512M
     -nographic
-    ${CON_QEMU_UART_PROXY} # serial port 0 is uses for Proxy connection
-    -serial mon:stdio      # serial port 1 is uses for console
+    ${CON_QEMU_UART_PROXY} # serial port 0 is used for Proxy connection
+    -serial mon:stdio      # serial port 1 is used for console
     -kernel ${IMAGE_PATH}
 )
 
-qemu-system-arm  ${QEMU_PARAMS[@]}
+qemu-system-arm ${QEMU_PARAMS[@]}
