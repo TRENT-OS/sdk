@@ -72,7 +72,7 @@ function collect_sdk_sources()
     fi
     mkdir -p ${OUT_DIR}
 
-    # rsyn would do the job nicely, but unfortunately it is not available in
+    # rsync would do the job nicely, but unfortunately it is not available in
     # some environments
     #
     #   rsync -a \
