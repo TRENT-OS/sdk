@@ -91,8 +91,16 @@ function collect_sdk_sources()
         cd ${SDK_SRC_DIR}
 
         SDK_EXCLUDES=(
-            --exclude '.git*'
+            --exclude-vcs
+            ### seems there is a bug in tar, the file .gitmodules is not
+            ### excluded as specified. Using --exclude-vcs instead.
+            #--exclude '.gitmodules'
+            #--exclude '.git*'
             --exclude 'astyle_check.sh'
+            --exclude './Jenkinsfile'
+            --exclude './build-sdk.sh'
+            --exclude './publish_doc.sh '
+            --exclude './sdk-pdfs'
             --exclude './sdk-sel4-camkes/tools/riscv-pk'
         )
         tar -c ${SDK_EXCLUDES[@]} ./ | tar -x -C ${ABS_OUT_DIR}/
