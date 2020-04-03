@@ -93,6 +93,7 @@ function collect_sdk_sources()
         SDK_EXCLUDES=(
             --exclude '.git*'
             --exclude 'astyle_check.sh'
+            --exclude './sdk-sel4-camkes/tools/riscv-pk'
         )
         tar -c ${SDK_EXCLUDES[@]} ./ | tar -x -C ${ABS_OUT_DIR}/
     )
