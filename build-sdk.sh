@@ -89,7 +89,12 @@ function collect_sdk_sources()
     local ABS_OUT_DIR=$(realpath ${OUT_DIR})
     (
         cd ${SDK_SRC_DIR}
-        tar -c --exclude '.git*' --exclude 'astyle_check.sh' ./ | tar -x -C ${ABS_OUT_DIR}/
+
+        SDK_EXCLUDES=(
+            --exclude '.git*'
+            --exclude 'astyle_check.sh'
+        )
+        tar -c ${SDK_EXCLUDES[@]} ./ | tar -x -C ${ABS_OUT_DIR}/
     )
 }
 
