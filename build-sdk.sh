@@ -56,21 +56,11 @@ function cmake_check_init_and_build()
 
 
 #-------------------------------------------------------------------------------
-function collect_sdk_sources()
+function copy_files()
 {
-    local SDK_SRC_DIR=$1
-    local OUT_DIR=$2
+    SRC_DIR=$1
+    DST_DIR=$2
     shift 2
-
-    print_info "collecting SDK sources from ${SDK_SRC_DIR}"
-
-    # ToDo: create file with git infos
-
-    # remove any existing otuput directory
-    if [ -d ${OUT_DIR} ]; then
-        rm -rf ${OUT_DIR}
-    fi
-    mkdir -p ${OUT_DIR}
 
     # rsync would do the job nicely, but unfortunately it is not available in
     # some environments
@@ -86,25 +76,86 @@ function collect_sdk_sources()
     # so we (ab)use tar for this, which is faster than cp. And as side effect,
     # from this solution we could easily derive a way to get everything into
     # one archive - if we ever need this.
-    local ABS_OUT_DIR=$(realpath ${OUT_DIR})
-    (
-        cd ${SDK_SRC_DIR}
+    mkdir -p ${DST_DIR}
+    tar -c -C ${SRC_DIR} $@ ./ | tar -x -C ${DST_DIR}/
+}
 
-        SDK_EXCLUDES=(
-            --exclude-vcs
-            ### seems there is a bug in tar, the file .gitmodules is not
-            ### excluded as specified. Using --exclude-vcs instead.
-            #--exclude '.gitmodules'
-            #--exclude '.git*'
-            --exclude 'astyle_check.sh'
-            --exclude './Jenkinsfile'
-            --exclude './build-sdk.sh'
-            --exclude './publish_doc.sh '
-            --exclude './sdk-pdfs'
-            --exclude './sdk-sel4-camkes/tools/riscv-pk'
-        )
-        tar -c ${SDK_EXCLUDES[@]} ./ | tar -x -C ${ABS_OUT_DIR}/
+
+#-------------------------------------------------------------------------------
+function collect_sdk_sources()
+{
+    local SDK_SRC_DIR=$1
+    local OUT_DIR=$2
+    shift 2
+
+    print_info "collecting SDK sources from ${SDK_SRC_DIR}"
+
+    # ToDo: create file with git infos
+
+    # remove any existing output directory
+    if [ -d ${OUT_DIR} ]; then
+        rm -rf ${OUT_DIR}
+    fi
+
+    local SDK_EXCLUDES=(
+        --exclude-vcs
+        ### seems there is a bug in tar, the file .gitmodules is not
+        ### excluded as specified. Using --exclude-vcs instead.
+        #--exclude '.gitmodules'
+        #--exclude '.git*'
+        --exclude 'astyle_check.sh'
+        --exclude './Jenkinsfile'
+        --exclude './build-sdk.sh'
+        --exclude './publish_doc.sh '
+        --exclude './sdk-pdfs'
+        --exclude './sdk-sel4-camkes/tools/riscv-pk'
     )
+    copy_files ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
+
+
+    # we make assumption about the directory structure of seos_tests now,
+    # but that is acceptable for the moment
+    local SDK_SRC_DEMOS_DIR=${SDK_SRC_DIR}/../src/demos
+    local OUT_DEMOS_DIR=${OUT_DIR}/demos
+
+    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DEMOS_DIR}) ; do
+        local SDK_EXCLUDES=(
+            --exclude-vcs
+            --exclude 'astyle_check.sh'
+        )
+        copy_files \
+            ${SDK_SRC_DEMOS_DIR}/${SDK_DEMO_NAME} \
+            ${OUT_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
+            ${SDK_EXCLUDES[@]}
+    done
+}
+
+
+#-------------------------------------------------------------------------------
+function build_sdk_demos()
+{
+    local SDK_SRC_DIR=$1
+    local BUILD_DIR=$2
+
+    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DIR}/demos) ; do
+        print_info "Building SDK demo: ${SDK_DEMO_NAME}"
+
+        local SDK_DEMO_BASE=${SDK_SRC_DIR}/demos/${SDK_DEMO_NAME}
+        local SDK_DEMO_SRC=${SDK_DEMO_BASE}/src
+        local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}
+
+        local BUILD_PARAMS=(
+            ${SDK_DEMO_SRC}
+            zynq7000
+            ${SDK_DEMO_OUT}
+            -D CMAKE_BUILD_TYPE=Debug
+        )
+        ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
+
+        mkdir ${SDK_DEMO_BASE}/bin
+        cp ${SDK_DEMO_OUT}/images/capdl-loader-image-arm-zynq7000 \
+           ${SDK_DEMO_BASE}/bin
+    done
 }
 
 
@@ -285,6 +336,7 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
     collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_DOC}
 
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
