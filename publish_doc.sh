@@ -16,4 +16,4 @@ DOC_DIR=${DOC_ROOT}/seos_sdk/${BRANCH_NAME}
 rm -rf ${DOC_DIR}
 mkdir -p ${DOC_DIR}
 
-mv sdk-package/doc ${DOC_DIR}/
+mv sdk-package/pkg/doc ${DOC_DIR}/

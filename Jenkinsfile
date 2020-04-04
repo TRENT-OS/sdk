@@ -114,7 +114,7 @@ pipeline {
                 stage('stash_doc') {
                     steps {
                         print_step_info env.STAGE_NAME
-                        stash name: "stash_doc", includes: "sdk-package/doc/, scm-src/publish_doc.sh"
+                        stash name: "stash_doc", includes: "sdk-package/pkg/doc/, scm-src/publish_doc.sh"
                     }
                 }
                 stage('publish_doc_and_reports') {
