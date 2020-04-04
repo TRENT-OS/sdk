@@ -271,11 +271,11 @@ PACKAGE_MODE=$1
 OUT_BASE_DIR=$2
 shift 2
 
-SDK_PACKAGE_SRC=${OUT_BASE_DIR}/src
+SDK_PACKAGE_SRC=${OUT_BASE_DIR}/pkg
 SDK_PACKAGE_BUILD=${OUT_BASE_DIR}/build
 SDK_PACKAGE_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
-SDK_PACKAGE_DOC=${OUT_BASE_DIR}/doc
-SDK_PACKAGE_BIN=${OUT_BASE_DIR}/bin
+SDK_PACKAGE_DOC=${OUT_BASE_DIR}/pkg/doc
+SDK_PACKAGE_BIN=${OUT_BASE_DIR}/pkg/bin
 
 # for development purposes, all the steps can also run directly from the SDK
 # sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
