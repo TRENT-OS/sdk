@@ -10,7 +10,7 @@
 
 # This script assumes it is located in the SDK root folder and should be invoked
 # from the desired build output directory.
-SEOS_SDK_DIR=$(cd `dirname $0` && pwd)
+OS_SDK_DIR=$(cd `dirname $0` && pwd)
 
 #-------------------------------------------------------------------------------
 function print_info()
@@ -194,7 +194,7 @@ function build_sdk_tools()
 function build_sdk_docs()
 {
     local SDK_SRC_DIR=$1
-    local SDK_PDF_DIR=${SEOS_SDK_DIR}/sdk-pdfs
+    local SDK_PDF_DIR=${OS_SDK_DIR}/sdk-pdfs
     local BUILD_DIR=$2/docs
     local OUT_DIR=$3
     shift 3
@@ -279,11 +279,11 @@ SDK_PACKAGE_BIN=${OUT_BASE_DIR}/bin
 
 # for development purposes, all the steps can also run directly from the SDK
 # sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
-# to SEOS_SDK_DIR for all steps
+# to OS_SDK_DIR for all steps
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${SEOS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_DOC}
 
@@ -300,12 +300,12 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
     # do not build the documentation
-    collect_sdk_sources ${SEOS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     # do not build the documentation and binaries
-    collect_sdk_sources ${SEOS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
 
 else
     echo "usage: $0 <all|bin> <OUT_BASE_DIR>"

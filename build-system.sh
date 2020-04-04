@@ -43,7 +43,7 @@
 
 # This script assumes it is located in the SDK root folder, so we can determine
 # the SDK location easily by getting this script's directory.
-SEOS_SDK_DIR=$(cd `dirname $0` && pwd)
+OS_SDK_DIR=$(cd `dirname $0` && pwd)
 
 # read parameters
 OS_PROJECT_DIR=$1
@@ -60,7 +60,7 @@ echo "## Output:    ${BUILD_DIR}"
 echo "##-----------------------------------------------------------------------"
 
 CMAKE_PARAMS=(
-    -D CMAKE_TOOLCHAIN_FILE=${SEOS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
+    -D CMAKE_TOOLCHAIN_FILE=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
     -D KernelVerificationBuild=OFF
@@ -138,7 +138,7 @@ if [[ ! -e ${BUILD_DIR} ]]; then
         cd ${BUILD_DIR}
         (
             set -x
-            cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${SEOS_SDK_DIR}
+            cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${OS_SDK_DIR}
         )
 
         # must run cmake multiple times, so config settings propagate properly
