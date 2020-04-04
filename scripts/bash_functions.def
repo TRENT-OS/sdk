@@ -1,0 +1,54 @@
+#-------------------------------------------------------------------------------
+#
+# Copyright (C) 2020, Hensoldt Cyber GmbH
+#
+#-------------------------------------------------------------------------------
+
+TRENTOS_BUILD_CONTAINER=trentos_build:trentos_0.9
+TRENTOS_TEST_CONTAINER=trentos_test:trentos_0.9
+
+open_trentos_build_env() 
+{
+        if [ -z "$1" ]
+          then
+                ARGS=bash
+          else
+                ARGS="$@"
+        fi
+
+        docker run \
+                -it \
+                --hostname "${TRENTOS_BUILD_CONTAINER%%:*}" \
+                --rm \
+                -u $(id -u) \
+                -v $(pwd):/host \
+                -v /etc/localtime:/etc/localtime:ro \
+                -w /host \
+                ${TRENTOS_BUILD_CONTAINER} \
+                ${ARGS}
+}
+
+open_trentos_test_env() 
+{
+        if [ -z "$1" ]
+          then
+                ARGS=bash
+          else
+                ARGS="$@"
+        fi
+
+        docker run \
+                -it \
+                --hostname "${TRENTOS_TEST_CONTAINER%%:*}" \
+                --rm \
+                -u $(id -u) \
+                -v $(pwd):/host \
+                -v /etc/localtime:/etc/localtime:ro \
+                -w /host \
+                --network=bridge \
+                --cap-add=NET_ADMIN \
+                --cap-add=NET_RAW \
+                --device=/dev/net/tun \
+                ${TRENTOS_TEST_CONTAINER} \
+                ${ARGS}
+}
