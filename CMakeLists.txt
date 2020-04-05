@@ -238,7 +238,7 @@ macro(os_sdk_build system_project_dir)
 
     # defaults is 4096, which is too small for more complex systems. What must
     # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
-    set(CapDLLoaderMaxObjects 28000 CACHE STRING "" FORCE)
+    set(CapDLLoaderMaxObjects 25000 CACHE STRING "" FORCE)
 
     # enable full debug for capdl-loader-app, e.g. to get information about the
     # required capability slots
