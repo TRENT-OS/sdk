@@ -229,10 +229,11 @@ macro(os_sdk_build system_project_dir)
     # we need one scheduling domain only
     set(KernelNumDomains 1 CACHE STRING "" FORCE)
 
-    # default is 12 and thus there are 4096 (= 2^12) slots.
+    # default is 12, which gives 4096 (2^12) slots. That is not enough for more
+    # complex systems. Using 15 gives 32768 slots
     set(KernelRootCNodeSizeBits 15 CACHE STRING "" FORCE)
 
-    # defaults is 4096, but it too small for more complex systems. What must
+    # defaults is 4096, which is too small for more complex systems. What must
     # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
     set(CapDLLoaderMaxObjects 28000 CACHE STRING "" FORCE)
 
