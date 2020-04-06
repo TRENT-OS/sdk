@@ -163,6 +163,7 @@ macro(os_sdk_build_doc)
         SEOS_PARTITION_MANAGER
         SEOS_FILESYSTEM_CORE
         SEOS_FILESYSTEM_FAT
+        SEOS_LOGGER
     )
 
     add_subdirectory(${SEOS_LIBS_DIR})
@@ -182,6 +183,7 @@ macro(os_sdk_build_doc)
         seos_filesystem_core_doc
         seos_filesystem_fat_doc
         seos_partition_manager_doc
+        seos_logger_doc
     )
 
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/seos-api-index.html
@@ -191,7 +193,7 @@ macro(os_sdk_build_doc)
         "  <body>\n"
         "    <ul>\n"
         "    <li><a href=\"seos_core_api/index.html\">Core API</a></li>\n"
-        "    <li><a href=\"seos_crypto/index.html\">Crypo</a></li>\n"
+        "    <li><a href=\"seos_crypto/index.html\">Crypto</a></li>\n"
         "    <li><a href=\"seos_configuration/index.html\">ConfigService</a></li>\n"
         "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
         "    <li>\n"
@@ -203,6 +205,7 @@ macro(os_sdk_build_doc)
         "    </li>\n"
         "    <li><a href=\"seos_keystore/index.html\">Keystore</a></li>\n"
         "    <li><a href=\"seos_libs/index.html\">Libs</a></li>\n"
+        "    <li><a href=\"seos_logger/index.html\">Logger</a></li>\n"
         "    <li><a href=\"seos_nwstack/index.html\">Network Stack</a></li>\n"
         "    <li><a href=\"seos_partition_manager/index.html\">Partition Manager</a></li>\n"
         "    </ul>\n"
