@@ -347,6 +347,11 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
     build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_DOC}
 
+elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
+    # create SDK snapshot from repos sources and build SDK from snapshot
+    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_DOC}
+
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
     # unit testing are a completely separate step, because the usualy build
     # docker container does not have the unit test tool installed. So we need
