@@ -11,14 +11,14 @@ TRENTOS_TEST_CONTAINER=trentos_test:trentos_0.9
 #-------------------------------------------------------------------------------
 open_trentos_build_env()
 {
-        if [ -z "$1" ]
-          then
-                ARGS=bash
-          else
-                ARGS="$@"
+        if [ "${#}" -eq "0" ]; then
+            local ARGS=bash
+        else
+            local ARGS="$@"
         fi
 
-        DOCKER_BUILD_PARAMS=(
+        DOCKER_PARAMS=(
+            run
             # --interactive Keep STDIN open even if not attached
             -i
             # --tty Allocate a pseudo-TTY
@@ -39,24 +39,21 @@ open_trentos_build_env()
             # set the current directory in the container to /host
             -w /host
         )
-        docker run \
-            ${DOCKER_BUILD_PARAMS[@]} \
-            ${TRENTOS_BUILD_CONTAINER} \
-            ${ARGS}
+        docker ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS}
 }
 
 
 #-------------------------------------------------------------------------------
 open_trentos_test_env()
 {
-        if [ -z "$1" ]
-          then
-                ARGS=bash
-          else
-                ARGS="$@"
+        if [ "${#}" -eq "0" ]; then
+            local ARGS=bash
+        else
+            local ARGS="$@"
         fi
 
-        DOCKER_TEST_PARAMS=(
+        local DOCKER_PARAMS=(
+            run
             # --interactive Keep STDIN open even if not attached
             -i
             # --tty Allocate a pseudo-TTY
@@ -87,8 +84,5 @@ open_trentos_test_env()
             # filedevice needed to create TAP devices
             --device=/dev/net/tun
         )
-        docker run \
-            ${DOCKER_TEST_PARAMS[@]} \
-            ${TRENTOS_TEST_CONTAINER} \
-            ${ARGS}
+        docker ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS}
 }

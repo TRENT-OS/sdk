@@ -12,13 +12,5 @@ DIR=`dirname "$(readlink -f "$0")"`
 # load function definitions into current bash
 source ${DIR}/bash_functions.def
 
-# set bash as default command if no arguments passed on the command line
-if [ $# -eq 0 ]
-  then
-    ARGS=bash
-  else
-    ARGS="$@"
-fi
-
 # execute trentos_build and pass all the arguments we received
-open_trentos_build_env "${ARGS}"
+open_trentos_build_env "$@"
