@@ -7,6 +7,8 @@
 TRENTOS_BUILD_CONTAINER=trentos_build:trentos_0.9
 TRENTOS_TEST_CONTAINER=trentos_test:trentos_0.9
 
+
+#-------------------------------------------------------------------------------
 open_trentos_build_env()
 {
         if [ -z "$1" ]
@@ -43,6 +45,8 @@ open_trentos_build_env()
             ${ARGS}
 }
 
+
+#-------------------------------------------------------------------------------
 open_trentos_test_env() 
 {
         if [ -z "$1" ]
