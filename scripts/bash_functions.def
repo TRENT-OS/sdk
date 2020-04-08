@@ -47,7 +47,7 @@ open_trentos_build_env()
 
 
 #-------------------------------------------------------------------------------
-open_trentos_test_env() 
+open_trentos_test_env()
 {
         if [ -z "$1" ]
           then
