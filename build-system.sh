@@ -43,7 +43,7 @@
 
 # This script assumes it is located in the SDK root folder, so we can determine
 # the SDK location easily by getting this script's directory.
-OS_SDK_DIR=$(cd `dirname $0` && pwd)
+OS_SDK_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # read parameters
 OS_PROJECT_DIR=$1

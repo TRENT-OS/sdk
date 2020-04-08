@@ -10,7 +10,8 @@
 
 # This script assumes it is located in the SDK root folder and should be invoked
 # from the desired build output directory.
-OS_SDK_DIR=$(cd `dirname $0` && pwd)
+OS_SDK_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+
 
 #-------------------------------------------------------------------------------
 function print_info()

@@ -7,10 +7,10 @@
 #-------------------------------------------------------------------------------
 
 # get the directory the script is located in
-DIR=`dirname "$(readlink -f "$0")"`
+SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # load function definitions into current bash
-source ${DIR}/bash_functions.def
+source ${SCRIPT_DIR}/bash_functions.def
 
 # execute trentos_build and pass all the arguments we received
 open_trentos_build_env "$@"
