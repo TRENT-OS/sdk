@@ -240,9 +240,9 @@ macro(os_sdk_build system_project_dir)
     # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
     set(CapDLLoaderMaxObjects 25000 CACHE STRING "" FORCE)
 
-    # enable full debug for capdl-loader-app, e.g. to get information about the
-    # required capability slots
-    set(LibUtilsDefaultZfLogLevel 0 CACHE STRING "" FORCE)
+    # use ZF_LOG_DEBUG (2), useful for capdl-loader-app to to get information
+    # about the required capability slots
+    set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "" FORCE)
 
     #---------------------------------------------------------------------------
     # use the seL4/CAmkES build system
