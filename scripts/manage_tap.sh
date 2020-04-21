@@ -54,7 +54,9 @@ function create_bridge()
 
     # kill any dhclient already running and start the daemon again for
     # the bridge
-    kill -9 $(pidof dhclient)
+    if [ -n "$(pidof dhclient)" ]; then
+	kill -9 $(pidof dhclient)
+    fi
     dhclient -v ${BRIDGE_NAME}
 }
 
@@ -72,7 +74,9 @@ function remove_bridge()
 
     ip link set dev ${NETWORK_INTERFACE_NAME} up
 
-    kill -9 $(pidof dhclient)
+    if [ -n "$(pidof dhclient)" ]; then
+        kill -9 $(pidof dhclient)
+    fi
     dhclient -v ${NETWORK_INTERFACE_NAME}
 }
 
