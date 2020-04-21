@@ -55,3 +55,6 @@
 [submodule "components/CryptoServer"]
 	path = components/CryptoServer
 	url = ../../sc/cryptoserver.git
+[submodule "components/TlsServer"]
+	path = components/TlsServer
+	url = ../../sc/tlsserver.git
