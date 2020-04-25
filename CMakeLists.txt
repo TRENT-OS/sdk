@@ -217,6 +217,20 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
+macro(DeclareAndCreateCamkESSystem camkes_system_file)
+
+    DeclareCAmkESRootserver(
+        ${camkes_system_file}
+        CPP_INCLUDES
+            ${SEOS_COMPONENTS_DIR}
+    )
+
+    GenerateCAmkESRootServer()
+
+endmacro()
+
+
+#-------------------------------------------------------------------------------
 macro(os_sdk_build system_project_dir)
 
     #---------------------------------------------------------------------------
@@ -270,6 +284,7 @@ macro(os_sdk_build system_project_dir)
     endif()
 
     add_subdirectory("${SEOS_LIBS_DIR}")
+    include("${SEOS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
 
     if (NOT EXISTS "${system_project_dir}")
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")

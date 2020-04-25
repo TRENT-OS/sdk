@@ -1,0 +1,37 @@
+/*
+ *  NIC-Chanmux CAmkES Component
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ *
+ *  to be used as:
+ *
+ *      #include "NIC_ChanMux/NIC_ChanMux.camkes"
+ *
+ *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_1)
+ *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_2)
+ *
+ */
+
+import <seos_if_chanMux.camkes>;
+import <if_OS_nic.camkes>;
+
+#define DECLARE_COMPONENT_NIC_ChanMux(_name_) \
+    component _name_ { \
+        control; \
+        \
+        has        mutex               mutex_ctrl_channel; \
+        \
+        /* lower interface to ChanMux ------------------------------------- */ \
+        uses       ChanMuxDriverInf    ChanMuxRpc; /* name hard-coded in driver lib */ \
+        consumes   EventDataAvailable  chanMux_event_hasData; \
+        dataport   Buf                 chanMux_port_ctrl; \
+        dataport   Buf                 chanMux_port_data_read; \
+        dataport   Buf                 chanMux_port_data_write; \
+        \
+        /* upper interface as NIC Driver ---------------------------------- */ \
+        provides   if_OS_nic           nic_rpc; \
+        emits      EventDataAvailable  nic_event_hasData; \
+        dataport   Buf                 nic_port_to; /* driver -> network stack */  \
+        dataport   Buf                 nic_port_from; /* network stack -> driver */ \
+    }
