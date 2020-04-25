@@ -14,24 +14,30 @@
  */
 
 import <seos_if_chanMux.camkes>;
+import <if_OS_Logger.camkes>;
 import <if_OS_nic.camkes>;
 
 #define DECLARE_COMPONENT_NIC_ChanMux(_name_) \
     component _name_ { \
         control; \
         \
-        has        mutex               mutex_ctrl_channel; \
+        has              mutex               mutex_ctrl_channel; \
         \
         /* lower interface to ChanMux ------------------------------------- */ \
-        uses       ChanMuxDriverInf    ChanMuxRpc; /* name hard-coded in driver lib */ \
-        consumes   EventDataAvailable  chanMux_event_hasData; \
-        dataport   Buf                 chanMux_port_ctrl; \
-        dataport   Buf                 chanMux_port_data_read; \
-        dataport   Buf                 chanMux_port_data_write; \
+        uses             ChanMuxDriverInf    ChanMuxRpc; /* name hard-coded in driver lib */ \
+        consumes         EventDataAvailable  chanMux_event_hasData; \
+        dataport         Buf                 chanMux_port_ctrl; \
+        dataport         Buf                 chanMux_port_data_read; \
+        dataport         Buf                 chanMux_port_data_write; \
         \
         /* upper interface as NIC Driver ---------------------------------- */ \
-        provides   if_OS_nic           nic_rpc; \
-        emits      EventDataAvailable  nic_event_hasData; \
-        dataport   Buf                 nic_port_to; /* driver -> network stack */  \
-        dataport   Buf                 nic_port_from; /* network stack -> driver */ \
+        provides         if_OS_nic           nic_rpc; \
+        emits            EventDataAvailable  nic_event_hasData; \
+        dataport         Buf                 nic_port_to; /* driver -> network stack */  \
+        dataport         Buf                 nic_port_from; /* network stack -> driver */ \
+        \
+        /* usage of LogServer is optional ----------------------------------*/ \
+        maybe uses      if_OS_Logger        logServer_rpc; \
+        maybe dataport  Buf                 logServer_port; \
+        maybe consumes  EventReady          logServer_event_ready; \
     }
