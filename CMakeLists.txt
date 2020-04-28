@@ -73,7 +73,6 @@ macro(seos_use_libs)
             SEOS_TLS
             SEOS_TLS_WITH_RPC_SERVER
             SEOS_TLS_WITH_RPC_CLIENT
-            SEOS_TLS_IMPL_MBEDTLS
             SEOS_KEYSTORE
             SEOS_PARTITION_MANAGER
             SEOS_FILESYSTEM_CORE
