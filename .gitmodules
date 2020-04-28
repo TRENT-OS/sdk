@@ -58,3 +58,6 @@
 [submodule "components/TlsServer"]
 	path = components/TlsServer
 	url = ../../sc/tlsserver.git
+[submodule "projects/libs/3rdParty/mbedtls"]
+	path = projects/libs/3rdParty/mbedtls
+	url = ../../ext/mbedtls.git
