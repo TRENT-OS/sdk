@@ -83,6 +83,8 @@ macro(seos_use_libs)
             SEOS_FILESYSTEM_SPIFFS_LEGACY
             SEOS_CONFIGURATION
             SEOS_LOGGER
+            3RDPARTY_MBEDTLS_WITH_CRYPTO_ONLY
+            3RDPARTY_MBEDTLS
     )
 
     foreach(seos_lib ${ARGN})
