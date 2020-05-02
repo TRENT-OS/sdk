@@ -1,0 +1,71 @@
+/*
+ *  ChanMux
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ */
+
+import <seos_if_chanMux.camkes>;
+// caller must import UART interface, since we don't have a generic one yet
+
+
+//------------------------------------------------------------------------------
+// Component definitions
+
+#if !defined(CHANMUX_COMPONENT_NAME)
+#error "define CHANMUX_COMPONENT_NAME"
+#endif
+#undef CHANMUX_COMPONENT_NAME_helper
+#define CHANMUX_COMPONENT_NAME_helper       CHANMUX_COMPONENT_NAME
+
+#if !defined(CHANMUX_UPPER_INTERFACES)
+#error "define CHANMUX_UPPER_INTERFACES"
+#endif
+#undef CHANMUX_UPPER_INTERFACES_helper
+#define CHANMUX_UPPER_INTERFACES_helper     CHANMUX_UPPER_INTERFACES
+
+component CHANMUX_COMPONENT_NAME_helper {
+
+    //-------------------------------------------------
+    // generic upper interface
+    provides       ChanMuxDriverInf    chanMux_rpc;
+
+    //-------------------------------------------------
+    // lower interface to UART
+    provides      ChanMuxOutInf        chanMux_lower_rpc;
+    uses          UartInf              uart_rpc;
+    dataport      Buf                  uart_port;
+
+    //-------------------------------------------------
+    // upper interfaces
+    #include CHANMUX_UPPER_INTERFACES_helper
+
+}
+
+#undef CHANMUX_COMPONENT_NAME_helper
+#undef CHANMUX_UPPER_INTERFACES_helper
+
+
+//------------------------------------------------------------------------------
+// Interface definitions
+
+// ensure we define this only once if this file in included multiple times
+#if !defined(DECLARE_AND_CONNECT_INSTANCE_CHANMUX)
+
+#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX(_name_, _inst_, _uart_rpc_, _uart_port_, _uart_rpc_caller_) \
+    component   _name_          _inst_; \
+    \
+    connection  seL4RPCCall     _name_ ## _ ## _inst_ ## _uart_rpc( \
+        from _inst_.uart_rpc, \
+        to   _uart_rpc_); \
+    \
+    connection  seL4SharedData  _name_ ## _ ## _inst_ ## _uart_port( \
+        from _inst_.uart_port, \
+        to   _uart_port_); \
+    \
+    connection  seL4RPCCall     _name_ ## _uart ## _inst_ ## _rpc   ( \
+        from _uart_rpc_caller_, \
+        to   _inst_.chanMux_lower_rpc);
+
+#endif
+

@@ -24,7 +24,7 @@ import <if_OS_nic.camkes>;
         has              mutex               mutex_ctrl_channel; \
         \
         /* lower interface to ChanMux ------------------------------------- */ \
-        uses             ChanMuxDriverInf    ChanMuxRpc; /* name hard-coded in driver lib */ \
+        uses             ChanMuxDriverInf    chanMux_rpc; \
         consumes         EventDataAvailable  chanMux_event_hasData; \
         dataport         Buf                 chanMux_port_ctrl; \
         dataport         Buf                 chanMux_port_data_read; \

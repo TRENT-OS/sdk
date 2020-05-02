@@ -222,7 +222,10 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
     DeclareCAmkESRootserver(
         ${camkes_system_file}
         CPP_INCLUDES
+            ${SYSTEM_PROJECT_DIR}
             ${SEOS_COMPONENTS_DIR}
+        CPP_FLAGS
+            -DCAMKES_TOOL_PROCESSING
     )
 
     GenerateCAmkESRootServer()
@@ -284,12 +287,14 @@ macro(os_sdk_build system_project_dir)
     endif()
 
     add_subdirectory("${SEOS_LIBS_DIR}")
+    include("${SEOS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
     include("${SEOS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
 
     if (NOT EXISTS "${system_project_dir}")
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
     endif()
 
+    set(SYSTEM_PROJECT_DIR ${system_project_dir})
     add_subdirectory("${system_project_dir}" "os_system")
 
     # dump SEOS system image for debugging purposes. It's mostly for low level

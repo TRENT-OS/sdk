@@ -10,8 +10,6 @@
 #include <camkes.h>
 #include <limits.h>
 
-static chanmux_nic_drv_config_t config;
-
 
 //------------------------------------------------------------------------------
 void
@@ -19,60 +17,51 @@ post_init(void)
 {
     Debug_LOG_INFO("[NIC '%s'] %s()", get_instance_name(), __func__);
 
-    // can't make this "static const" or even "static" because the data ports
-    // are allocated at runtime
-    chanmux_nic_drv_config_t my_config =
+    static const chanmux_nic_drv_config_t config =
     {
         .chanmux =
         {
             .ctrl =
             {
-                .id            = CFG_CHANMUX_CHANNEL_CRTL,
-                .port =
-                {
-                    .buffer    = chanMux_port_ctrl,
-                    .len       = PAGE_SIZE
-                }
+                .id         = CFG_CHANMUX_CHANNEL_CRTL,
+                .func = {
+                    .read   = chanMux_rpc_read,
+                    .write  = chanMux_rpc_write
+                },
+                .port       = CHANMUX_DATAPORT_ASSIGN(chanMux_port_ctrl),
             },
             .data =
             {
-                .id            = CFG_CHANMUX_CHANNEL_DATA,
-                .port_read =
-                {
-                    .buffer    = chanMux_port_data_read,
-                    .len       = PAGE_SIZE
+                .id         = CFG_CHANMUX_CHANNEL_DATA,
+                .func = {
+                    .read   = chanMux_rpc_read,
+                    .write  = chanMux_rpc_write
                 },
-                .port_write = {
-                    .buffer    = chanMux_port_data_write,
-                    .len       = PAGE_SIZE
-                }
+                .port       = CHANMUX_DATAPORT_DUPLEX_ASSIGN(
+                                chanMux_port_data_read,
+                                chanMux_port_data_write ),
             },
-            .wait              = chanMux_event_hasData_wait
+            .wait           = chanMux_event_hasData_wait
         },
 
         .network_stack =
         {
-            .to = // driver -> network stack
-            {
-                .buffer        = nic_port_to,
-                .len           = PAGE_SIZE
-            },
-            .from = // network stack -> driver
-            {
-                .buffer        = nic_port_from,
-                .len           = PAGE_SIZE
-            },
-            .notify            = nic_event_hasData_emit
+            // driver -> network stack
+            .to             = CHANMUX_DATAPORT_ASSIGN(nic_port_to),
+            // network stack -> driver
+            .from           = CHANMUX_DATAPORT_ASSIGN(nic_port_from),
+            .notify         = nic_event_hasData_emit
         },
 
         .nic_control_channel_mutex =
         {
-            .lock    = mutex_ctrl_channel_lock,
-            .unlock  = mutex_ctrl_channel_unlock
+            .lock           = mutex_ctrl_channel_lock,
+            .unlock         = mutex_ctrl_channel_unlock
         }
     };
 
-    config = my_config;
+    Debug_LOG_INFO("[NIC '%s'] starting driver", get_instance_name());
+
 
     seos_err_t ret = chanmux_nic_driver_init(&config);
     if (ret != SEOS_SUCCESS)
