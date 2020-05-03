@@ -289,6 +289,7 @@ macro(os_sdk_build system_project_dir)
     add_subdirectory("${SEOS_LIBS_DIR}")
     include("${SEOS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
     include("${SEOS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
+    include("${SEOS_COMPONENTS_DIR}/UART/CMakeLists.txt")
 
     if (NOT EXISTS "${system_project_dir}")
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
