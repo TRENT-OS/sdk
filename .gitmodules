@@ -61,3 +61,6 @@
 [submodule "projects/libs/3rdParty/mbedtls"]
 	path = projects/libs/3rdParty/mbedtls
 	url = ../../ext/mbedtls.git
+[submodule "projects/libs/seos_cert"]
+	path = projects/libs/seos_cert
+	url = ../../seos/cert.git

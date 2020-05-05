@@ -57,3 +57,7 @@ endif()
 if (3RDPARTY_MBEDTLS OR 3RDPARTY_MBEDTLS_WITH_CRYPTO_ONLY)
     add_subdirectory(3rdParty/mbedtls)
 endif()
+
+if (SEOS_CERT)
+    add_subdirectory(seos_cert)
+endif()

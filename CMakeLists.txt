@@ -67,6 +67,7 @@ macro(seos_use_libs)
             SEOS_LIBS_LOGGER
             SEOS_NETWORK_DRIVER_TAP_PROXY
             SEOS_NW_STACK
+            SEOS_CERT
             SEOS_CRYPTO
             SEOS_CRYPTO_WITH_RPC_SERVER
             SEOS_CRYPTO_WITH_RPC_CLIENT
