@@ -54,7 +54,7 @@ if (SEOS_LOGGER)
     add_subdirectory(seos_logger)
 endif()
 
-if (3RDPARTY_MBEDTLS OR 3RDPARTY_MBEDTLS_WITH_CRYPTO_ONLY)
+if (3RDPARTY_MBEDTLS_FOR_TLS OR 3RDPARTY_MBEDTLS_FOR_CRYPTO OR 3RDPARTY_MBEDTLS_FOR_CERT)
     add_subdirectory(3rdParty/mbedtls)
 endif()
 
