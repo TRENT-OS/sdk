@@ -84,6 +84,19 @@ void post_init(void)
         return;
     }
 
+    // We can't use ps_cdev_init(), because it expects an ID, usually simply
+    // set to PS_SERIAL_DEFAULT to use the default UART.
+    //
+    // ps_chardevice_t* dev = ps_cdev_init(
+    //                            PS_SERIAL_DEFAULT,
+    //                            &(ctx.io_ops),
+    //                            &(ctx.ps_cdev);
+    //
+    // All we have from CAmkES is "regBase" with the virtual address of the
+    // registers. Since the structure behind the ID just contains the physical
+    // address, there is no change to correlate this. Luckily, some platforms
+    // implement ps_cdev_static_init(), where we can pass the virtual address
+    // directly.
     ps_chardevice_t* dev = ps_cdev_static_init(
                             &(ctx.io_ops),
                             &(ctx.ps_cdev),
