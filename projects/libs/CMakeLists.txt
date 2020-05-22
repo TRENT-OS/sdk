@@ -54,10 +54,14 @@ if (SEOS_LOGGER)
     add_subdirectory(seos_logger)
 endif()
 
+if (SEOS_CERT)
+    add_subdirectory(seos_cert)
+endif()
+
 if (3RDPARTY_MBEDTLS_FOR_TLS OR 3RDPARTY_MBEDTLS_FOR_CRYPTO OR 3RDPARTY_MBEDTLS_FOR_CERT)
     add_subdirectory(3rdParty/mbedtls)
 endif()
 
-if (SEOS_CERT)
-    add_subdirectory(seos_cert)
+if (THIRD_PARTY_TINYFRAME)
+    add_subdirectory(3rdParty/tinyframe)
 endif()

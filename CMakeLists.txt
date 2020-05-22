@@ -85,6 +85,7 @@ macro(seos_use_libs)
             3RDPARTY_MBEDTLS_FOR_CRYPTO
             3RDPARTY_MBEDTLS_FOR_TLS
             3RDPARTY_MBEDTLS_FOR_CERT
+            THIRD_PARTY_TINYFRAME
     )
 
     foreach(seos_lib ${ARGN})
