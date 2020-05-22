@@ -64,3 +64,6 @@
 [submodule "projects/libs/seos_cert"]
 	path = projects/libs/seos_cert
 	url = ../../seos/cert.git
+[submodule "projects/libs/3rdParty/tinyframe"]
+	path = projects/libs/3rdParty/tinyframe
+	url = ../../ext/tinyframe.git
