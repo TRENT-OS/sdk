@@ -141,10 +141,8 @@ if [[ ! -e ${BUILD_DIR} ]]; then
             cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${OS_SDK_DIR}
         )
 
-        # must run cmake multiple times, so config settings propagate properly
-        echo "re-run cmake (1/2)"
-        cmake .
-        echo "re-run cmake (2/2)"
+        # must run cmake twice, so config settings propagate properly
+        echo "re-run cmake"
         cmake .
     )
 fi
