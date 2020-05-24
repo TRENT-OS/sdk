@@ -31,18 +31,9 @@ SET(SEOS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 #-------------------------------------------------------------------------------
 macro(seos_set_config_file seos_cfg_file)
 
-    # if seos_cfg_file is a relative path, we assume it to be relative to the
-    # cmake file that uses this macro. Unfortunately, this path is not in any
-    # SEOS lib's list of include folders, so we must make it an absolute path.
-    # This is easy, We can simply prepend it with CMAKE_CURRENT_LIST_DIR, which
-    # holds the path of the cmake file that uses this macro.
-    # There is one pitcall, macro parameters are immutable, so we need a helper
-    # variable here
-    set(seos_cfg_file_abs "${seos_cfg_file}")
-
-    if (NOT IS_ABSOLUTE "${seos_cfg_file}")
-        set(seos_cfg_file_abs "${CMAKE_CURRENT_LIST_DIR}/${seos_cfg_file}")
-    endif()
+    # ensure the file name with absolute path is used, so include files can be
+    # used from projects in arbitrary directories.
+    get_filename_component(seos_cfg_file_abs ${seos_cfg_file} ABSOLUTE)
 
     if (NOT EXISTS "${seos_cfg_file_abs}")
          message(FATAL_ERROR "SEOS config file not found: ${seos_cfg_file_abs}")
