@@ -29,14 +29,14 @@ SET(SEOS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
 SET(SEOS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 #-------------------------------------------------------------------------------
-macro(seos_set_config_file seos_cfg_file)
+function(seos_set_config_file cfg_file)
 
     # ensure the file name with absolute path is used, so include files can be
     # used from projects in arbitrary directories.
-    get_filename_component(seos_cfg_file_abs ${seos_cfg_file} ABSOLUTE)
+    get_filename_component(CFG_FILE_ABS ${cfg_file} ABSOLUTE)
 
-    if (NOT EXISTS "${seos_cfg_file_abs}")
-         message(FATAL_ERROR "system config file not found: ${seos_cfg_file_abs}")
+    if (NOT EXISTS "${CFG_FILE_ABS}")
+         message(FATAL_ERROR "system config file not found: ${CFG_FILE_ABS}")
     endif()
 
     # set the variables, but do not overwrite anything in the cache. This has
@@ -46,19 +46,19 @@ macro(seos_set_config_file seos_cfg_file)
     # when things change. So any internal changes in the SDK require a wipe of
     # the build workspace, a clean re-initialization of CMake and then a full
     # re-build.
-    set(DEBUG_CONFIG_H_FILE             "${seos_cfg_file_abs}" CACHE STRING "")
-    set(MEMORY_CONFIG_H_FILE            "${seos_cfg_file_abs}" CACHE STRING "")
-    set(LOGS_CONFIG_H_FILE              "${seos_cfg_file_abs}" CACHE STRING "")
-    set(KEYSTORE_CONFIG_H_FILE          "${seos_cfg_file_abs}" CACHE STRING "")
-    set(FILESYSTEM_CONFIG_H_FILE        "${seos_cfg_file_abs}" CACHE STRING "")
-    set(PARTITION_MANAGER_CONFIG_H_FILE "${seos_cfg_file_abs}" CACHE STRING "")
-    set(OS_Logger_CONFIG_H_FILE         "${seos_cfg_file_abs}" CACHE STRING "")
+    set(DEBUG_CONFIG_H_FILE             "${CFG_FILE_ABS}" CACHE STRING "")
+    set(MEMORY_CONFIG_H_FILE            "${CFG_FILE_ABS}" CACHE STRING "")
+    set(LOGS_CONFIG_H_FILE              "${CFG_FILE_ABS}" CACHE STRING "")
+    set(KEYSTORE_CONFIG_H_FILE          "${CFG_FILE_ABS}" CACHE STRING "")
+    set(FILESYSTEM_CONFIG_H_FILE        "${CFG_FILE_ABS}" CACHE STRING "")
+    set(PARTITION_MANAGER_CONFIG_H_FILE "${CFG_FILE_ABS}" CACHE STRING "")
+    set(OS_Logger_CONFIG_H_FILE         "${CFG_FILE_ABS}" CACHE STRING "")
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------
-macro(seos_use_libs)
+function(seos_use_libs)
 
     # we maintain a list of libs here that the SDK provides. This allows doing
     # a nice sanity check against what the system projects are trying to use.
@@ -105,7 +105,7 @@ macro(seos_use_libs)
 
     endforeach()
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------
