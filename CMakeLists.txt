@@ -1,3 +1,9 @@
+#
+# SDK Build System
+#
+# Copyright (C) 2019-2020, Hensoldt Cyber GmbH
+#
+
 cmake_minimum_required(VERSION 3.7.2)
 
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -42,6 +48,13 @@ macro(seos_set_config_file seos_cfg_file)
          message(FATAL_ERROR "SEOS config file not found: ${seos_cfg_file_abs}")
     endif()
 
+    # set the variables, but do not overwrite anything in the cache. This has
+    # the advantage that the user can configure the config files on the command
+    # line when initializing the build. However, the drawback is that since the
+    # cache is persisted over the builds, the variables will not be updated
+    # when things change. So any internal changes in the SDK require a wipe of
+    # the build workspace, a clean re-initialization of CMake and then a full
+    # re-build.
     set(DEBUG_CONFIG_H_FILE             "${seos_cfg_file_abs}" CACHE STRING "")
     set(MEMORY_CONFIG_H_FILE            "${seos_cfg_file_abs}" CACHE STRING "")
     set(LOGS_CONFIG_H_FILE              "${seos_cfg_file_abs}" CACHE STRING "")
@@ -57,10 +70,10 @@ endmacro()
 macro(seos_use_libs)
 
     # we maintain a list of SEOS libs here that the sandbox provides. This
-    # allows doing a nice sanity check against what the SEOS projects a trying
-    # to use. While this makes it quite impossible to sneak new lib in, there
-    # is the additional effort when adding new libs. We may remove this list if
-    # it turn out to cause more pain than benefit.
+    # allows doing a nice sanity check against what the SEOS projects are
+    # trying to use. While this makes it quite impossible to sneak new lib in,
+    # there is the additional effort when adding new libs. We may remove this
+    # list if it turn out to cause more pain than benefit.
     set(SEOS_KNOWN_LIBS
             SEOS_LIBS
             SEOS_CHANMUX
@@ -94,6 +107,9 @@ macro(seos_use_libs)
             message(FATAL_ERROR "unknown SEOS library: ${seos_lib}")
         endif()
 
+        # we use "FORCE" here because this must overwrite any setting from the
+        # cache, e.g. from CMake configuration passed on the command line. Any
+        # lib that is passed to this function must be enabled.
         set(${seos_lib} ON CACHE BOOL "use ${seos_lib}" FORCE)
 
     endforeach()
@@ -298,6 +314,7 @@ macro(os_sdk_build system_project_dir)
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
     endif()
 
+    # add the actual system project
     set(SYSTEM_PROJECT_DIR ${system_project_dir})
     add_subdirectory("${system_project_dir}" "os_system")
 
