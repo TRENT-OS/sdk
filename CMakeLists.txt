@@ -16,7 +16,35 @@ set(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 
 #-------------------------------------------------------------------------------
+# Set the system configuration
+#
+# Parameters:
+#
+#  <cfg_file>
+#    required, config file name.
+#
+#  CREATE_CONFIG_PROJECT
+#    optional, create config project with base name of file, ie if <cfg_file>
+#    is "configs/system_config.h", the project's name will be "system_config"-
+#    The project creates an interface library that provides the config file's
+#    include path. This allows including the config file easily in other files
+#    then.
+#
+#  CONFIG_PROJECT_NAME <name>
+#    optional, allows customizing the config project's name. This parameters
+#    implicitly enables CREATE_CONFIG_PROJECT, so it must not be specified
+#    explicitly.
+#
 function(os_set_config_file cfg_file)
+
+    cmake_parse_arguments(
+        PARSE_ARGV
+        1
+        CFG
+        "CREATE_CONFIG_PROJECT" # option arguments
+        "CONFIG_PROJECT_NAME" # optional single value arguments
+        "" # optional multi value arguments
+    )
 
     # ensure the file name with absolute path is used, so include files can be
     # used from projects in arbitrary directories.
@@ -40,6 +68,34 @@ function(os_set_config_file cfg_file)
     set(FILESYSTEM_CONFIG_H_FILE        "${CFG_FILE_ABS}" CACHE STRING "")
     set(PARTITION_MANAGER_CONFIG_H_FILE "${CFG_FILE_ABS}" CACHE STRING "")
     set(OS_Logger_CONFIG_H_FILE         "${CFG_FILE_ABS}" CACHE STRING "")
+
+    #-----------------------------------------------
+    if (CFG_CONFIG_PROJECT_NAME)
+        set(CFG_CREATE_CONFIG_PROJECT TRUE)
+    endif()
+
+    if (CFG_CREATE_CONFIG_PROJECT)
+
+        if (NOT CFG_CONFIG_PROJECT_NAME)
+
+            get_filename_component(
+                CFG_CONFIG_PROJECT_NAME
+                ${CFG_FILE_ABS}
+                NAME_WE
+            )
+        endif()
+
+        message("creating config file project: ${CFG_CONFIG_PROJECT_NAME}")
+
+        get_filename_component(CFG_FILE_DIR ${CFG_FILE_ABS} DIRECTORY)
+
+        # define project that creates an interface library providing the config
+        # file include paths. This allows including the config file easily.
+        project(${CFG_CONFIG_PROJECT_NAME} C)
+        add_library(${PROJECT_NAME} INTERFACE)
+        target_include_directories(${PROJECT_NAME} INTERFACE ${CFG_FILE_DIR})
+
+    endif()
 
 endfunction()
 
