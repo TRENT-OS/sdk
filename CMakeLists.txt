@@ -285,8 +285,8 @@ macro(os_sdk_build system_project_dir)
     set(ENABLE_LINT ON CACHE BOOL "enable linting")
 
     if (ENABLE_LINT)
-        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr")
-        set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*")
+        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
+        set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
     endif()
 
     add_subdirectory("${SEOS_LIBS_DIR}")
