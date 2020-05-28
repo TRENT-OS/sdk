@@ -13,7 +13,7 @@ set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# SEOS project can use this macro to get the CAmkES environment
+# projects can use this macro to get the CAmkES environment
 macro(seos_import_camkes)
 
 # ToDo: make me work again
@@ -22,7 +22,7 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
-# SEOS Libs config
+# SDK libs config
 #-------------------------------------------------------------------------------
 
 SET(SEOS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
@@ -36,7 +36,7 @@ macro(seos_set_config_file seos_cfg_file)
     get_filename_component(seos_cfg_file_abs ${seos_cfg_file} ABSOLUTE)
 
     if (NOT EXISTS "${seos_cfg_file_abs}")
-         message(FATAL_ERROR "SEOS config file not found: ${seos_cfg_file_abs}")
+         message(FATAL_ERROR "system config file not found: ${seos_cfg_file_abs}")
     endif()
 
     # set the variables, but do not overwrite anything in the cache. This has
@@ -60,12 +60,12 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(seos_use_libs)
 
-    # we maintain a list of SEOS libs here that the sandbox provides. This
-    # allows doing a nice sanity check against what the SEOS projects are
-    # trying to use. While this makes it quite impossible to sneak new lib in,
-    # there is the additional effort when adding new libs. We may remove this
-    # list if it turn out to cause more pain than benefit.
-    set(SEOS_KNOWN_LIBS
+    # we maintain a list of libs here that the SDK provides. This allows doing
+    # a nice sanity check against what the system projects are trying to use.
+    # While this makes it quite impossible to sneak new lib in, there is the
+    # additional effort when adding new libs. We may remove this list if it
+    # turn out to cause more pain than benefit.
+    set(SDK_KNOWN_LIBS
             SEOS_LIBS
             SEOS_CHANMUX
             SEOS_LIBS_LOGGER
@@ -92,16 +92,16 @@ macro(seos_use_libs)
             THIRD_PARTY_TINYFRAME
     )
 
-    foreach(seos_lib ${ARGN})
+    foreach(sdk_lib ${ARGN})
 
-        if (NOT "${seos_lib}" IN_LIST SEOS_KNOWN_LIBS)
-            message(FATAL_ERROR "unknown SEOS library: ${seos_lib}")
+        if (NOT "${sdk_lib}" IN_LIST SDK_KNOWN_LIBS)
+            message(FATAL_ERROR "unknown SDK library: ${sdk_lib}")
         endif()
 
         # we use "FORCE" here because this must overwrite any setting from the
         # cache, e.g. from CMake configuration passed on the command line. Any
         # lib that is passed to this function must be enabled.
-        set(${seos_lib} ON CACHE BOOL "use ${seos_lib}" FORCE)
+        set(${sdk_lib} ON CACHE BOOL "use ${sdk_lib}" FORCE)
 
     endforeach()
 
@@ -247,7 +247,7 @@ endmacro()
 macro(os_sdk_build system_project_dir)
 
     #---------------------------------------------------------------------------
-    # SEOS default settings for a seL4 based CAmkES system.
+    # default settings for a seL4 based CAmkES system.
     #---------------------------------------------------------------------------
 
     set(SEL4_CONFIG_DEFAULT_ADVANCED ON)
@@ -279,7 +279,7 @@ macro(os_sdk_build system_project_dir)
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
 
     #---------------------------------------------------------------------------
-    # SEOS specific build process
+    # SDK specific build process
     #---------------------------------------------------------------------------
 
     CAmkESAddImportPath(
@@ -309,12 +309,12 @@ macro(os_sdk_build system_project_dir)
     set(SYSTEM_PROJECT_DIR ${system_project_dir})
     add_subdirectory("${system_project_dir}" "os_system")
 
-    # dump SEOS system image for debugging purposes. It's mostly for low level
+    # dump system image for debugging purposes. It's mostly for low level
     # debugging of specific platform issues. For debugging an actual CAmkES
     # system that runs on top of seL4 this does not provide anything.
     set(IMAGE_NAME "$<TARGET_PROPERTY:rootserver_image,IMAGE_NAME>")
     add_custom_target(
-        seos_image_dump ALL
+        system_image_dump ALL
         DEPENDS ${CMAKE_BINARY_DIR}/${IMAGE_NAME}
         COMMAND ${CROSS_COMPILER_PREFIX}size ${IMAGE_NAME} | tee ${IMAGE_NAME}.size
         COMMAND ${CROSS_COMPILER_PREFIX}objdump -dht ${IMAGE_NAME} > ${IMAGE_NAME}.lst
