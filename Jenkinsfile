@@ -4,22 +4,24 @@
 // add to group "stack" in order to grant usage of Haskell stack in the docker
 // image
 
-def DOCKER_BUILD_ENV = [ image: 'seos_build_env_20191010',
-                         args: ' -v /etc/localtime:/etc/localtime:ro '+
-                               ' --group-add=1001'
+def DOCKER_BUILD_ENV = [ 
+	image: 		'docker:5000/trentos_build:trentos_0.9',
+    args: 	    '-v /etc/localtime:/etc/localtime:ro '+
+                	' --group-add=1001 ',
+	registry: 	'https://docker:5000',
                        ]
 
 def DOCKER_TEST_ENV = [
-    image:      'docker:5000/seos_test_env:latest',
-    args:       ' -v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro'+
-                    ' -v /etc/localtime:/etc/localtime:ro' +
-                    ' --network=host' +
-                    ' --cap-add=NET_ADMIN' +
-                    ' --cap-add=NET_RAW' +
-                    ' --device=/dev/net/tun',
-    registry:   'http://docker:5000'
+    image:      'docker:5000/trentos_test:trentos_0.9',
+    args:       '-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro '+
+	               ' -v /etc/localtime:/etc/localtime:ro '+
+	               ' --network=bridge '+
+	               ' --cap-add=NET_ADMIN '+
+	               ' --cap-add=NET_RAW '+
+	               ' --device=/dev/net/tun '+
+	               ' --group-add=sudo ',
+    registry:   'https://docker:5000'
 ]
-
 
 def print_step_info(name) { echo "#################### " + name }
 
