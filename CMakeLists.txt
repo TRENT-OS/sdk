@@ -257,19 +257,19 @@ macro(os_sdk_build system_project_dir)
     set(VERIFICATION OFF CACHE BOOL "Only verification friendly kernel features")
 
     # we need one scheduling domain only
-    set(KernelNumDomains 1 CACHE STRING "" FORCE)
+    set(KernelNumDomains 1 CACHE STRING "")
 
     # default is 12, which gives 4096 (2^12) slots. That is not enough for more
     # complex systems. Using 15 gives 32768 slots
-    set(KernelRootCNodeSizeBits 15 CACHE STRING "" FORCE)
+    set(KernelRootCNodeSizeBits 15 CACHE STRING "")
 
     # defaults is 4096, which is too small for more complex systems. What must
     # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
-    set(CapDLLoaderMaxObjects 25000 CACHE STRING "" FORCE)
+    set(CapDLLoaderMaxObjects 25000 CACHE STRING "")
 
     # use ZF_LOG_DEBUG (2), useful for capdl-loader-app to to get information
     # about the required capability slots
-    set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "" FORCE)
+    set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
 
     #---------------------------------------------------------------------------
     # use the seL4/CAmkES build system
