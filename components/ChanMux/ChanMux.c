@@ -5,7 +5,7 @@
  */
 
 #include "ChanMux/ChanMux.h"
-#include "SeosError.h"
+#include "OS_Error.h"
 #include <camkes.h>
 
 extern const ChanMux_config_t cfgChanMux;
@@ -86,7 +86,7 @@ extern unsigned int chanMux_rpc_get_sender_id(void);
 
 //------------------------------------------------------------------------------
 // function write() of interface
-seos_err_t
+OS_Error_t
 chanMux_rpc_write(
     unsigned int  chanNum,
     size_t        len,
@@ -103,7 +103,7 @@ chanMux_rpc_write(
 
 //------------------------------------------------------------------------------
 // function read() of interface
-seos_err_t
+OS_Error_t
 chanMux_rpc_read(
     unsigned int  chanNum,
     size_t        len,

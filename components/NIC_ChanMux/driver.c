@@ -5,7 +5,7 @@
  */
 
 #include "LibDebug/Debug.h"
-#include "SeosError.h"
+#include "OS_Error.h"
 #include "chanmux_nic_drv_api.h"
 #include <camkes.h>
 #include <limits.h>
@@ -63,8 +63,8 @@ post_init(void)
     Debug_LOG_INFO("[NIC '%s'] starting driver", get_instance_name());
 
 
-    seos_err_t ret = chanmux_nic_driver_init(&config);
-    if (ret != SEOS_SUCCESS)
+    OS_Error_t ret = chanmux_nic_driver_init(&config);
+    if (ret != OS_SUCCESS)
     {
         Debug_LOG_FATAL("[NIC '%s'] chanmux_nic_driver_init() failed, error %d",
                         get_instance_name(), ret);
@@ -79,15 +79,15 @@ run(void)
 {
     Debug_LOG_INFO("[NIC '%s'] %s()", get_instance_name(), __func__);
 
-    seos_err_t ret = chanmux_nic_driver_run();
-    if (ret != SEOS_SUCCESS)
+    OS_Error_t ret = chanmux_nic_driver_run();
+    if (ret != OS_SUCCESS)
     {
         Debug_LOG_FATAL("[NIC '%s'] chanmux_nic_driver_run() failed, error %d",
                         get_instance_name(), ret);
         return -1;
     }
 
-    // actually, this is not supposed to return with SEOS_SUCCESS. We have to
+    // actually, this is not supposed to return with OS_SUCCESS. We have to
     // assume this is a graceful shutdown for some reason
     Debug_LOG_WARNING("[NIC '%s'] graceful termination", get_instance_name());
 
@@ -103,7 +103,7 @@ run(void)
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-seos_err_t
+OS_Error_t
 nic_rpc_tx_data(
     size_t* pLen)
 {
@@ -112,7 +112,7 @@ nic_rpc_tx_data(
 
 
 //------------------------------------------------------------------------------
-seos_err_t
+OS_Error_t
 nic_rpc_get_mac(void)
 {
     return chanmux_nic_driver_rpc_get_mac();

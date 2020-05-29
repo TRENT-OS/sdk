@@ -6,7 +6,7 @@
 
 
 // ToDo: remove this hard-coded ChanMux dependency
-import <seos_if_chanMux.camkes>;
+import <if_ChanMux.camkes>;
 
 
 //------------------------------------------------------------------------------

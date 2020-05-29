@@ -200,7 +200,7 @@ function sdk_unit_test()
     local BUILD_DIR=$2
     shift 2
 
-    print_info "running SEOS Libs Unit Tests"
+    print_info "running SDK Libs Unit Tests"
 
     local BUILD_PARAMS=(
         ${BUILD_DIR}/test_seos_libs
@@ -273,13 +273,13 @@ function build_sdk_docs()
 
     # clear folder where we collect docs
     if [[ -e ${OUT_DIR} ]]; then
-        echo "removing attic SEOS API documentation collection folder"
+        echo "removing attic API documentation collection folder"
         rm -rf ${OUT_DIR}
     fi
     mkdir -p ${OUT_DIR}/html
     mkdir -p ${OUT_DIR}/pdf
 
-    # collect SEOS API documentation
+    # collect API documentation
     echo "collecting HTML documentation in ${OUT_DIR}/html..."
 
     # we change the current directory to execute "find", because this works
@@ -294,7 +294,7 @@ function build_sdk_docs()
             echo "  ${TARGET_FOLDER} <- ${module}"
             cp -ar ${module} ${ABS_OUT_DIR_HTML}/${TARGET_FOLDER}
         done
-        cp -ar seos-api-index.html ${ABS_OUT_DIR_HTML}/index.html
+        cp -ar os-api-index.html ${ABS_OUT_DIR_HTML}/index.html
     )
 
     # collect all the pdfs

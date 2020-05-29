@@ -66,91 +66,91 @@ add_sdk_lib(
 add_sdk_lib(
     "seos_libs"
     USAGE_FLAGS
-        SEOS_LIBS
+        OS_LIBS
 )
 
 add_sdk_lib(
     "chanmux"
     USAGE_FLAGS
-        SEOS_CHANMUX
+        OS_CHANMUX
 )
 
 add_sdk_lib(
     "seos_crypto"
     USAGE_FLAGS
-        SEOS_CRYPTO
-        SEOS_CRYPTO_WITH_RPC_SERVER
-        SEOS_CRYPTO_WITH_RPC_CLIENT
+        OS_CRYPTO
+        OS_CRYPTO_WITH_RPC_SERVER
+        OS_CRYPTO_WITH_RPC_CLIENT
 )
 
 add_sdk_lib(
     "seos_keystore"
     USAGE_FLAGS
-        SEOS_KEYSTORE
+        OS_KEYSTORE
 )
 
 add_sdk_lib(
     "seos_network_driver_tap_proxy"
     USAGE_FLAGS
-        SEOS_NETWORK_DRIVER_TAP_PROXY
+        OS_NETWORK_DRIVER_TAP_PROXY
 )
 
 add_sdk_lib(
     "seos_nwstack"
     USAGE_FLAGS
-        SEOS_NW_STACK
+        OS_NW_STACK
 )
 
 add_sdk_lib(
     "seos_partition_manager"
     USAGE_FLAGS
-        SEOS_PARTITION_MANAGER
+        OS_PARTITION_MANAGER
 )
 
 add_sdk_lib(
     "seos_filesystem_core"
     USAGE_FLAGS
-        SEOS_FILESYSTEM_CORE
+        OS_FILESYSTEM_CORE
 )
 
 add_sdk_lib(
     "seos_filesystem_fat"
     USAGE_FLAGS
-        SEOS_FILESYSTEM_FAT
+        OS_FILESYSTEM_FAT
 )
 
 
 add_sdk_lib(
     "seos_filesystem_spiffs"
     USAGE_FLAGS
-        SEOS_FILESYSTEM_SPIFFS
-        SEOS_FILESYSTEM_SPIFFS_LEGACY
+        OS_FILESYSTEM_SPIFFS
+        OS_FILESYSTEM_SPIFFS_LEGACY
 )
 
 add_sdk_lib(
     "seos_tls"
     USAGE_FLAGS
-        SEOS_TLS
-        SEOS_TLS_WITH_RPC_CLIENT
-        SEOS_TLS_WITH_RPC_SERVER
+        OS_TLS
+        OS_TLS_WITH_RPC_CLIENT
+        OS_TLS_WITH_RPC_SERVER
 )
 
 add_sdk_lib(
     "seos_configuration"
     USAGE_FLAGS
-        SEOS_CONFIGURATION
+        OS_CONFIGURATION
 )
 
 add_sdk_lib(
     "seos_logger"
     USAGE_FLAGS
-        SEOS_LOGGER
+        OS_LOGGER
 )
 
 add_sdk_lib(
     "seos_cert"
     USAGE_FLAGS
-        SEOS_CERT
+        OS_CERT
 )
 
 add_sdk_lib(

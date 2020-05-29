@@ -25,11 +25,11 @@ endmacro()
 # SDK libs config
 #-------------------------------------------------------------------------------
 
-SET(SEOS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
-SET(SEOS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
+SET(OS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
+SET(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 #-------------------------------------------------------------------------------
-function(seos_set_config_file cfg_file)
+function(os_set_config_file cfg_file)
 
     # ensure the file name with absolute path is used, so include files can be
     # used from projects in arbitrary directories.
@@ -58,7 +58,7 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(seos_use_libs)
+function(os_use_libs)
 
     # we maintain a list of libs here that the SDK provides. This allows doing
     # a nice sanity check against what the system projects are trying to use.
@@ -66,26 +66,26 @@ function(seos_use_libs)
     # additional effort when adding new libs. We may remove this list if it
     # turn out to cause more pain than benefit.
     set(SDK_KNOWN_LIBS
-            SEOS_LIBS
-            SEOS_CHANMUX
-            SEOS_LIBS_LOGGER
-            SEOS_NETWORK_DRIVER_TAP_PROXY
-            SEOS_NW_STACK
-            SEOS_CERT
-            SEOS_CRYPTO
-            SEOS_CRYPTO_WITH_RPC_SERVER
-            SEOS_CRYPTO_WITH_RPC_CLIENT
-            SEOS_TLS
-            SEOS_TLS_WITH_RPC_SERVER
-            SEOS_TLS_WITH_RPC_CLIENT
-            SEOS_KEYSTORE
-            SEOS_PARTITION_MANAGER
-            SEOS_FILESYSTEM_CORE
-            SEOS_FILESYSTEM_FAT
-            SEOS_FILESYSTEM_SPIFFS
-            SEOS_FILESYSTEM_SPIFFS_LEGACY
-            SEOS_CONFIGURATION
-            SEOS_LOGGER
+            OS_LIBS
+            OS_CHANMUX
+            OS_LIBS_LOGGER
+            OS_NETWORK_DRIVER_TAP_PROXY
+            OS_NW_STACK
+            OS_CERT
+            OS_CRYPTO
+            OS_CRYPTO_WITH_RPC_SERVER
+            OS_CRYPTO_WITH_RPC_CLIENT
+            OS_TLS
+            OS_TLS_WITH_RPC_SERVER
+            OS_TLS_WITH_RPC_CLIENT
+            OS_KEYSTORE
+            OS_PARTITION_MANAGER
+            OS_FILESYSTEM_CORE
+            OS_FILESYSTEM_FAT
+            OS_FILESYSTEM_SPIFFS
+            OS_FILESYSTEM_SPIFFS_LEGACY
+            OS_CONFIGURATION
+            OS_LOGGER
             3RDPARTY_MBEDTLS_FOR_CRYPTO
             3RDPARTY_MBEDTLS_FOR_TLS
             3RDPARTY_MBEDTLS_FOR_CERT
@@ -113,7 +113,7 @@ endfunction()
 # Doxyfile use DOXYGEN_OUTPUT_DIR env variable. The macro has two string
 # parameters that accept shell script snippets that will run a pre and post
 # build steps for the doxygen run.
-macro(seos_create_doxygen_target doc_target_name pre_action post_action)
+macro(os_create_doxygen_target doc_target_name pre_action post_action)
 
     find_package(Doxygen)
 
@@ -161,42 +161,42 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(os_sdk_build_doc)
 
-    seos_use_libs(
-        SEOS_LIBS
-        SEOS_CHANMUX
-        SEOS_CONFIGURATION
-        SEOS_CRYPTO
-        SEOS_TLS
-        SEOS_KEYSTORE
-        SEOS_FILESYSTEM_SPIFFS
-        SEOS_NW_STACK
-        SEOS_PARTITION_MANAGER
-        SEOS_FILESYSTEM_CORE
-        SEOS_FILESYSTEM_FAT
-        SEOS_LOGGER
+    os_use_libs(
+        OS_LIBS
+        OS_CHANMUX
+        OS_CONFIGURATION
+        OS_CRYPTO
+        OS_TLS
+        OS_KEYSTORE
+        OS_FILESYSTEM_SPIFFS
+        OS_NW_STACK
+        OS_PARTITION_MANAGER
+        OS_FILESYSTEM_CORE
+        OS_FILESYSTEM_FAT
+        OS_LOGGER
     )
 
-    add_subdirectory(${SEOS_LIBS_DIR})
+    add_subdirectory(${OS_LIBS_DIR})
 
     add_custom_target( os_sdk_doc )
 
     add_dependencies( os_sdk_doc
-        seos_core_api_doc
-        seos_chanmux_doc
-        seos_libs_doc
-        seos_crypto_doc
-        seos_configuration_doc
-        seos_tls_doc
-        seos_keystore_doc
-        seos_filesystem_spiffs_doc
-        seos_nw_lib_doc
-        seos_filesystem_core_doc
-        seos_filesystem_fat_doc
-        seos_partition_manager_doc
-        seos_logger_doc
+        os_core_api_doc
+        os_chanmux_doc
+        os_libs_doc
+        os_crypto_doc
+        os_configuration_doc
+        os_tls_doc
+        os_keystore_doc
+        os_filesystem_spiffs_doc
+        os_nw_lib_doc
+        os_filesystem_core_doc
+        os_filesystem_fat_doc
+        os_partition_manager_doc
+        os_logger_doc
     )
 
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/seos-api-index.html
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/os-api-index.html
         "<!doctype html>\n"
         "<html>\n"
         "  <head></head>\n"
@@ -233,7 +233,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
         ${camkes_system_file}
         CPP_INCLUDES
             ${SYSTEM_PROJECT_DIR}
-            ${SEOS_COMPONENTS_DIR}
+            ${OS_COMPONENTS_DIR}
         CPP_FLAGS
             -DCAMKES_TOOL_PROCESSING
     )
@@ -283,9 +283,9 @@ macro(os_sdk_build system_project_dir)
     #---------------------------------------------------------------------------
 
     CAmkESAddImportPath(
-        ${SEOS_LIBS_DIR}/seos_core_api/camkes
-        ${SEOS_COMPONENTS_DIR}
-        ${SEOS_LIBS_DIR}/chanmux/camkes
+        ${OS_LIBS_DIR}/seos_core_api/camkes
+        ${OS_COMPONENTS_DIR}
+        ${OS_LIBS_DIR}/chanmux/camkes
     )
 
     # enable linting by default
@@ -296,10 +296,10 @@ macro(os_sdk_build system_project_dir)
         set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
     endif()
 
-    add_subdirectory("${SEOS_LIBS_DIR}")
-    include("${SEOS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
-    include("${SEOS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
-    include("${SEOS_COMPONENTS_DIR}/UART/CMakeLists.txt")
+    add_subdirectory("${OS_LIBS_DIR}")
+    include("${OS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
+    include("${OS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
+    include("${OS_COMPONENTS_DIR}/UART/CMakeLists.txt")
 
     if (NOT EXISTS "${system_project_dir}")
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
