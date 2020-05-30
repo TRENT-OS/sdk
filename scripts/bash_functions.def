@@ -4,8 +4,16 @@
 #
 #-------------------------------------------------------------------------------
 
-TRENTOS_BUILD_CONTAINER=trentos_build:trentos_0.9
-TRENTOS_TEST_CONTAINER=trentos_test:trentos_0.9
+
+# the name is fixed, but the tag can be set externally also
+
+TRENTOS_BUILD_CONTAINER_NAME="trentos_build"
+TRENTOS_BUILD_CONTAINER_TAG=${TRENTOS_BUILD_CONTAINER_TAG:-trentos_0.9}
+TRENTOS_BUILD_CONTAINER=${TRENTOS_BUILD_CONTAINER_NAME}:${TRENTOS_BUILD_CONTAINER_TAG}
+
+TRENTOS_TEST_CONTAINER_NAME="trentos_test"
+TRENTOS_TEST_CONTAINER_TAG=${TRENTOS_TEST_CONTAINER_TAG:-trentos_0.9}
+TRENTOS_TEST_CONTAINER=${TRENTOS_TEST_CONTAINER_NAME}:${TRENTOS_TEST_CONTAINER_TAG}
 
 
 #-------------------------------------------------------------------------------
