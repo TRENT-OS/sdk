@@ -17,6 +17,18 @@ TRENTOS_TEST_CONTAINER=${TRENTOS_TEST_CONTAINER_NAME}:${TRENTOS_TEST_CONTAINER_T
 
 
 #-------------------------------------------------------------------------------
+# avoid having unsupported chars in hostname
+make_container_hostname()
+{
+    local tmp=${1}
+    tmp=${tmp//_/-}  # replace "_" by "-"
+    tmp=${tmp//:/-}  # replace ":" by "-"
+    tmp=${tmp//./-}  # replace "." by "-"
+    echo "${tmp}"
+}
+
+
+#-------------------------------------------------------------------------------
 open_trentos_build_env()
 {
         if [ "${#}" -eq "0" ]; then
@@ -31,8 +43,8 @@ open_trentos_build_env()
             -i
             # --tty Allocate a pseudo-TTY
             -t
-            # remove label tag from the container name
-            --hostname "${TRENTOS_BUILD_CONTAINER%%:*}"
+            # host name is container name with tag
+            --hostname $(make_container_hostname ${TRENTOS_BUILD_CONTAINER})
             # discard changes to container on exit
             --rm
             # set the uid of the user running in the container to that of the
@@ -66,8 +78,8 @@ open_trentos_test_env()
             -i
             # --tty Allocate a pseudo-TTY
             -t
-            # remove label tag from the container name
-            --hostname "${TRENTOS_TEST_CONTAINER%%:*}"
+            # host name is container name with tag
+            --hostname $(make_container_hostname ${TRENTOS_TEST_CONTAINER})
             # discard changes to container on exit
             --rm
             # set the uid of the user running in the container to that of the
