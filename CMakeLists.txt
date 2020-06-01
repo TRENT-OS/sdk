@@ -247,6 +247,17 @@ endmacro()
 macro(os_sdk_build system_project_dir)
 
     #---------------------------------------------------------------------------
+    # default settings for the SDK
+    #---------------------------------------------------------------------------
+
+    # enable CAmkES by default
+    set(SDK_USE_CAMKES ON CACHE BOOL "enable CAmkES")
+
+    # enable linting by default
+    set(ENABLE_LINT ON CACHE BOOL "enable linting")
+
+
+    #---------------------------------------------------------------------------
     # default settings for a seL4 based CAmkES system.
     #---------------------------------------------------------------------------
 
@@ -263,13 +274,19 @@ macro(os_sdk_build system_project_dir)
     # complex systems. Using 15 gives 32768 slots
     set(KernelRootCNodeSizeBits 15 CACHE STRING "")
 
-    # defaults is 4096, which is too small for more complex systems. What must
-    # hold is: CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
-    set(CapDLLoaderMaxObjects 25000 CACHE STRING "")
+    if (SDK_USE_CAMKES)
+
+        # defaults is 4096, which is too small for more complex systems. The
+        # root C-Node must provide enough space for all caps in the end, ie
+        # CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
+        set(CapDLLoaderMaxObjects 25000 CACHE STRING "")
+
+    endif()
 
     # use ZF_LOG_DEBUG (2), useful for capdl-loader-app to to get information
     # about the required capability slots
     set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
+
 
     #---------------------------------------------------------------------------
     # use the seL4/CAmkES build system
@@ -277,26 +294,36 @@ macro(os_sdk_build system_project_dir)
 
     set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
+    setup_sel4_build_system()
+
 
     #---------------------------------------------------------------------------
     # SDK specific build process
     #---------------------------------------------------------------------------
 
-    CAmkESAddImportPath(
-        ${OS_LIBS_DIR}/seos_core_api/camkes
-        ${OS_COMPONENTS_DIR}
-        ${OS_LIBS_DIR}/chanmux/camkes
-    )
+    if (SDK_USE_CAMKES)
 
-    # enable linting by default
-    set(ENABLE_LINT ON CACHE BOOL "enable linting")
+        setup_sel4_camkes_build_system()
 
+        CAmkESAddImportPath(
+            ${OS_LIBS_DIR}/seos_core_api/camkes
+            ${OS_COMPONENTS_DIR}
+            ${OS_LIBS_DIR}/chanmux/camkes
+        )
+
+    endif()
+
+    # linting does not work on seL4/CAmkES code, thus we define details here,
+    # after we've including the seL4/CAmkES build system.
     if (ENABLE_LINT)
         set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
         set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
     endif()
 
     add_subdirectory("${OS_LIBS_DIR}")
+
+    # we include the components even if CAmkES is not enabled, because the may
+    # provide library code that native systems can use.
     include("${OS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
     include("${OS_COMPONENTS_DIR}/CryptoServer/CMakeLists.txt")
     include("${OS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
