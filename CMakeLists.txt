@@ -303,13 +303,22 @@ macro(os_sdk_build system_project_dir)
     include("${OS_COMPONENTS_DIR}/TlsServer/CMakeLists.txt")
     include("${OS_COMPONENTS_DIR}/UART/CMakeLists.txt")
 
+
+    #---------------------------------------------------------------------------
+    # add the actual system project
+    #---------------------------------------------------------------------------
+
     if (NOT EXISTS "${system_project_dir}")
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
     endif()
 
-    # add the actual system project
     set(SYSTEM_PROJECT_DIR ${system_project_dir})
     add_subdirectory("${system_project_dir}" "os_system")
+
+
+    #---------------------------------------------------------------------------
+    # add post-processing steps
+    #---------------------------------------------------------------------------
 
     # dump system image for debugging purposes. It's mostly for low level
     # debugging of specific platform issues. For debugging an actual CAmkES
