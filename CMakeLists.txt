@@ -231,9 +231,6 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
     DeclareCAmkESRootserver(
         ${camkes_system_file}
-        CPP_INCLUDES
-            ${SYSTEM_PROJECT_DIR}
-            ${OS_COMPONENTS_DIR}
         CPP_FLAGS
             -DCAMKES_TOOL_PROCESSING
     )
@@ -305,6 +302,10 @@ macro(os_sdk_build system_project_dir)
 
         setup_sel4_camkes_build_system()
 
+        CAmkESAddCPPInclude(
+            ${OS_COMPONENTS_DIR}
+        )
+
         CAmkESAddImportPath(
             ${OS_LIBS_DIR}/seos_core_api/camkes
             ${OS_COMPONENTS_DIR}
@@ -340,7 +341,16 @@ macro(os_sdk_build system_project_dir)
     endif()
 
     set(SYSTEM_PROJECT_DIR ${system_project_dir})
-    add_subdirectory("${system_project_dir}" "os_system")
+
+    if (SDK_USE_CAMKES)
+
+        CAmkESAddCPPInclude(
+            ${SYSTEM_PROJECT_DIR}
+        )
+
+    endif()
+
+    add_subdirectory("${SYSTEM_PROJECT_DIR}" "os_system")
 
 
     #---------------------------------------------------------------------------
