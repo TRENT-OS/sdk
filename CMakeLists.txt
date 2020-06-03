@@ -70,7 +70,7 @@ function(os_use_libs)
             OS_CHANMUX
             OS_LIBS_LOGGER
             OS_NETWORK_DRIVER_TAP_PROXY
-            OS_NW_STACK
+            OS_NETWORK_STACK
             OS_CERT
             OS_CRYPTO
             OS_CRYPTO_WITH_RPC_SERVER
@@ -169,7 +169,7 @@ macro(os_sdk_build_doc)
         OS_TLS
         OS_KEYSTORE
         OS_FILESYSTEM_SPIFFS
-        OS_NW_STACK
+        OS_NETWORK_STACK
         OS_PARTITION_MANAGER
         OS_FILESYSTEM_CORE
         OS_FILESYSTEM_FAT
@@ -189,7 +189,7 @@ macro(os_sdk_build_doc)
         os_tls_doc
         os_keystore_doc
         os_filesystem_spiffs_doc
-        os_nw_lib_doc
+        os_network_stack_doc
         os_filesystem_core_doc
         os_filesystem_fat_doc
         os_partition_manager_doc

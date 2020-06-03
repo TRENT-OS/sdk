@@ -29,7 +29,7 @@ macro(DeclareCAmkESComponent_NIC_ChanMux name channel_ctrl channel_data)
         LIBS
             seos_core_api
             seos_libs
-            seos_nw_driver_tap_proxy_lib
+            os_network_driver_tap_proxy
     )
 
 endmacro()

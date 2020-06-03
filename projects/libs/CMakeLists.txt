@@ -98,7 +98,7 @@ add_sdk_lib(
 add_sdk_lib(
     "seos_nwstack"
     USAGE_FLAGS
-        OS_NW_STACK
+        OS_NETWORK_STACK
 )
 
 add_sdk_lib(
