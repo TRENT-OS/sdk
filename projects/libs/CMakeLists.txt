@@ -58,10 +58,7 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-
-add_sdk_lib(
-    "seos_core_api"
-)
+add_subdirectory("seos_core_api")
 
 add_sdk_lib(
     "seos_libs"
