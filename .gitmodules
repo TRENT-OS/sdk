@@ -67,3 +67,9 @@
 [submodule "projects/libs/3rdParty/tinyframe"]
 	path = projects/libs/3rdParty/tinyframe
 	url = ../../ext/tinyframe.git
+[submodule "projects/libs/os_nic_driver_chanmux"]
+	path = projects/libs/os_nic_driver_chanmux
+	url = ../../seos/seos_network_driver_tap_proxy_lib.git
+[submodule "projects/libs/os_network_stack"]
+	path = projects/libs/os_network_stack
+	url = ../../seos/networkstack.git
