@@ -86,17 +86,9 @@ add_sdk_lib(
         OS_KEYSTORE
 )
 
-add_sdk_lib(
-    "os_nic_driver_chanmux"
-    USAGE_FLAGS
-        OS_NETWORK_DRIVER_TAP_PROXY
-)
+add_subdirectory("os_nic_driver_chanmux")
 
-add_sdk_lib(
-    "os_network_stack"
-    USAGE_FLAGS
-        OS_NETWORK_STACK
-)
+add_subdirectory("os_network_stack")
 
 add_sdk_lib(
     "seos_partition_manager"
