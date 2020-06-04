@@ -68,4 +68,3 @@ component CHANMUX_COMPONENT_NAME_helper {
         to   _inst_.chanMux_lower_rpc);
 
 #endif
-
