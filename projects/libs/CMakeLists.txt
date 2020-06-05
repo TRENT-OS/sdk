@@ -90,13 +90,13 @@ add_sdk_lib(
 )
 
 add_sdk_lib(
-    "seos_network_driver_tap_proxy"
+    "os_nic_driver_chanmux"
     USAGE_FLAGS
         OS_NETWORK_DRIVER_TAP_PROXY
 )
 
 add_sdk_lib(
-    "seos_nwstack"
+    "os_network_stack"
     USAGE_FLAGS
         OS_NETWORK_STACK
 )

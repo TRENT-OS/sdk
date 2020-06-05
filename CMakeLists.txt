@@ -216,7 +216,7 @@ macro(os_sdk_build_doc)
         "    <li><a href=\"seos_keystore/index.html\">Keystore</a></li>\n"
         "    <li><a href=\"seos_libs/index.html\">Libs</a></li>\n"
         "    <li><a href=\"seos_logger/index.html\">Logger</a></li>\n"
-        "    <li><a href=\"seos_nwstack/index.html\">Network Stack</a></li>\n"
+        "    <li><a href=\"os_network_stack/index.html\">Network Stack</a></li>\n"
         "    <li><a href=\"seos_partition_manager/index.html\">Partition Manager</a></li>\n"
         "    </ul>\n"
         "  </body>\n"
