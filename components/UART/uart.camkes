@@ -84,7 +84,7 @@ procedure UartInf {
     _inst_hw_.regBase_size   = 0x1000; \
     _inst_hw_.irq_irq_number = _irq_; \
     \
-    __inst_.inputDataPort    = "R";
+    _inst_.inputDataPort     = "R";
 
 
 //------------------------------------------------------------------------------
