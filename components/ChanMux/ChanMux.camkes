@@ -8,6 +8,8 @@
 import <if_ChanMux.camkes>;
 // caller must import UART interface, since we don't have a generic one yet
 
+// platform specific defaults
+#include "ChanMux_plat_defaults.camkes"
 
 //------------------------------------------------------------------------------
 // Component definitions

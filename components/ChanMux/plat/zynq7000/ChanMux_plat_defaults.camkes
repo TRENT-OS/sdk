@@ -1,0 +1,9 @@
+/*
+ *  ChanMux defaults for platform zynq7000
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ */
+
+#define CFG_CHANMUX_DEFAULT_UART_PHYS_ADDR  0xe0000000
+#define CFG_CHANMUX_DEFAULT_UART_INTR       59
