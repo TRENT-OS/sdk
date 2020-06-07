@@ -65,7 +65,7 @@ CMAKE_PARAMS=(
     -D PLATFORM=${BUILD_PLATFORM}
     -D KernelVerificationBuild=OFF
     # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
-    # musllibc and capDL-toolthat) that project agnostic, so we don't have
+    # musllibc and capDL-tool) that are project agnostic, so we don't have
     # to rebuild them every time. This reduces the build time a lot.
     -D SEL4_CACHE_DIR=cache-${BUILD_PLATFORM}
     # location of the OS project to be build. Since we will change the current
