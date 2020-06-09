@@ -6,6 +6,7 @@
 
 #include "ChanMux/ChanMux.h"
 #include "OS_Error.h"
+#include "OS_Dataport.h"
 #include <camkes.h>
 
 extern const ChanMux_config_t cfgChanMux;
@@ -27,7 +28,7 @@ get_instance_ChanMux(void)
     if (NULL == self)
     {
         static const ChanMux_config_lower_t cfgChanMux_lower = {
-            .port = CHANMUX_DATAPORT_ASSIGN(uart_port),
+            .port = OS_DATAPORT_ASSIGN(uart_port),
             .writer = uart_rpc_write,
         };
 

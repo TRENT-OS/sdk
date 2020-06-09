@@ -6,6 +6,7 @@
 
 #include "LibDebug/Debug.h"
 #include "OS_Error.h"
+#include "OS_Dataport.h"
 #include "chanmux_nic_drv_api.h"
 #include <camkes.h>
 #include <limits.h>
@@ -28,7 +29,7 @@ post_init(void)
                     .read   = chanMux_rpc_read,
                     .write  = chanMux_rpc_write
                 },
-                .port       = CHANMUX_DATAPORT_ASSIGN(chanMux_port_ctrl),
+                .port       = OS_DATAPORT_ASSIGN(chanMux_port_ctrl),
             },
             .data =
             {
@@ -47,9 +48,9 @@ post_init(void)
         .network_stack =
         {
             // driver -> network stack
-            .to             = CHANMUX_DATAPORT_ASSIGN(nic_port_to),
+            .to             = OS_DATAPORT_ASSIGN(nic_port_to),
             // network stack -> driver
-            .from           = CHANMUX_DATAPORT_ASSIGN(nic_port_from),
+            .from           = OS_DATAPORT_ASSIGN(nic_port_from),
             .notify         = nic_event_hasData_emit
         },
 
