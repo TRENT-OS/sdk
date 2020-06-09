@@ -35,8 +35,8 @@ macro(DeclareCAmkESComponent_ChanMux name config_file system_config_lib)
             -Werror
         LIBS
             ${system_config_lib}
-            seos_core_api
-            seos_libs
+            os_core_api
+            os_libs
             chanmux_server
     )
 

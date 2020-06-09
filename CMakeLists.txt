@@ -14,7 +14,7 @@ set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 #-------------------------------------------------------------------------------
 # projects can use this macro to get the CAmkES environment
-macro(seos_import_camkes)
+macro(os_import_camkes)
 
 # ToDo: make me work again
 
@@ -199,22 +199,22 @@ macro(os_sdk_build_doc)
         "  <head></head>\n"
         "  <body>\n"
         "    <ul>\n"
-        "    <li><a href=\"seos_core_api/index.html\">Core API</a></li>\n"
-        "    <li><a href=\"seos_crypto/index.html\">Crypto</a></li>\n"
-        "    <li><a href=\"seos_configuration/index.html\">ConfigService</a></li>\n"
+        "    <li><a href=\"os_core_api/index.html\">Core API</a></li>\n"
+        "    <li><a href=\"os_crypto/index.html\">Crypto</a></li>\n"
+        "    <li><a href=\"os_configuration/index.html\">ConfigService</a></li>\n"
         "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
         "    <li>\n"
-        "        <a href=\"seos_filesystem_core/index.html\">Filesystem Core</a>\n"
+        "        <a href=\"os_filesystem_core/index.html\">Filesystem Core</a>\n"
         "        <ul>\n"
-        "        <li><a href=\"seos_filesystem_fat/index.html\">Filesystem FAT</a></li>\n"
-        "        <li><a href=\"seos_filesystem_spiffs/index.html\">Filesystem SPIFFS</a></li>\n"
+        "        <li><a href=\"os_filesystem_fat/index.html\">Filesystem FAT</a></li>\n"
+        "        <li><a href=\"os_filesystem_spiffs/index.html\">Filesystem SPIFFS</a></li>\n"
         "        </ul>\n"
         "    </li>\n"
-        "    <li><a href=\"seos_keystore/index.html\">Keystore</a></li>\n"
-        "    <li><a href=\"seos_libs/index.html\">Libs</a></li>\n"
-        "    <li><a href=\"seos_logger/index.html\">Logger</a></li>\n"
+        "    <li><a href=\"os_keystore/index.html\">Keystore</a></li>\n"
+        "    <li><a href=\"os_libs/index.html\">Libs</a></li>\n"
+        "    <li><a href=\"os_logger/index.html\">Logger</a></li>\n"
         "    <li><a href=\"os_network_stack/index.html\">Network Stack</a></li>\n"
-        "    <li><a href=\"seos_partition_manager/index.html\">Partition Manager</a></li>\n"
+        "    <li><a href=\"os_partition_manager/index.html\">Partition Manager</a></li>\n"
         "    </ul>\n"
         "  </body>\n"
         "</html>\n"
@@ -304,7 +304,7 @@ macro(os_sdk_build system_project_dir)
         )
 
         CAmkESAddImportPath(
-            ${OS_LIBS_DIR}/seos_core_api/camkes
+            ${OS_LIBS_DIR}/os_core_api/camkes
             ${OS_COMPONENTS_DIR}
             ${OS_LIBS_DIR}/chanmux/camkes
         )

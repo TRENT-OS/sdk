@@ -27,8 +27,8 @@ macro(DeclareCAmkESComponent_NIC_ChanMux name channel_ctrl channel_data)
             -Wall
             -Werror
         LIBS
-            seos_core_api
-            seos_libs
+            os_core_api
+            os_libs
             os_network_driver_tap_proxy
     )
 

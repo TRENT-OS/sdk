@@ -205,7 +205,7 @@ function sdk_unit_test()
     local BUILD_PARAMS=(
         ${BUILD_DIR}/test_seos_libs
         cov # ninja target
-        ${SDK_SRC_DIR}/libs/seos_libs/test  # CMakeList file
+        ${SDK_SRC_DIR}/libs/os_libs/test  # CMakeList file
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}

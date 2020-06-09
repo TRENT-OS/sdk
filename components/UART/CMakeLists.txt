@@ -24,8 +24,8 @@ macro(DeclareCAmkESComponent_UART name)
         C_FLAGS
             -Wall -Werror
         LIBS
-            seos_core_api
-            seos_libs
+            os_core_api
+            os_libs
             platsupport
 )
 
