@@ -42,7 +42,7 @@
 	url = ../../seos/logger.git
 [submodule "tools/proxy"]
 	path = tools/proxy
-	url = ../../hc/mqtt_proxy_demo.git
+	url = ../../ssdk/proxy.git
 [submodule "tools/kpt"]
 	path = tools/kpt
 	url = ../../ssdk/keystore_provisioning_tool.git
