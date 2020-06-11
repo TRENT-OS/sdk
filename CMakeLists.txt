@@ -7,26 +7,9 @@
 cmake_minimum_required(VERSION 3.7.2)
 
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
+set(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
-#-------------------------------------------------------------------------------
-# CAmkES
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-# projects can use this macro to get the CAmkES environment
-macro(os_import_camkes)
-
-# ToDo: make me work again
-
-endmacro()
-
-
-#-------------------------------------------------------------------------------
-# SDK libs config
-#-------------------------------------------------------------------------------
-
-SET(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
-SET(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 #-------------------------------------------------------------------------------
 function(os_set_config_file cfg_file)
