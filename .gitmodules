@@ -73,3 +73,54 @@
 [submodule "projects/libs/os_network_stack"]
 	path = projects/libs/os_network_stack
 	url = ../../seos/networkstack.git
+[submodule "libs/3rdParty/mbedtls"]
+	path = libs/3rdParty/mbedtls
+	url = ../../ext/mbedtls.git
+[submodule "libs/3rdParty/tinyframe"]
+	path = libs/3rdParty/tinyframe
+	url = ../../ext/tinyframe.git
+[submodule "libs/chanmux"]
+	path = libs/chanmux
+	url = ../../seos/chanmux.git
+[submodule "libs/os_network_stack"]
+	path = libs/os_network_stack
+	url = ../../seos/networkstack.git
+[submodule "libs/chanmux_nic_driver"]
+	path = libs/chanmux_nic_driver
+	url = ../../seos/seos_network_driver_tap_proxy_lib.git
+[submodule "libs/os_cert"]
+	path = libs/os_cert
+	url = ../../seos/cert.git
+[submodule "libs/os_configuration"]
+	path = libs/os_configuration
+	url = ../../seos/configuration_lib.git
+[submodule "libs/os_core_api"]
+	path = libs/os_core_api
+	url = ../../seos/core-api.git
+[submodule "libs/os_crypto"]
+	path = libs/os_crypto
+	url = ../../seos/crypto.git
+[submodule "libs/os_filesystem_core"]
+	path = libs/os_filesystem_core
+	url = ../../seos/filesystem_core.git
+[submodule "libs/os_filesystem_fat"]
+	path = libs/os_filesystem_fat
+	url = ../../seos/filesystem_fat_lib.git
+[submodule "libs/os_filesystem_spiffs"]
+	path = libs/os_filesystem_spiffs
+	url = ../../seos/filesystem_spiffs_lib.git
+[submodule "libs/os_keystore"]
+	path = libs/os_keystore
+	url = ../../seos/keystore.git
+[submodule "libs/os_libs"]
+	path = libs/os_libs
+	url = ../../hc/seos_libs.git
+[submodule "libs/os_logger"]
+	path = libs/os_logger
+	url = ../../seos/logger.git
+[submodule "libs/os_partition_manager"]
+	path = libs/os_partition_manager
+	url = ../../seos/partition_manager.git
+[submodule "libs/os_tls"]
+	path = libs/os_tls
+	url = ../../seos/tls.git

@@ -25,7 +25,7 @@ endmacro()
 # SDK libs config
 #-------------------------------------------------------------------------------
 
-SET(OS_LIBS_DIR "${OS_SDK_DIR}/projects/libs")
+SET(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
 SET(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 #-------------------------------------------------------------------------------
