@@ -141,7 +141,9 @@ if [[ ! -e ${BUILD_DIR} ]]; then
             cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${OS_SDK_DIR}
         )
 
-        # must run cmake twice, so config settings propagate properly
+        # cmake must run twice, so the config settings propagate properly. The
+        # first runs populates the cache and the second run will find the
+        # correct settings in the cache to set up the build.
         echo "re-run cmake"
         cmake .
     )

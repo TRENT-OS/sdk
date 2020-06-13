@@ -39,9 +39,13 @@ function cmake_check_init_and_build()
 
     # initilaize CMake if no build folder exists
     if [[ ! -e ${BUILD_DIR} ]]; then
-        mkdir -p ${BUILD_DIR}
+
+        # the build runs from within the build folder, which is created in the
+        # test workspace. We have to ensure that the source path is accessible
+        # from there, the most simple way to achieve this is having it as
+        # absolute path
         local ABS_CMAKE_FILE=$(realpath ${CMAKE_FILE})
-        # use subshell to configure the build
+        mkdir -p ${BUILD_DIR}
         (
             cd ${BUILD_DIR}
             cmake $@ -G Ninja ${ABS_CMAKE_FILE}
@@ -169,10 +173,10 @@ function build_sdk_tool()
     print_info "Building SDK tool: ${SDK_TOOL} -> ${BUILD_DIR}"
 
     local BUILD_PARAMS=(
-        ${BUILD_DIR}
+        ${BUILD_DIR}                # build output folder
         all                         # ninja target
-        ${SDK_SRC_DIR}/${SDK_TOOL}  # CMakeList file
-        # params start here
+        ${SDK_SRC_DIR}/${SDK_TOOL}  # folder containing CMakeList file
+        # custom build params start here
 
         # SDK_SRC_DIR may be a relative path to the current directory, but the
         # build will change the working directory to BUILD_DIR. Thus we must
@@ -194,9 +198,9 @@ function sdk_unit_test()
     print_info "running SDK Libs Unit Tests"
 
     local BUILD_PARAMS=(
-        ${BUILD_DIR}/test_seos_libs
-        cov # ninja target
-        ${SDK_SRC_DIR}/libs/os_libs/test  # CMakeList file
+        ${BUILD_DIR}/test_seos_libs       # build output folder
+        cov                               # ninja target
+        ${SDK_SRC_DIR}/libs/os_libs/test  # folder containing CMakeList file
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
@@ -253,10 +257,10 @@ function build_sdk_docs()
     print_info "building SDK docs into ${OUT_DIR} from ${SDK_SRC_DIR}"
 
     local BUILD_PARAMS=(
-        ${BUILD_DIR}
-        os_sdk_doc    # ninja target
-        ${SDK_SRC_DIR}      # CMakeList file
-        # params start here
+        ${BUILD_DIR}    # build output folder
+        os_sdk_doc      # ninja target
+        ${SDK_SRC_DIR}  # folder containing CMakeList file
+        # custom build params start here
         -D OS_SDK_DOC=ON
     )
 
