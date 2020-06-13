@@ -113,15 +113,6 @@ function collect_sdk_sources()
     )
     copy_files ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
 
-
-    (
-        cd ${OUT_DIR}
-        mv projects/libs libs
-        rmdir projects
-        sed -i 's/projects\/libs/libs/g' CMakeLists.txt
-    )
-
-
     # we make assumption about the directory structure of seos_tests now,
     # but that is acceptable for the moment
     local SDK_SRC_DEMOS_DIR=${SDK_SRC_DIR}/../src/demos
