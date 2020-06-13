@@ -209,6 +209,20 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
+macro(get_all_targets_recursive targets dir)
+
+    get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    foreach(subdir ${subdirectories})
+        get_all_targets_recursive(${targets} ${subdir})
+    endforeach()
+
+    get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
+    list(APPEND ${targets} ${current_targets})
+
+endmacro()
+
+
+#-------------------------------------------------------------------------------
 macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
     DeclareCAmkESRootserver(
@@ -218,6 +232,26 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
     )
 
     GenerateCAmkESRootServer()
+
+    set(targets "")
+    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    foreach(target ${targets})
+
+        # each CAmkES component is in a *.instance.bin file. Disassemble with
+        # source interleaved, print section headers and symbol table
+        if(target MATCHES "(.*\.instance\.bin)|capdl-loader")
+
+            add_custom_command(
+                TARGET ${target}
+                POST_BUILD
+                COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${target} > ${target}.lst
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
+                VERBATIM
+            )
+
+        endif()
+
+    endforeach()
 
 endmacro()
 
@@ -332,25 +366,6 @@ macro(os_sdk_build system_project_dir)
     endif()
 
     add_subdirectory("${SYSTEM_PROJECT_DIR}" "os_system")
-
-
-    #---------------------------------------------------------------------------
-    # add post-processing steps
-    #---------------------------------------------------------------------------
-
-    # dump system image for debugging purposes. It's mostly for low level
-    # debugging of specific platform issues. For debugging an actual CAmkES
-    # system that runs on top of seL4 this does not provide anything.
-    set(IMAGE_NAME "$<TARGET_PROPERTY:rootserver_image,IMAGE_NAME>")
-    add_custom_target(
-        system_image_dump ALL
-        DEPENDS ${CMAKE_BINARY_DIR}/${IMAGE_NAME}
-        COMMAND ${CROSS_COMPILER_PREFIX}size ${IMAGE_NAME} | tee ${IMAGE_NAME}.size
-        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dht ${IMAGE_NAME} > ${IMAGE_NAME}.lst
-        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dghlsStx ${IMAGE_NAME} > ${IMAGE_NAME}.dump
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        VERBATIM
-    )
 
 endmacro()
 
