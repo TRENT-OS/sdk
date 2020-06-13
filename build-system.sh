@@ -59,20 +59,6 @@ echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Output:    ${BUILD_DIR}"
 echo "##-----------------------------------------------------------------------"
 
-CMAKE_PARAMS=(
-    -D CMAKE_TOOLCHAIN_FILE=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
-    # seL4 build system settings
-    -D PLATFORM=${BUILD_PLATFORM}
-    -D KernelVerificationBuild=OFF
-    # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
-    # musllibc and capDL-tool) that are project agnostic, so we don't have
-    # to rebuild them every time. This reduces the build time a lot.
-    -D SEL4_CACHE_DIR=cache-${BUILD_PLATFORM}
-    # location of the OS project to be build. Since we will change the current
-    # working directory, we have to ensure this is an absolute path
-    -D OS_PROJECT_DIR=$(realpath ${OS_PROJECT_DIR})
-)
-
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
     am335x | am335x-boneblack | am335x-boneblue | \
@@ -88,9 +74,7 @@ case "${BUILD_PLATFORM}" in
     qemu-arm-virt |\
     tk1 |\
     zynq7000 )
-        CMAKE_PARAMS+=(
-            -D CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
-        )
+        CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
         ;;
     #-------------------------------------
     fvp  |\
@@ -100,23 +84,17 @@ case "${BUILD_PLATFORM}" in
     tx1 |\
     tx2 |\
     zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
-        CMAKE_PARAMS+=(
-            -D CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
-        )
+        CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
         ;;
     #-------------------------------------
     ariane |\
     hifive |\
     spike )
-        CMAKE_PARAMS+=(
-            -D CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
-        )
+        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
         ;;
     #-------------------------------------
     pc99)
-        CMAKE_PARAMS+=(
-            -D CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
-        )
+        CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
         ;;
     #-------------------------------------
     *)
@@ -124,6 +102,22 @@ case "${BUILD_PLATFORM}" in
         exit 1
         ;;
 esac
+
+CMAKE_PARAMS=(
+    # CMake settings
+    -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
+    -D CMAKE_TOOLCHAIN_FILE=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
+    # seL4 build system settings
+    -D PLATFORM=${BUILD_PLATFORM}
+    -D KernelVerificationBuild=OFF
+    # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
+    # musllibc and capDL-tool) that are project agnostic, so we don't have
+    # to rebuild them every time. This reduces the build time a lot.
+    -D SEL4_CACHE_DIR=cache-${BUILD_PLATFORM}
+    # location of the OS project to be build. Since we will change the current
+    # working directory, we have to ensure this is an absolute path
+    -D OS_PROJECT_DIR=$(realpath ${OS_PROJECT_DIR})
+)
 
 # check if cmake init has failed previously
 if [[ -e ${BUILD_DIR} ]] && [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
