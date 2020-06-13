@@ -140,6 +140,16 @@ if [[ ! -e ${BUILD_DIR} ]]; then
         # correct settings in the cache to set up the build.
         echo "re-run cmake"
         cmake .
+
+        # create a visualization of the build targets
+        echo "create build target graph"
+        BUILD_TARGETS_GRAPH=build-targets-graph
+        mkdir -p ${BUILD_TARGETS_GRAPH}
+        (
+            cd ${BUILD_TARGETS_GRAPH}
+            cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot .. > /dev/null
+            dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
+        )
     )
 fi
 
