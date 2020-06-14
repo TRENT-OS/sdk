@@ -7,6 +7,8 @@
 cmake_minimum_required(VERSION 3.7.2)
 
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
 set(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
 set(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
@@ -269,7 +271,6 @@ macro(os_sdk_build system_project_dir)
     # use the seL4/CAmkES build system
     #---------------------------------------------------------------------------
 
-    set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
     setup_sel4_build_system()
 
