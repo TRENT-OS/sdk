@@ -251,6 +251,18 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
         endif()
 
+        if(target STREQUAL "capdl-loader")
+
+            add_custom_command(
+                TARGET ${target}
+                POST_BUILD
+                COMMAND dot -Tsvg graph.dot -o graph.svg
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
+                VERBATIM
+            )
+
+        endif()
+
     endforeach()
 
 endmacro()
