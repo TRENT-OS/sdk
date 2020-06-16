@@ -43,52 +43,47 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(os_use_libs)
+macro(add_os_libs_subdirectories)
 
-    # we maintain a list of libs here that the SDK provides. This allows doing
-    # a nice sanity check against what the system projects are trying to use.
-    # While this makes it quite impossible to sneak new lib in, there is the
-    # additional effort when adding new libs. We may remove this list if it
-    # turn out to cause more pain than benefit.
-    set(SDK_KNOWN_LIBS
-            OS_LIBS
-            OS_CHANMUX
-            OS_LIBS_LOGGER
-            OS_CERT
-            OS_CRYPTO
-            OS_CRYPTO_WITH_RPC_SERVER
-            OS_CRYPTO_WITH_RPC_CLIENT
-            OS_TLS
-            OS_TLS_WITH_RPC_SERVER
-            OS_TLS_WITH_RPC_CLIENT
-            OS_KEYSTORE
-            OS_PARTITION_MANAGER
-            OS_FILESYSTEM_CORE
-            OS_FILESYSTEM_FAT
-            OS_FILESYSTEM_SPIFFS
-            OS_FILESYSTEM_SPIFFS_LEGACY
-            OS_CONFIGURATION
-            OS_LOGGER
-            3RDPARTY_MBEDTLS_FOR_CRYPTO
-            3RDPARTY_MBEDTLS_FOR_TLS
-            3RDPARTY_MBEDTLS_FOR_CERT
-            THIRD_PARTY_TINYFRAME
+    # ToDo: eventually, we want to simply include every sub-folder in
+    #       ${OS_LIBS_DIR}, because they are all supposed to hold libs.
+    #       Currently we have some duplicate libs in there due to the recent
+    #       renaming, so we can use this:
+    #
+    #   file(GLOB OS_LIBS_SUBDIRS RELATIVE "${OS_LIBS_DIR}" "${OS_LIBS_DIR}/*")
+    #
+    # Instead, we manually define the list
+    set(OS_LIBS_SUBDIRS
+            "os_core_api"
+            "os_libs"
+            "os_crypto"
+            "os_cert"
+            "os_partition_manager"
+            "os_filesystem_core"
+            "os_filesystem_fat"
+            "os_filesystem_spiffs"
+            "os_keystore"
+            "os_configuration"
+            "os_logger"
+            "os_network_stack"
+            "os_tls"
+            "chanmux"
+            "chanmux_nic_driver"
+            "3rdParty/tinyframe"
+            "3rdParty/mbedtls"
     )
 
-    foreach(sdk_lib ${ARGN})
+    foreach(OS_LIB_SUBDIR ${OS_LIBS_SUBDIRS})
 
-        if (NOT "${sdk_lib}" IN_LIST SDK_KNOWN_LIBS)
-            message(FATAL_ERROR "unknown SDK library: ${sdk_lib}")
-        endif()
-
-        # we use "FORCE" here because this must overwrite any setting from the
-        # cache, e.g. from CMake configuration passed on the command line. Any
-        # lib that is passed to this function must be enabled.
-        set(${sdk_lib} ON CACHE BOOL "use ${sdk_lib}" FORCE)
+        add_subdirectory(
+            "${OS_LIBS_DIR}/${OS_LIB_SUBDIR}"
+            "os_libs/${OS_LIB_SUBDIR}"
+        )
 
     endforeach()
 
-endfunction()
+
+endmacro()
 
 
 #-------------------------------------------------------------------------------
@@ -144,21 +139,7 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(os_sdk_build_doc)
 
-    os_use_libs(
-        OS_LIBS
-        OS_CHANMUX
-        OS_CONFIGURATION
-        OS_CRYPTO
-        OS_TLS
-        OS_KEYSTORE
-        OS_FILESYSTEM_SPIFFS
-        OS_PARTITION_MANAGER
-        OS_FILESYSTEM_CORE
-        OS_FILESYSTEM_FAT
-        OS_LOGGER
-    )
-
-    add_subdirectory(${OS_LIBS_DIR})
+    add_os_libs_subdirectories()
 
     add_custom_target( os_sdk_doc )
 
@@ -348,7 +329,7 @@ macro(os_sdk_build system_project_dir)
         set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
     endif()
 
-    add_subdirectory("${OS_LIBS_DIR}")
+    add_os_libs_subdirectories()
 
     # we include the components even if CAmkES is not enabled, because the may
     # provide library code that native systems can use.
