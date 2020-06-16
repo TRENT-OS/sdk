@@ -124,3 +124,6 @@
 [submodule "libs/os_tls"]
 	path = libs/os_tls
 	url = ../../seos/tls.git
+[submodule "components/EntropySource"]
+	path = components/EntropySource
+	url = ../../sc/entropysource.git
