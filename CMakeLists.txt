@@ -338,6 +338,7 @@ macro(os_sdk_build system_project_dir)
     include("${OS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
     include("${OS_COMPONENTS_DIR}/TlsServer/CMakeLists.txt")
     include("${OS_COMPONENTS_DIR}/UART/CMakeLists.txt")
+    include("${OS_COMPONENTS_DIR}/EntropySource/CMakeLists.txt")
 
 
     #---------------------------------------------------------------------------
