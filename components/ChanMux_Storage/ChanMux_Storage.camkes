@@ -1,0 +1,28 @@
+/* Copyright (C) 2020, HENSOLDT Cyber GmbH */
+
+/**
+ * @file
+ * @brief   Driver for the generic storage
+ *
+ * This component will communicate with the chanmux for accessing the underlying
+ * storage.
+ */
+
+/** @cond SKIP_IMPORTS */
+import <if_OS_Storage.camkes>;
+/** @endcond */
+
+/**
+ * @hideinitializer
+ */
+component ChanMux_Storage
+{
+    // Storage interface
+    provides if_OS_Storage  storage_rpc;  //!< Generic storage access interface.
+    dataport Buf            storage_port; //!< Storage interface data port.
+
+    // ChanMux interface
+    uses      ChanMuxDriverInf      chanMux_rpc;
+    consumes  DataAvailableEvent    chanMux_event_hasData;
+    dataport  Buf                   chanMux_port;
+}
