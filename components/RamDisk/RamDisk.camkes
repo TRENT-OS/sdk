@@ -1,0 +1,38 @@
+/* Copyright (C) 2020, HENSOLDT Cyber GmbH */
+
+/**
+ * @file
+ * @brief   Driver for the Volatile Memory storage (RamDisk)
+ *
+ * This component acts like a disk driver (secondary storage), but in reality
+ * stores the data in the volatile memory are (RAM).
+ *
+ * It shall be used, when relatively fast storage is needed and it is ok for the
+ * data to be lost between reset cycles. Use cases for for example caching or
+ * testing.
+ *
+ * @note    The underlying memory is volatile, so expected loss of data betwean
+ *          reboots!
+ *
+ * @note    The size of the storage is configured with the macro
+ *          RAMDISK_SIZE_BYTES, please make sure that it is defined in the main
+ *          config header.
+ *
+ * @see @link https://en.wikipedia.org/wiki/RAM_drive @endlink
+ */
+
+/** @cond SKIP_IMPORTS */
+import <if_OS_Storage.camkes>;
+/** @endcond */
+
+/**
+ * @hideinitializer
+ */
+component RamDisk
+{
+    include "stddef.h";
+
+    // Storage interface
+    provides    if_OS_Storage   storage_rpc;
+    dataport    Buf             storage_port;
+}
