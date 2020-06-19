@@ -1,45 +1,6 @@
 [submodule "sdk-sel4-camkes"]
 	path = sdk-sel4-camkes
 	url = ../../ssdk/sdk-sel4-camkes.git
-[submodule "projects/libs/seos_libs"]
-	path = projects/libs/seos_libs
-	url = ../../hc/seos_libs.git
-[submodule "projects/libs/seos_crypto"]
-	path = projects/libs/seos_crypto
-	url = ../../seos/crypto.git
-[submodule "projects/libs/seos_keystore"]
-	path = projects/libs/seos_keystore
-	url = ../../seos/keystore.git
-[submodule "projects/libs/seos_core_api"]
-	path = projects/libs/seos_core_api
-	url = ../../seos/core-api.git
-[submodule "projects/libs/seos_nwstack"]
-	path = projects/libs/seos_nwstack
-	url = ../../seos/networkstack.git
-[submodule "projects/libs/seos_filesystem_core"]
-	path = projects/libs/seos_filesystem_core
-	url = ../../seos/filesystem_core.git
-[submodule "projects/libs/seos_filesystem_fat"]
-	path = projects/libs/seos_filesystem_fat
-	url = ../../seos/filesystem_fat_lib.git
-[submodule "projects/libs/seos_partition_manager"]
-	path = projects/libs/seos_partition_manager
-	url = ../../seos/partition_manager.git
-[submodule "projects/libs/seos_filesystem_spiffs"]
-	path = projects/libs/seos_filesystem_spiffs
-	url = ../../seos/filesystem_spiffs_lib.git
-[submodule "projects/libs/seos_network_driver_tap_proxy"]
-	path = projects/libs/seos_network_driver_tap_proxy
-	url = ../../seos/seos_network_driver_tap_proxy_lib.git
-[submodule "projects/libs/seos_tls"]
-	path = projects/libs/seos_tls
-	url = ../../seos/tls.git
-[submodule "projects/libs/seos_configuration"]
-	path = projects/libs/seos_configuration
-	url = ../../seos/configuration_lib.git
-[submodule "projects/libs/seos_logger"]
-	path = projects/libs/seos_logger
-	url = ../../seos/logger.git
 [submodule "tools/proxy"]
 	path = tools/proxy
 	url = ../../ssdk/proxy.git
@@ -49,30 +10,12 @@
 [submodule "sdk-pdfs"]
 	path = sdk-pdfs
 	url = ../../ssdk/sdk-pdfs.git
-[submodule "projects/libs/chanmux"]
-	path = projects/libs/chanmux
-	url = ../../seos/chanmux.git
 [submodule "components/CryptoServer"]
 	path = components/CryptoServer
 	url = ../../sc/cryptoserver.git
 [submodule "components/TlsServer"]
 	path = components/TlsServer
 	url = ../../sc/tlsserver.git
-[submodule "projects/libs/3rdParty/mbedtls"]
-	path = projects/libs/3rdParty/mbedtls
-	url = ../../ext/mbedtls.git
-[submodule "projects/libs/seos_cert"]
-	path = projects/libs/seos_cert
-	url = ../../seos/cert.git
-[submodule "projects/libs/3rdParty/tinyframe"]
-	path = projects/libs/3rdParty/tinyframe
-	url = ../../ext/tinyframe.git
-[submodule "projects/libs/os_nic_driver_chanmux"]
-	path = projects/libs/os_nic_driver_chanmux
-	url = ../../seos/seos_network_driver_tap_proxy_lib.git
-[submodule "projects/libs/os_network_stack"]
-	path = projects/libs/os_network_stack
-	url = ../../seos/networkstack.git
 [submodule "libs/3rdParty/mbedtls"]
 	path = libs/3rdParty/mbedtls
 	url = ../../ext/mbedtls.git
