@@ -57,7 +57,7 @@
 	url = ../../seos/keystore.git
 [submodule "libs/os_libs"]
 	path = libs/os_libs
-	url = ../../hc/seos_libs.git
+	url = ../../seos/util_libs.git
 [submodule "libs/os_logger"]
 	path = libs/os_logger
 	url = ../../seos/logger.git
