@@ -1,0 +1,571 @@
+//------------------------------------------------------------------------------
+//
+// SDK Jenkins Pipeline Control Script
+//
+// Copyright (C) 2020, Hensoldt Cyber GmbH
+//
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+// Test system list
+//
+// Elements:
+//   <SYSTEM_NAME>:  system name
+//   <TEST_MACHINE>: defaults to 'test'
+//   <TEST_SCRTIPT>: defaults to <SYSTEM_NAME>.py
+//
+
+def TEST_CONFIG = [
+
+    tests: [
+        ['demo_hello_world',              null,                'test_demo_hello_world.py'],
+        ['demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py'],
+        ['test_chanmux',                  null,                null],
+        ['test_proxy_nvm',                null,                null],
+        ['test_cert_lib',                 null,                null],
+        ['test_crypto_api',               null,                null],
+        ['test_cryptoserver',             null,                null],
+        ['test_entropysource',            null,                null],
+        ['test_storage_interface',        null,                null],
+        ['test_partition_manager',        null,                null],
+        // ['/test_seos_filestream',          null,                null], // broken build:
+        ['test_filesystem_as_lib',        null,                null],
+        ['test_config_server_fs_backend', null,                null],
+        ['test_config_server',            null,                null],
+        ['test_keystore',                 null,                null],
+        ['test_logserver',                null,                null],
+        ['test_network_api',              'test_network',      null],
+        ['test_tls_api',                  'test_tls',          null],
+        ['test_tlsserver',                'test_tls',          null],
+    ],
+
+    platforms: [
+        'zynq7000',
+        // 'imx6',
+        // 'migv',
+        // 'spike',
+        // 'rpi3',
+    ]
+]
+
+
+def SDK_PACKAGE_ARCHIVE = 'sdk-package.bz2'
+
+
+//------------------------------------------------------------------------------
+// Docker
+//
+// Notes:
+// * bind the localtime to docker container to avoid problems of gaps between
+//   the localtime of the container and the host.
+// * add user to group "stack" (1001) in order to grant usage of Haskell stack
+//   in the docker image
+//
+// ToDo
+// * why are sudo right needed in the test container
+//
+
+def DOCKER_BASE = 'docker:5000'
+def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+
+def DOCKER_BUILD_ENV = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_build:trentos_0.9',
+    args:     ['-v /etc/localtime:/etc/localtime:ro',
+               '--group-add=1001'
+              ].join(' ')
+]
+
+def DOCKER_TEST_ENV  = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_test:20200701',
+    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
+               '-v /etc/localtime:/etc/localtime:ro',
+               '--network=bridge',
+               '--cap-add=NET_ADMIN',
+               '--cap-add=NET_RAW',
+               '--device=/dev/net/tun',
+               '--group-add=sudo'
+              ].join(' ')
+]
+
+
+
+//------------------------------------------------------------------------------
+def print_step_info(name)
+{
+    println('######## ' + name)
+}
+
+
+//------------------------------------------------------------------------------
+def do_notify_bitbucket()
+{
+    // the StashNotifier requires to ru in a node block, which should not be
+    // necessary technically. See also the open issue issue at
+    // https://github.com/jenkinsci/stashnotifier-plugin/issues/234 which
+
+    if (env.NODE_NAME)
+    {
+        notifyBitbucket();
+    }
+    else
+    {
+        node { notifyBitbucket() }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def get_build_relative_url(build)
+{
+    // getAbsoluteUrl() is deprecate and generally regarded as a bad idea for
+    // generating HTML page content. This workaround avoids accessing the raw
+    // build, which can't be done by scripts by default
+
+    return '/job/' +
+            build.getFullProjectName().replace("/", "/job/") +
+            '/' +
+            build.getNumber()
+
+}
+
+
+//------------------------------------------------------------------------------
+def get_result_ball_img_url(result)
+{
+    def states = [
+        'SUCCESS':  'green.gif', // there is no png
+        'UNSTABLE': 'yellow.png',
+        'FAILURE':  'red.png',
+        'ABORTED':  'aborted.png'
+    ]
+
+    return Jenkins.RESOURCE_PATH +
+            '/images/16x16/' +
+            states.get(result, 'help.png')
+}
+
+
+//------------------------------------------------------------------------------
+def run_app(
+    application,
+    param_array = null
+) {
+    def cmdLine = application
+
+    if (param_array)
+    {
+        cmdLine += ' ' + param_array.join(' ')
+    }
+
+    sh(cmdLine);
+}
+
+
+//------------------------------------------------------------------------------
+def run_shell_script(
+    script,
+    param_array = null
+) {
+    run_app(script, param_array)
+}
+
+
+//------------------------------------------------------------------------------
+def execute_build(ctx, stage_ctx)
+{
+    def test_system        = stage_ctx.test_ctx[0]
+    def test_machine_label = stage_ctx.test_ctx[1]
+    def test_script        = stage_ctx.test_ctx[2]
+
+    def jobBuild = build(
+        job: 'generic_jobs/generic_pipeline_sandbox',
+        wait: true,   // block call until finished
+        propagate: false,
+        parameters: [
+            string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
+            string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
+            string(name: 'TEST_SYSTEM',        value: 'ss/'+test_system),
+            string(name: 'TEST_MACHINE_LABEL', value: test_machine_label ?: ''),
+            string(name: 'TEST_SCRIPT',        value: test_script ?: test_system+'.py'),
+            string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
+            string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
+        ]
+    )
+
+    // if we arrive here, the job has finished
+    stage_ctx.build = jobBuild
+    def result = jobBuild.getResult()
+    def duration = jobBuild.getDurationString()
+    def cnt = ctx.jobStages.size()
+
+    lock('job-post-processing')
+    {
+        def num = cnt - (--ctx.running);
+
+        println(num + '/' + cnt + ': ' +
+                test_system + ' system build/test stage took ' + duration +
+                ', result: ' + result)
+
+        ctx.summary.appendText(
+            stage_ctx.platform + ', ' + test_system + ':' +
+            ' <a href="' + get_build_relative_url(jobBuild) + '">' +
+                '#' + jobBuild.getNumber() +
+            '</a>' +
+            ' <img src="' + get_result_ball_img_url(result) + '">' +
+            ' (' + duration + ')' +
+            '<br>',
+            false)
+    }
+
+    // When CI is under heavy load, no free executor could be available to run
+    // the artifact copy from the child job. In the worst case the child job
+    // already got deleted. We could extend the time before the job is deleted,
+    // but this may overload CI also because the workspaces eat the disk space.
+    // Better solution is running the copy job on a dedicated executor, which
+    // exists on the master
+    node('pipeline-control')
+    {
+        cleanWs()
+
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+        {
+            copyArtifacts(
+                filter: stage_ctx.system_pkg,
+                projectName: jobBuild.getFullProjectName(),
+                selector: specific("${jobBuild.getNumber()}") // need to ensure this is a string
+            )
+
+            stash(
+                name: stage_ctx.stash_name,
+                includes: stage_ctx.system_pkg
+            )
+        }
+
+        cleanWs()
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def do_jobs_for_test_systems(branch, testConfig)
+{
+    // downstram job create this package and finally wealso pack all the
+    // collected results into a package with this name
+    def SYSTEM_PACKAGE = 'package.bz2'
+
+    def summary = manager.createSummary("orange-square.png")
+
+    def sub_jobs_ctx = [
+        summary:   summary,
+        branch:    branch,
+        jobStages: [:],
+        running:   0
+    ]
+
+    // if we use a loop "for (test_ctx in testConfig.tests) ..." then only one
+    // instance of the variable test_ctx exists. When the closures are invoked
+    // after the loop, they all see the last value that the loop variable. When
+    // a loop "testConfig.tests.each { test_ctx -> ..." is used, a closure with
+    // a separate variable is create for each iteration, which can be used in
+    // further closures then also independently.
+
+    testConfig.tests.each { test_ctx ->
+
+        def test_system = test_ctx[0]
+
+        testConfig.platforms.each { platform ->
+
+            def pkg_name = platform + '-' + test_system
+
+            def job_stage_ctx = [
+                // do not try storing "sub_jobs_ctx" in here, this ends in a
+                // stragen recursion when transforming the maps/lists
+                test_ctx:     test_ctx,
+                platform:     platform,
+                system_pkg:   SYSTEM_PACKAGE,
+                stash_name:   pkg_name,
+                closure:      null,   // set below
+                build:        null    // set in closure
+            ]
+
+            sub_jobs_ctx.jobStages[pkg_name] = job_stage_ctx
+
+            job_stage_ctx.closure = {
+                stage(pkg_name) { execute_build(sub_jobs_ctx, job_stage_ctx) }
+            }
+        }
+    }
+
+
+    sub_jobs_ctx.running  = sub_jobs_ctx.jobStages.size()
+    def build_start = new Date()
+
+    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+    {
+        // we don't need an executor to start the jobs and wait for them to
+        // finish
+        //
+        //  parallel
+        //      firstBranch:  { /* do something */ },
+        //      secondBranch: { /* do something */ },
+        //      failFast: true|false // terminate all upon any one failing
+
+        parallel(
+            sub_jobs_ctx.jobStages.collectEntries { k, v -> [(k): v.closure] }
+        )
+    }
+
+    duration = groovy.time.TimeCategory.minus(new Date(), build_start)
+    def duration_msg = 'all system build/test stages took ' + duration
+    println(duration_msg)
+    summary.appendText('<hr>' + duration_msg, false)
+
+    // builds are done, now collect the results and artifacts. This needs a
+    // workspace, so we have to allocate a node
+
+    cnt = sub_jobs_ctx.jobStages.size()
+
+    node {
+        stage('process_results') {
+
+            cleanWs()
+
+            sub_jobs_ctx.jobStages.eachWithIndex { e, idx ->
+
+                def pkg_name = e.key
+                def jobBuild = e.value
+
+                println('processing ' + (idx+1) + '/' + cnt + ': ' + pkg_name)
+
+                // there might be no stash if something failed earlier
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                {
+                    unstash(pkg_name)
+                    def pkg_dir = 'package-' + pkg_name
+                    run_app('mkdir', [pkg_dir])
+                    run_app('tar', ['-xf ' + SYSTEM_PACKAGE, '-C ' + pkg_dir])
+                    run_app('rm', [SYSTEM_PACKAGE])
+                }
+            }
+
+            // ToDo: support multiple platforms here, currently this would see
+            //       the same test case for each platform and it's likely
+            //       messing up the analysis
+            junit('package-*/test_results.xml')
+
+            run_app('tar', ['-cjf '+SYSTEM_PACKAGE, 'package-*/'])
+
+            archiveArtifacts(
+                artifacts: SYSTEM_PACKAGE,
+                fingerprint: true
+            )
+
+            cleanWs()
+
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+pipeline {
+
+    agent none
+
+    options {
+
+        skipDefaultCheckout()
+
+        // disableConcurrentBuilds()
+
+        // unfortunately there is no way to have build discarding conditional
+        // for development branches only, so "master" and "integration" would
+        // keep their builds. The potential work around is having a conditional
+        // stage where "master" and "integration" push a package to an artifact
+        // server, which then preserves this.
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
+    stages {
+
+        //----------------------------------------------------------------------
+        stage('Build_stage') {
+
+            agent { label "build" }
+
+            stages {
+
+                //--------------------------------------------------------------
+                stage('checkout') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        cleanWs()
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: scm.branches,
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [
+                                [
+                                    $class: 'RelativeTargetDirectory',
+                                    relativeTargetDir: 'scm-src'
+                                ],
+                                [
+                                    $class: 'SubmoduleOption',
+                                    disableSubmodules: false,
+                                    recursiveSubmodules: true,
+                                    trackingSubmodules: false,
+                                    parentCredentials: true,
+                                    threads: 8,
+                                ]
+                            ],
+                            // submoduleCfg: [],
+                            userRemoteConfigs: scm.userRemoteConfigs
+                        ])
+                        do_notify_bitbucket()
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('build') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        run_shell_script(
+                            'scm-src/build-sdk.sh',
+                            [
+                                'all',
+                                'sdk-package'
+                            ]
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('package') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        run_app('du',['-sh sdk-package/pkg'])
+
+                        run_app(
+                            'tar',
+                            [
+                                '-cjf ' + SDK_PACKAGE_ARCHIVE,
+                                '-C sdk-package/pkg',
+                                '.'
+                            ]
+                        )
+
+                        run_app('du', ['-sh ' + SDK_PACKAGE_ARCHIVE])
+
+                        archiveArtifacts(
+                            artifacts: SDK_PACKAGE_ARCHIVE,
+                            fingerprint: true
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('stash_doc') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        stash(
+                            name: 'stash_doc',
+                            includes: [
+                                'scm-src/publish_doc.sh',
+                                'sdk-package/pkg/doc/',
+                            ].join(',')
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('astyle') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script('scm-src/astyle_check_sdk.sh')
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('unit-test') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script(
+                                'scm-src/build-sdk.sh',
+                                [
+                                    'unit-tests',
+                                    'sdk-package'
+                                ]
+                            )
+                        }
+                    }
+                }
+
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Tests') {
+            steps {
+                print_step_info env.STAGE_NAME
+                do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
+            }
+
+        }
+
+        //-----------------------------------------------------------------------
+        stage('publish_docs') {
+            agent { label "publish_doc" }
+            when {
+                expression {
+                    return (env.BRANCH_NAME in ["master", "integration"])
+                }
+            }
+            steps {
+                print_step_info env.STAGE_NAME
+                cleanWs()
+                unstash('stash_doc')
+                run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
+                cleanWs()
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    post {
+        always {
+            do_notify_bitbucket()
+        }
+    }
+}

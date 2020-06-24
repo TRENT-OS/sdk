@@ -1,0 +1,473 @@
+//------------------------------------------------------------------------------
+//
+// Generic Jenkins Pipeline Script
+//
+// Copyright (C) 2020, Hensoldt Cyber GmbH
+//
+//------------------------------------------------------------------------------
+//
+// job parameters
+//
+//    PLATFORM
+//    BRANCH_OR_COMMIT
+//    TEST_SYSTEM
+//    TEST_MACHINE_LABEL
+//    TEST_SCRIPT
+//    UPSTREAM_JOB_NAME
+//    UPSTREAM_JOB_ID
+
+params.each { println it.key + " = " + it.value }
+
+def test_machine_label = TEST_MACHINE_LABEL ?: 'test'
+def build_name_str = BRANCH_OR_COMMIT + ', ' + TEST_SYSTEM + ', '+PLATFORM
+
+def SYSTEM_PACKAGE = 'package.bz2'
+
+
+//------------------------------------------------------------------------------
+// Docker
+//------------------------------------------------------------------------------
+//
+// Notes:
+// * bind the localtime to docker container to avoid problems of gaps between
+//   the localtime of the container and the host.
+// * add user to group "stack" (1001) in order to grant usage of Haskell stack
+//   in the docker image
+//
+// ToDo
+// * why are sudo right needed in the test container
+//
+
+def DOCKER_BASE = 'docker:5000'
+def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+
+def DOCKER_BUILD_ENV = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_build:trentos_0.9',
+    args:     ['-v /etc/localtime:/etc/localtime:ro',
+               '--group-add=1001'
+              ].join(' ')
+]
+
+def DOCKER_TEST_ENV  = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_test:20200701',
+    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
+               '-v /etc/localtime:/etc/localtime:ro',
+               '--network=bridge',
+               '--cap-add=NET_ADMIN',
+               '--cap-add=NET_RAW',
+               '--device=/dev/net/tun',
+               '--group-add=sudo'
+              ].join(' ')
+]
+
+
+//------------------------------------------------------------------------------
+def do_notify_bitbucket()
+{
+    // the StashNotifier requires to ru in a node block, which should not be
+    // necessary technically. See also the open issue issue at
+    // https://github.com/jenkinsci/stashnotifier-plugin/issues/234 which
+
+    if (env.NODE_NAME)
+    {
+        notifyBitbucket();
+    }
+    else
+    {
+        node { notifyBitbucket() }
+    }
+}
+
+//------------------------------------------------------------------------------
+def run_app(
+    application,
+    param_array = null
+) {
+    def cmdLine = application
+
+    if (param_array)
+    {
+        cmdLine += ' ' + param_array.join(' ')
+    }
+
+    sh(cmdLine);
+}
+
+
+//------------------------------------------------------------------------------
+def run_shell_script(
+    script,
+    param_array = null
+) {
+    run_app(script, param_array)
+}
+
+
+//------------------------------------------------------------------------------
+def do_git_checkout(
+    repo,
+    branch,
+    dir = '.'
+) {
+    println(
+        'checkout: ' + repo + '@' + branch +
+        ( dir ? (' into ' + dir) : '' ) +
+        ' ...'
+    )
+
+    try
+    {
+        return checkout([
+                    poll: false,
+                    scm: [
+                        $class: 'GitSCM',
+                        branches: [
+                            [name: branch]
+                        ],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [
+                            [
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: dir
+                            ],
+
+                            [
+                                $class: 'SubmoduleOption',
+                                disableSubmodules: false,
+                                recursiveSubmodules: true,
+                                trackingSubmodules: false,
+                                parentCredentials: true,
+                                // parallel checkouts speed up things, but too
+                                // many threads (from too man parallel jobs)
+                                // will eventually overload the GIT server and
+                                // we get failures due to timeouts. We've seen
+                                // this happening with 8 threads, so try 4 now.
+                                threads: 4
+                            ]
+                        ],
+                        userRemoteConfigs: [
+                            [
+                                credentialsId: 'ac3a90b4-fd3f-4aa4-b28e-bd78878588ad',
+                                url: 'ssh://git@bitbucket.hensoldt-cyber.systems:7999/' + repo + '.git'
+                            ]
+                        ]
+                    ]
+                ])
+
+        // scmVars.each { println it.key + " = " + it.value }
+        // GIT_BRANCH = origin/integration
+        // GIT_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
+        // GIT_PREVIOUS_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
+        // GIT_PREVIOUS_SUCCESSFUL_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
+        // GIT_URL = ssh://git@bitbucket.hensoldt-cyber.systems:7999/ss/demo_hello_world.git
+    }
+    catch (Exception e)
+    {
+        println 'Exception: ' + e;
+        return null
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def do_checkout(
+    repo,
+    branch,
+    dir = '.'
+) {
+    manager.createSummary("text.gif").appendText('<hr>' + repo)
+
+    def scmVars = do_git_checkout(repo, branch, dir)
+
+    // if this is a custom branch, then fall back to integration
+    if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
+    {
+        manager.createSummary("text.gif").appendText('no branch: ' + branch)
+        scmVars = do_git_checkout(repo, 'integration', dir)
+    }
+
+    if (!scmVars)
+    {
+        echo 'error'
+        return
+    }
+
+}
+
+
+//------------------------------------------------------------------------------
+def get_sdk(
+    dir = '.'
+) {
+
+    // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
+
+    copyArtifacts(
+        projectName: UPSTREAM_JOB_NAME,
+        selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
+        filter: 'sdk-package.bz2',
+    )
+
+    run_app('mkdir', ['-p', dir])
+    run_app('tar', ['-xf sdk-package.bz2', '-C ' + dir])
+}
+
+
+//------------------------------------------------------------------------------
+def print_step_info(
+    name
+) {
+    println('#################### ' + name)
+}
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+pipeline {
+
+    agent none
+
+    options {
+        skipDefaultCheckout()
+
+        // unfortunately there is no way to have build discarding conditional
+        // for development branches only, so "master" and "integration" would
+        // keep their builds. The potential work around is having a conditional
+        // stage where "master" and "integration" push a package to an artifact
+        // server, which then preserves this.
+        buildDiscarder(logRotator(numToKeepStr: '40'))
+    }
+
+    stages {
+
+        //----------------------------------------------------------------------
+        stage('Build_stage') {
+
+            agent { label "build" }
+
+            stages {
+
+                //--------------------------------------------------------------
+                stage('checkout') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        buildName(build_name_str)
+
+                        // addShortText(
+                        //     text: build_name_str,
+                        //     background: "khaki",
+                        //     border: 1,
+                        //     borderColor: "gray",
+                        //     color: "black"
+                        // )
+
+                        script {
+                            manager.createSummary("text.gif").appendText(
+                                '<table style="border: 1px solid black; border-collapse: collapse;">'+
+                                    params.collect { param ->
+                                        '<tr>'+
+                                            '<td style="border: 1px solid black">'+
+                                                '<b><code>'+param.key+'</code></b>'+
+                                            '</td>'+
+                                            '<td style="border: 1px solid black">'+
+                                                (param.value?:'<i>(null)</i>')+
+                                            '</td>'+
+                                        '</tr>'
+                                    }.join('') +
+                                '</table>'
+                            )
+                        }
+
+                        cleanWs()
+
+                        get_sdk('src/sdk')
+
+                        do_checkout(
+                            TEST_SYSTEM,
+                            BRANCH_OR_COMMIT,
+                            'src/system')
+
+                        do_notify_bitbucket()
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('build') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        run_shell_script(
+                            'src/sdk/build-system.sh',
+                            [
+                                'src/system', // PROJECT_DIR
+                                PLATFORM,
+                                'build', // BUILD_DIR
+                                '-D CMAKE_BUILD_TYPE=Debug'
+                            ]
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('stash_cleanup') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        stash \
+                            name: 'test_package', \
+                            includes: [ 'build/camkes-tool/libsel4camkes/gen_config/**',
+                                        'build/capdl/capdl-loader-app/gen_config/**',
+                                        'build/elfloader/elfloader',
+                                        'build/images/*-' + PLATFORM,
+                                        'build/kernel/kernel_all.c',
+                                        'build/kernel/kernel_all.i',
+                                        'build/kernel/kernel.elf',
+                                        'build/kernel/kernel.dts',
+                                        'build/kernel/gen_config/**',
+                                        'build/kernel/gen_headers/**',
+                                        'build/kernel/generated/**',
+                                        'build/os_system/**',
+                                      ].join(',')
+                        cleanWs()
+                    }
+                }
+
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test_stage') {
+
+            agent { label test_machine_label }
+
+            stages {
+
+                //----------------------------------------------------------------------
+                stage('checkout') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        cleanWs()
+
+                        unstash 'test_package'
+
+                        get_sdk('src/sdk')
+
+                        do_checkout(
+                            'ta/common',
+                            BRANCH_OR_COMMIT,
+                            'src/test/common')
+
+                        do_checkout(
+                            'ta/seos_tests',
+                            BRANCH_OR_COMMIT,
+                            'src/test/tests')
+                    }
+                }
+
+                //----------------------------------------------------------------------
+                stage('test') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                        {
+                            dir('src/test/tests')
+                            {
+                                run_app(
+                                    'pytest',
+                                    [
+                                        '-v',
+                                        // '--capture=no',  // show printf() from python scripts in console
+                                        '--proxy=../../../src/sdk/bin/proxy_app,TCP',
+                                        '--target=' + PLATFORM,
+                                        '--system_image=../../../build/images/capdl-loader-image-arm-' + PLATFORM,
+                                        '--log_dir=../../../test-logs',
+                                        '--junitxml=../../../test_results.xml',
+                                        TEST_SCRIPT
+                                    ]
+                                )
+                            }
+                        }
+                    }
+                }
+
+                //----------------------------------------------------------------------
+                stage('package') {
+
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        // get the current jobs log up to now. One day we
+                        // should find a nicer way for this ...
+                        run_app(
+                            'wget',
+                            [
+                                '-q',
+                                '--no-check-certificate',
+                                '-O build.log',
+                                BUILD_URL + 'consoleText'
+                            ]
+                        )
+
+                        run_app(
+                            'tar',
+                            [
+                                '--ignore-failed-read',
+                                '-cjf ' + SYSTEM_PACKAGE,
+                                'build.log',
+                                'test_results.xml',
+                                'build/capdl/capdl-loader-app/gen_config/',
+                                'build/elfloader/elfloader',
+                                'build/images/',
+                                'build/kernel/kernel_all.c',
+                                'build/kernel/kernel_all.i',
+                                'build/kernel/kernel.elf',
+                                'build/kernel/kernel.dts',
+                                'build/kernel/gen_config/',
+                                'build/kernel/gen_headers/',
+                                'build/kernel/generated/',
+                                'build/os_system/',
+                                'test-logs/'
+                            ]
+                        )
+
+                        archiveArtifacts(
+                            artifacts: SYSTEM_PACKAGE,
+                            fingerprint: true
+                        )
+
+                        cleanWs()
+                    }
+                }
+            }
+        }
+
+    }
+
+    //--------------------------------------------------------------------------
+    post {
+        always {
+            do_notify_bitbucket()
+        }
+    }
+
+}
