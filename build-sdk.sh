@@ -111,7 +111,7 @@ function collect_sdk_sources()
         --exclude 'astyle_check.sh'
         --exclude './Jenkinsfile'
         --exclude './build-sdk.sh'
-        --exclude './publish_doc.sh '
+        --exclude './publish_doc.sh'
         --exclude './sdk-pdfs'
         --exclude './sdk-sel4-camkes/tools/riscv-pk'
     )
