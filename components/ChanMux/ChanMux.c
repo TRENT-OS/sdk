@@ -67,40 +67,40 @@ void pre_init(void)
 //==============================================================================
 
 // this is missing in camkes.h
-extern unsigned int chanMux_rpc_get_sender_id(void);
+extern unsigned int ChanMuxRpc_get_sender_id(void);
 
 
 //------------------------------------------------------------------------------
 // function write() of interface
 OS_Error_t
-chanMux_rpc_write(
+ChanMuxRpc_write(
     unsigned int  chanNum,
     size_t        len,
     size_t*       lenWritten)
 {
     return ChanMux_write(
-               get_instance_ChanMux(),
-               chanMux_rpc_get_sender_id(),
-               chanNum,
-               len,
-               lenWritten);
+            get_instance_ChanMux(),
+            ChanMuxRpc_get_sender_id(),
+            chanNum,
+            len,
+            lenWritten);
 }
 
 
 //------------------------------------------------------------------------------
 // function read() of interface
 OS_Error_t
-chanMux_rpc_read(
+ChanMuxRpc_read(
     unsigned int  chanNum,
     size_t        len,
     size_t*       lenRead)
 {
     return ChanMux_read(
-               get_instance_ChanMux(),
-               chanMux_rpc_get_sender_id(),
-               chanNum,
-               len,
-               lenRead);
+            get_instance_ChanMux(),
+            ChanMuxRpc_get_sender_id(),
+            chanNum,
+            len,
+            lenRead);
 }
 
 int run()

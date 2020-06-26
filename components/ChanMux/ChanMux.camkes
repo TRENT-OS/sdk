@@ -30,7 +30,7 @@ component CHANMUX_COMPONENT_NAME_helper {
     control;
     //-------------------------------------------------
     // generic upper interface
-    provides       ChanMuxDriverInf    chanMux_rpc;
+    provides      ChanMuxDriverInf    ChanMuxRpc;
 
     //-------------------------------------------------
     // lower interface to underlying layer
@@ -73,6 +73,7 @@ component CHANMUX_COMPONENT_NAME_helper {
     connection  seL4Notification _name_ ## _UnderlyingChan ## _inst_ ## _notification( \
         from _UnderlyingChan_data_available_, \
         to _inst_.UnderlyingChan_EventHasData);
+#endif
 
 #define DECLARE_AND_CONNECT_INSTANCE_CHANMUX_TO_UART(_name_, _inst_, _uart_inst_) \
 DECLARE_AND_CONNECT_INSTANCE_CHANMUX( \
@@ -81,5 +82,3 @@ DECLARE_AND_CONNECT_INSTANCE_CHANMUX( \
             _uart_inst_.Uart_inputDataport,\
             _uart_inst_.Uart_outputFifoDataport, \
             _uart_inst_.Uart_DataAvailable)
-
-#endif

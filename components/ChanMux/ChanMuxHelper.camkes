@@ -1,0 +1,40 @@
+/*
+ *  ChanMux helper macros
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ */
+
+#pragma once
+
+#define DECLARE_CHANMUX_CHANNEL_INTERFACE(_component_to_connect_, _chan_name_) \
+    dataport  Buf                 _component_to_connect_ ##_## _chan_name_ ##_## portRead; \
+    dataport  Buf                 _component_to_connect_ ##_## _chan_name_ ##_## portWrite; \
+    emits     DataAvailableEvent  _component_to_connect_ ##_## _chan_name_ ##_## DataAvailable;
+
+#define DECLARE_CHANMUX_INTERFACE_USER(_chanmux_inst_) \
+    uses        ChanMuxDriverInf    _chanmux_inst_ ## _Rpc;
+
+#define DECLARE_CHANMUX_CHANNEL_CONNECTOR(_chanmux_inst_, _chan_name_) \
+    dataport    Buf                 _chanmux_inst_ ##_## _chan_name_ ##_## portRead; \
+    dataport    Buf                 _chanmux_inst_ ##_## _chan_name_ ##_## portWrite; \
+    consumes    DataAvailableEvent  _chanmux_inst_ ##_## _chan_name_ ##_## EventHasData;
+
+#define CHANMUX_INSTANCE_CONNECT_INTERFACE(_chanmux_inst_, _component_to_connect_) \
+    connection seL4RPCCall _component_to_connect_ ##_## _chanmux_inst_ ##_## rpc( \
+        from    _component_to_connect_._chanmux_inst_ ##_## Rpc, \
+        to      _chanmux_inst_.ChanMuxRpc); \
+
+#define CHANMUX_INSTANCE_CONNECT_CHANNEL(_chanmux_inst_, _component_to_connect_, _chan_name_) \
+    connection seL4SharedData _component_to_connect_ ##_## _chanmux_inst_ ##_## _chan_name_ ##_## portWrite( \
+        from    _component_to_connect_._chanmux_inst_ ##_## _chan_name_ ##_## portWrite, \
+        to      _chanmux_inst_._component_to_connect_ ##_## _chan_name_ ##_## portWrite); \
+    connection  seL4SharedData _component_to_connect_ ##_## _chanmux_inst_ ##_## _chan_name_ ##_## portRead ( \
+        from    _component_to_connect_._chanmux_inst_ ##_## _chan_name_ ##_## portRead, \
+        to      _chanmux_inst_._component_to_connect_ ##_## _chan_name_ ##_## portRead); \
+    connection  seL4NotificationNative _chanmux_inst_ ##_## _component_to_connect_ ##_## _chan_name_ ##_## notification( \
+        from    _chanmux_inst_._component_to_connect_ ##_## _chan_name_ ##_## DataAvailable, \
+        to      _component_to_connect_._chanmux_inst_ ##_## _chan_name_ ##_## EventHasData);
+
+#define CHANMUX_ASSIGN_CLIENT_BADGE(_chanmux_inst_, _component_to_connect_, _badge_value_) \
+    _component_to_connect_._chanmux_inst_ ## _Rpc_attributes = _badge_value_;

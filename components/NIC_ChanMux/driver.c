@@ -26,23 +26,26 @@ post_init(void)
             {
                 .id         = CFG_CHANMUX_CHANNEL_CRTL,
                 .func = {
-                    .read   = chanMux_rpc_read,
-                    .write  = chanMux_rpc_write
+                    .read   = chanMux_Rpc_read,
+                    .write  = chanMux_Rpc_write
                 },
-                .port       = OS_DATAPORT_ASSIGN(chanMux_port_ctrl),
+                .port       = CHANMUX_DATAPORT_ASSIGN(
+                                chanMux_ctrl_portRead,
+                                chanMux_ctrl_portWrite),
+                .wait       = chanMux_ctrl_EventHasData_wait
             },
             .data =
             {
                 .id         = CFG_CHANMUX_CHANNEL_DATA,
                 .func = {
-                    .read   = chanMux_rpc_read,
-                    .write  = chanMux_rpc_write
+                    .read   = chanMux_Rpc_read,
+                    .write  = chanMux_Rpc_write
                 },
-                .port       = CHANMUX_DATAPORT_DUPLEX_ASSIGN(
-                                chanMux_port_data_read,
-                                chanMux_port_data_write ),
+                .port       = CHANMUX_DATAPORT_ASSIGN(
+                                chanMux_data_portRead,
+                                chanMux_data_portWrite),
+                .wait       = chanMux_data_EventHasData_wait
             },
-            .wait           = chanMux_event_hasData_wait
         },
 
         .network_stack =

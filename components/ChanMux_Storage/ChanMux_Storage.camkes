@@ -12,6 +12,8 @@
 import <if_OS_Storage.camkes>;
 /** @endcond */
 
+#include "ChanMux/ChanMuxHelper.camkes"
+
 /**
  * @hideinitializer
  */
@@ -22,7 +24,6 @@ component ChanMux_Storage
     dataport Buf            storage_port; //!< Storage interface data port.
 
     // ChanMux interface
-    uses      ChanMuxDriverInf      chanMux_rpc;
-    consumes  DataAvailableEvent    chanMux_event_hasData;
-    dataport  Buf                   chanMux_port;
+    DECLARE_CHANMUX_INTERFACE_USER(chanMux)
+    DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, chan)
 }

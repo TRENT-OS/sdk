@@ -17,6 +17,8 @@ import <if_ChanMux.camkes>;
 import <if_OS_Logger.camkes>;
 import <if_OS_Nic.camkes>;
 
+#include "ChanMux/ChanMuxHelper.camkes"
+
 #define DECLARE_COMPONENT_NIC_ChanMux(_name_) \
     component _name_ { \
         control; \
@@ -24,11 +26,9 @@ import <if_OS_Nic.camkes>;
         has              mutex               mutex_ctrl_channel; \
         \
         /* lower interface to ChanMux ------------------------------------- */ \
-        uses             ChanMuxDriverInf    chanMux_rpc; \
-        consumes         EventDataAvailable  chanMux_event_hasData; \
-        dataport         Buf                 chanMux_port_ctrl; \
-        dataport         Buf                 chanMux_port_data_read; \
-        dataport         Buf                 chanMux_port_data_write; \
+        DECLARE_CHANMUX_INTERFACE_USER(chanMux) \
+        DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, ctrl) \
+        DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, data) \
         \
         /* upper interface as NIC Driver ---------------------------------- */ \
         provides         if_OS_Nic           nic_rpc; \
