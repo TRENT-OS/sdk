@@ -10,7 +10,7 @@
 
 #include <camkes.h>
 
-extern const ChanMux_config_t cfgChanMux;
+extern const ChanMux_Config_t cfgChanMux;
 
 //------------------------------------------------------------------------------
 static ChanMux*
@@ -28,8 +28,7 @@ get_instance_ChanMux(void)
 
     if (NULL == self)
     {
-        static const ChanMux_config_lower_t cfgChanMux_lower =
-        {
+        static const ChanMux_ConfigLowerChan_t cfgChanMux_lower = {
             .port = OS_DATAPORT_ASSIGN(UnderlyingChan_inputDataport),
             .writer = UnderlyingChan_Rpc_write,
         };
