@@ -31,78 +31,78 @@ make_container_hostname()
 #-------------------------------------------------------------------------------
 open_trentos_build_env()
 {
-        if [ "${#}" -eq "0" ]; then
-            local ARGS=bash
-        else
-            local ARGS="$@"
-        fi
+    if [ "${#}" -eq "0" ]; then
+        local ARGS=bash
+    else
+        local ARGS="$@"
+    fi
 
-        DOCKER_PARAMS=(
-            run
-            # --interactive Keep STDIN open even if not attached
-            -i
-            # --tty Allocate a pseudo-TTY
-            -t
-            # host name is container name with tag
-            --hostname $(make_container_hostname ${TRENTOS_BUILD_CONTAINER})
-            # discard changes to container on exit
-            --rm
-            # set the uid of the user running in the container to that of the
-            # user on the host
-            -u $(id -u)
-            # mount the current working directory on the host in the container
-            # in the /host folder
-            -v $(pwd):/host
-            # mount /etc/localtime to the container as read only, so that the
-            # container has a valid clock source
-            -v /etc/localtime:/etc/localtime:ro
-            # set the current directory in the container to /host
-            -w /host
-        )
-        docker ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS}
+    DOCKER_PARAMS=(
+        run
+        # --interactive Keep STDIN open even if not attached
+        -i
+        # --tty Allocate a pseudo-TTY
+        -t
+        # host name is container name with tag
+        --hostname $(make_container_hostname ${TRENTOS_BUILD_CONTAINER})
+        # discard changes to container on exit
+        --rm
+        # set the uid of the user running in the container to that of the
+        # user on the host
+        -u $(id -u)
+        # mount the current working directory on the host in the container
+        # in the /host folder
+        -v $(pwd):/host
+        # mount /etc/localtime to the container as read only, so that the
+        # container has a valid clock source
+        -v /etc/localtime:/etc/localtime:ro
+        # set the current directory in the container to /host
+        -w /host
+    )
+    docker ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS}
 }
 
 
 #-------------------------------------------------------------------------------
 open_trentos_test_env()
 {
-        if [ "${#}" -eq "0" ]; then
-            local ARGS=bash
-        else
-            local ARGS="$@"
-        fi
+    if [ "${#}" -eq "0" ]; then
+        local ARGS=bash
+    else
+        local ARGS="$@"
+    fi
 
-        local DOCKER_PARAMS=(
-            run
-            # --interactive Keep STDIN open even if not attached
-            -i
-            # --tty Allocate a pseudo-TTY
-            -t
-            # host name is container name with tag
-            --hostname $(make_container_hostname ${TRENTOS_TEST_CONTAINER})
-            # discard changes to container on exit
-            --rm
-            # set the uid of the user running in the container to that of the
-            # user on the host
-            -u $(id -u)
-            # mount the current working directory on the host in the container
-            # in the /host folder
-            -v $(pwd):/host
-            # mount /etc/localtime to the container as read only, so that the
-            # container has a valid clock source
-            -v /etc/localtime:/etc/localtime:ro
-            # set the current directory in the container to /host
-            -w /host
-            # make the container run in a separate network namespace
-            --network=bridge
-            # allow the container to manage its interfaces
-            # needed to create TAP devices
-            --cap-add=NET_ADMIN
-            # allow the container to send/receive RAW packets
-            # needed by tcpdump
-            --cap-add=NET_RAW
-            # filedevice needed to create TAP devices
-            --device=/dev/net/tun
-        )
-        docker ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS}
+    local DOCKER_PARAMS=(
+        run
+        # --interactive Keep STDIN open even if not attached
+        -i
+        # --tty Allocate a pseudo-TTY
+        -t
+        # host name is container name with tag
+        --hostname $(make_container_hostname ${TRENTOS_TEST_CONTAINER})
+        # discard changes to container on exit
+        --rm
+        # set the uid of the user running in the container to that of the
+        # user on the host
+        -u $(id -u)
+        # mount the current working directory on the host in the container
+        # in the /host folder
+        -v $(pwd):/host
+        # mount /etc/localtime to the container as read only, so that the
+        # container has a valid clock source
+        -v /etc/localtime:/etc/localtime:ro
+        # set the current directory in the container to /host
+        -w /host
+        # make the container run in a separate network namespace
+        --network=bridge
+        # allow the container to manage its interfaces
+        # needed to create TAP devices
+        --cap-add=NET_ADMIN
+        # allow the container to send/receive RAW packets
+        # needed by tcpdump
+        --cap-add=NET_RAW
+        # filedevice needed to create TAP devices
+        --device=/dev/net/tun
+    )
+    docker ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS}
 }
