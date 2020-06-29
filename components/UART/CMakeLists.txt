@@ -20,7 +20,7 @@ macro(DeclareCAmkESComponent_UART name)
     DeclareCAmkESComponent(
         ${name}
         SOURCES
-            ${COMPONENT_UART_DIR}/uart.c
+            ${COMPONENT_UART_DIR}/Uart.c
         C_FLAGS
             -Wall -Werror
         LIBS

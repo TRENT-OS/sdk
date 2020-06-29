@@ -7,18 +7,7 @@
 
 // ToDo: remove this hard-coded ChanMux dependency
 import <if_ChanMux.camkes>;
-
-
-//------------------------------------------------------------------------------
-// RPC Interface
-
-procedure UartInf {
-
-    // writes synchronously len bytes from the input dataport to the uart
-    void write(size_t len);
-
-};
-
+import <../interfaces/if_BlockingWrite.camkes>;
 
 //------------------------------------------------------------------------------
 // Components
@@ -36,16 +25,13 @@ procedure UartInf {
 #define DECLARE_COMPONENT_UART_DRV(_type_drv_) \
     \
     component _type_drv_ { \
-        control; \
-        \
         dataport  Buf               regBase; \
         consumes  IRQ               irq; \
-        has       binary_semaphore  sem; \
         \
-        provides  UartInf           UartDrv; \
-        dataport  Buf               inputDataPort; \
-        \
-        uses      ChanMuxOutInf     Output; \
+        provides  BlockingWriteInf      UartDrv; \
+        dataport  Buf                   Uart_inputDataport; \
+        dataport  Buf                   Uart_outputFifoDataport; \
+        emits     EventDataAvailable    Uart_DataAvailable; \
     }
 
 

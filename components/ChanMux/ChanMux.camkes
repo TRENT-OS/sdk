@@ -27,16 +27,17 @@ import <if_ChanMux.camkes>;
 #define CHANMUX_UPPER_INTERFACES_helper     CHANMUX_UPPER_INTERFACES
 
 component CHANMUX_COMPONENT_NAME_helper {
-
+    control;
     //-------------------------------------------------
     // generic upper interface
     provides       ChanMuxDriverInf    chanMux_rpc;
 
     //-------------------------------------------------
-    // lower interface to UART
-    provides      ChanMuxOutInf        chanMux_lower_rpc;
-    uses          UartInf              uart_rpc;
-    dataport      Buf                  uart_port;
+    // lower interface to underlying layer
+    uses          BlockingWriteInf     UnderlyingChan_Rpc;
+    dataport      Buf                  UnderlyingChan_inputDataport;
+    dataport      Buf                  UnderlyingChan_outputFifoDataport;
+    consumes      EventDataAvailable   UnderlyingChan_EventHasData;
 
     //-------------------------------------------------
     // upper interfaces
@@ -54,19 +55,31 @@ component CHANMUX_COMPONENT_NAME_helper {
 // ensure we define this only once if this file in included multiple times
 #if !defined(DECLARE_AND_CONNECT_INSTANCE_CHANMUX)
 
-#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX(_name_, _inst_, _uart_rpc_, _uart_port_, _uart_rpc_caller_) \
+#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX(_name_, _inst_, _UnderlyingChan_rpc_, _UnderlyingChan_inputDataport_, _UnderlyingChan_outputFifoDataport_, _UnderlyingChan_data_available_) \
     component   _name_          _inst_; \
     \
-    connection  seL4RPCCall     _name_ ## _ ## _inst_ ## _uart_rpc( \
-        from _inst_.uart_rpc, \
-        to   _uart_rpc_); \
+    connection  seL4RPCCall     _name_ ## _ ## _inst_ ## _UnderlyingChan_rpc( \
+        from _inst_.UnderlyingChan_Rpc, \
+        to   _UnderlyingChan_rpc_); \
     \
-    connection  seL4SharedData  _name_ ## _ ## _inst_ ## _uart_port( \
-        from _inst_.uart_port, \
-        to   _uart_port_); \
+    connection  seL4SharedData  _name_ ## _ ## _inst_ ## _UnderlyingChan_inputDataport( \
+        from _inst_.UnderlyingChan_inputDataport, \
+        to   _UnderlyingChan_inputDataport_); \
     \
-    connection  seL4RPCCall     _name_ ## _uart ## _inst_ ## _rpc   ( \
-        from _uart_rpc_caller_, \
-        to   _inst_.chanMux_lower_rpc);
+    connection  seL4SharedData  _name_ ## _ ## _inst_ ## _UnderlyingChan_outputFifoDataport( \
+        from _UnderlyingChan_outputFifoDataport_, \
+        to   _inst_.UnderlyingChan_outputFifoDataport); \
+    \
+    connection  seL4Notification _name_ ## _UnderlyingChan ## _inst_ ## _notification( \
+        from _UnderlyingChan_data_available_, \
+        to _inst_.UnderlyingChan_EventHasData);
+
+#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX_TO_UART(_name_, _inst_, _uart_inst_) \
+DECLARE_AND_CONNECT_INSTANCE_CHANMUX( \
+            _name_, _inst_, \
+            _uart_inst_.UartDrv, \
+            _uart_inst_.Uart_inputDataport,\
+            _uart_inst_.Uart_outputFifoDataport, \
+            _uart_inst_.Uart_DataAvailable)
 
 #endif

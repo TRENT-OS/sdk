@@ -5,8 +5,9 @@
  */
 
 #include "ChanMux/ChanMux.h"
-#include "OS_Error.h"
 #include "OS_Dataport.h"
+#include "LibIO/FifoDataport.h"
+
 #include <camkes.h>
 
 extern const ChanMux_config_t cfgChanMux;
@@ -28,8 +29,8 @@ get_instance_ChanMux(void)
     if (NULL == self)
     {
         static const ChanMux_config_lower_t cfgChanMux_lower = {
-            .port = OS_DATAPORT_ASSIGN(uart_port),
-            .writer = uart_rpc_write,
+            .port = OS_DATAPORT_ASSIGN(UnderlyingChan_inputDataport),
+            .writer = UnderlyingChan_Rpc_write,
         };
 
          // create a ChanMUX
@@ -60,22 +61,6 @@ void pre_init(void)
     // ensure the instance is set up
     (void)get_instance_ChanMux();
 }
-
-
-//==============================================================================
-// CAmkES Interface "chanMux_lower_rpc" (ChanMUX bottom)
-//==============================================================================
-
-//------------------------------------------------------------------------------
-// function takeByte() of interface
-void
-chanMux_lower_rpc_takeByte(char byte)
-{
-    ChanMux_takeByte(
-        get_instance_ChanMux(),
-        byte);
-}
-
 
 //==============================================================================
 // CAmkES Interface "ChanMuxDriverInf" (ChanMUX top)
@@ -116,4 +101,22 @@ chanMux_rpc_read(
             chanNum,
             len,
             lenRead);
+}
+
+int run()
+{
+    FifoDataport* underlyingFifo =
+            (FifoDataport*) UnderlyingChan_outputFifoDataport;
+    ChanMux* chanMux = get_instance_ChanMux();
+
+    for(;;)
+    {
+        UnderlyingChan_EventHasData_wait();
+        while (FifoDataport_getSize(underlyingFifo) > 0)
+        {
+            char const* c = FifoDataport_getFirst(underlyingFifo);
+            ChanMux_takeByte(chanMux, *c);
+            FifoDataport_remove(underlyingFifo, 1);
+        }
+    }
 }

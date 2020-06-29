@@ -1,0 +1,13 @@
+/*
+ *  FifoDataport
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ */
+
+procedure BlockingWriteInf
+{
+   // takes bytes from the input dataport and blocks until the last byte is
+   // completely sent thru the channel implementing this interface
+   void write(size_t len);
+};
