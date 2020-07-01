@@ -28,12 +28,13 @@ get_instance_ChanMux(void)
 
     if (NULL == self)
     {
-        static const ChanMux_config_lower_t cfgChanMux_lower = {
+        static const ChanMux_config_lower_t cfgChanMux_lower =
+        {
             .port = OS_DATAPORT_ASSIGN(UnderlyingChan_inputDataport),
             .writer = UnderlyingChan_Rpc_write,
         };
 
-         // create a ChanMUX
+        // create a ChanMUX
         if (!ChanMux_ctor(&theOne, &cfgChanMux, &cfgChanMux_lower))
         {
             Debug_LOG_ERROR("ChanMux_ctor() failed");
@@ -79,11 +80,11 @@ chanMux_rpc_write(
     size_t*       lenWritten)
 {
     return ChanMux_write(
-            get_instance_ChanMux(),
-            chanMux_rpc_get_sender_id(),
-            chanNum,
-            len,
-            lenWritten);
+               get_instance_ChanMux(),
+               chanMux_rpc_get_sender_id(),
+               chanNum,
+               len,
+               lenWritten);
 }
 
 
@@ -96,20 +97,20 @@ chanMux_rpc_read(
     size_t*       lenRead)
 {
     return ChanMux_read(
-            get_instance_ChanMux(),
-            chanMux_rpc_get_sender_id(),
-            chanNum,
-            len,
-            lenRead);
+               get_instance_ChanMux(),
+               chanMux_rpc_get_sender_id(),
+               chanNum,
+               len,
+               lenRead);
 }
 
 int run()
 {
     FifoDataport* underlyingFifo =
-            (FifoDataport*) UnderlyingChan_outputFifoDataport;
+        (FifoDataport*) UnderlyingChan_outputFifoDataport;
     ChanMux* chanMux = get_instance_ChanMux();
 
-    for(;;)
+    for (;;)
     {
         UnderlyingChan_EventHasData_wait();
         while (FifoDataport_getSize(underlyingFifo) > 0)

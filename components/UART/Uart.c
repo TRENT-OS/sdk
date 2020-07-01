@@ -32,7 +32,8 @@
 #   define Uart_Config_BACKUP_FIFO_SIZE    4096
 #endif
 
-static struct {
+static struct
+{
     bool             isValid;
     ps_io_ops_t      io_ops;
     ps_chardevice_t  ps_cdev;
@@ -81,9 +82,9 @@ void irq_handle(void)
         {
             bool isBackupFifoEmpty =
 #if Uart_Config_BACKUP_FIFO_SIZE > 0
-                    CharFifo_isEmpty(&ctx.backupFifo);
+                CharFifo_isEmpty(&ctx.backupFifo);
 #else
-                    false;
+                false;
 #endif
             size_t  i = 0;
             bool    useBackupFifo = !isBackupFifoEmpty;
@@ -150,11 +151,12 @@ void irq_handle(void)
             Uart_DataAvailable_emit();
         }
 #endif
-    } while (ret > 0
+    }
+    while (ret > 0
 #if Uart_Config_BACKUP_FIFO_SIZE > 0
-                && !CharFifo_isEmpty(&ctx.backupFifo)
+           && !CharFifo_isEmpty(&ctx.backupFifo)
 #endif
-            );
+          );
 }
 
 
@@ -174,11 +176,11 @@ UartDrv_write(
     }
 
     ssize_t ret = ctx.ps_cdev.write(
-                    &(ctx.ps_cdev),
-                    Uart_inputDataport,
-                    len,
-                    NULL,
-                    NULL);
+                      &(ctx.ps_cdev),
+                      Uart_inputDataport,
+                      len,
+                      NULL,
+                      NULL);
     if (ret != len)
     {
         Debug_LOG_ERROR("write error, could only write %zd of %zu bytes",
@@ -199,7 +201,7 @@ void post_init(void)
     ctx.isValid         = false;
     ctx.outputFifo      = (FifoDataport*) Uart_outputFifoDataport;
     size_t fifoCapacity =
-            sizeof( *(Uart_outputFifoDataport) ) - offsetof(FifoDataport, data);
+        sizeof( *(Uart_outputFifoDataport) ) - offsetof(FifoDataport, data);
 #if Uart_Config_BACKUP_FIFO_SIZE > 0
     static char backupBuf[Uart_Config_BACKUP_FIFO_SIZE];
 #endif
@@ -236,9 +238,9 @@ void post_init(void)
     // implement ps_cdev_static_init(), where we can pass the virtual address
     // directly.
     ps_chardevice_t* dev = ps_cdev_static_init(
-                            &(ctx.io_ops),
-                            &(ctx.ps_cdev),
-                            regBase);
+                               &(ctx.io_ops),
+                               &(ctx.ps_cdev),
+                               regBase);
     if (dev != &(ctx.ps_cdev))
     {
         Debug_LOG_ERROR("ps_cdev_init() failed, code %p", dev);
