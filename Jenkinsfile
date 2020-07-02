@@ -5,14 +5,14 @@
 // image
 
 def DOCKER_BUILD_ENV = [ 
-	image: 		'docker:5000/trentos_build:trentos_0.9',
+	image: 		'docker:5000/trentos_build:20200701',
     args: 	    '-v /etc/localtime:/etc/localtime:ro '+
                 	' --group-add=1001 ',
 	registry: 	'https://docker:5000',
                        ]
 
 def DOCKER_TEST_ENV = [
-    image:      'docker:5000/trentos_test:trentos_0.9',
+    image:      'docker:5000/trentos_test:20200701',
     args:       '-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro '+
 	               ' -v /etc/localtime:/etc/localtime:ro '+
 	               ' --network=bridge '+
