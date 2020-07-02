@@ -36,6 +36,7 @@ DOCKER_COMMON_ARGS=(
 
 TTY=-t
 DOCKER_ARGS=()
+ARGS=()
 
 #-------------------------------------------------------------------------------
 # Parse the flags passed as command line arguments to the open_trentos scripts
@@ -69,6 +70,14 @@ parse_command_line_arguments()
     done
 
     shift $((OPTIND -1))
+
+ 
+    if [ "${#}" -eq "0" ]; then
+        ARGS=(bash)
+    else
+        ARGS=("$@")
+    fi
+
 }
 
 #-------------------------------------------------------------------------------
@@ -88,12 +97,6 @@ open_trentos_build_env()
 {
     parse_command_line_arguments "$@"
 
-    if [ "${#}" -eq "0" ]; then
-        local ARGS=bash
-    else
-        local ARGS="$@"
-    fi
-
     DOCKER_PARAMS=(
         ${DOCKER_COMMON_ARGS[@]}
         # --tty Allocate a pseudo-TTY
@@ -103,7 +106,7 @@ open_trentos_build_env()
         # parameters passed on the command line
         ${DOCKER_ARGS[@]}
     )
-    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS}
+    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS[@]}
 }
 
 
@@ -111,12 +114,6 @@ open_trentos_build_env()
 open_trentos_test_env()
 {
     parse_command_line_arguments "$@"
-
-    if [ "${#}" -eq "0" ]; then
-        local ARGS=bash
-    else
-        local ARGS="$@"
-    fi
 
     local DOCKER_PARAMS=(
         ${DOCKER_COMMON_ARGS[@]}
@@ -137,5 +134,5 @@ open_trentos_test_env()
         # parameters passed on the command line
         ${DOCKER_ARGS[@]}
     )
-    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS}
+    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS[@]}
 }
