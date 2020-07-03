@@ -1,0 +1,31 @@
+/*
+ *  NIC-Dummy CAmkES Component
+ *
+ *  Copyright (C) 2020, Hensoldt Cyber GmbH
+ *
+ *
+ *  to be used as:
+ *
+ *      #include "NIC_Dummy/NIC_Dummy.camkes"
+ *
+ *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_1)
+ *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_2)
+ *
+ */
+
+import <if_OS_nic.camkes>;
+import <if_OS_Logger.camkes>;
+
+#define DECLARE_COMPONENT_NIC_Dummy(_name_) \
+    component _name_ { \
+        /* upper interface as NIC Driver ---------------------------------- */ \
+        provides         if_OS_nic           nic_rpc; \
+        emits            EventDataAvailable  nic_event_hasData; \
+        dataport         Buf                 nic_port_to; /* driver -> network stack */  \
+        dataport         Buf                 nic_port_from; /* network stack -> driver */ \
+        \
+        /* usage of LogServer is optional ----------------------------------*/ \
+        maybe uses      if_OS_Logger        logServer_rpc; \
+        maybe dataport  Buf                 logServer_port; \
+        maybe consumes  EventReady          logServer_event_ready; \
+    }
