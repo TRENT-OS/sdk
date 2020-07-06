@@ -25,7 +25,7 @@ isOutsideOfTheStorage(
         return true;
     }
 
-    return (RAMDISK_SIZE_BYTES <= (offset + size));
+    return (sizeof(storage) <= (offset + size));
 }
 
 
@@ -113,7 +113,7 @@ OS_Error_t
 storage_rpc_getSize(
     size_t* const size)
 {
-    *size = RAMDISK_SIZE_BYTES;
+    *size = sizeof(storage);
 
     return OS_SUCCESS;
 }
