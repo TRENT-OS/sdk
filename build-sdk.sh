@@ -255,6 +255,16 @@ function build_sdk_tools()
 
         cp ${TOOLS_BUILD_DIR}/cpt ${OUT_DIR}/cpt
     )
+
+    # build ramdisk generator tool
+    (
+        local TOOLS_SRC_DIR=tools/rdgen
+        local TOOLS_BUILD_DIR=${BUILD_DIR}/rdgen
+
+        build_sdk_tool ${SDK_SRC_DIR} ${TOOLS_SRC_DIR} ${TOOLS_BUILD_DIR}
+
+        cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
+    )
 }
 
 #-------------------------------------------------------------------------------
