@@ -15,17 +15,14 @@ static uint8_t storage[RAMDISK_SIZE_BYTES] = { 0u };
 //------------------------------------------------------------------------------
 static
 bool
-isOutsideOfTheStorage(
+isValidStorageArea(
     size_t const offset,
     size_t const size)
 {
-    // Checking integer overflow.
-    if ((offset + size) < offset)
-    {
-        return true;
-    }
-
-    return (sizeof(storage) <= (offset + size));
+    size_t const end = offset + size;
+    // Checking integer overflow first. The end index is not part of the area,
+    // but we allow offset = end with size = 0 here
+    return ( (end >= offset) && (end <= sizeof(storage)) );
 }
 
 
@@ -36,7 +33,7 @@ storage_rpc_write(
     size_t  const size,
     size_t* const written)
 {
-    if (isOutsideOfTheStorage(offset, size))
+    if (!isValidStorageArea(offset, size))
     {
         *written = 0U;
         return OS_ERROR_INSUFFICIENT_SPACE;
@@ -56,7 +53,7 @@ storage_rpc_read(
     size_t  const size,
     size_t* const read)
 {
-    if (isOutsideOfTheStorage(offset, size))
+    if (!isValidStorageArea(offset, size))
     {
         *read = 0U;
         return OS_ERROR_OVERFLOW_DETECTED;
@@ -76,7 +73,7 @@ storage_rpc_erase(
     size_t  const size,
     size_t* const erased)
 {
-    if (isOutsideOfTheStorage(offset, size))
+    if (!isValidStorageArea(offset, size))
     {
         *erased = 0U;
         return OS_ERROR_OVERFLOW_DETECTED;
