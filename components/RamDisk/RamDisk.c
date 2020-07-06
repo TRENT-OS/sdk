@@ -5,6 +5,7 @@
 #include "OS_Error.h"
 #include "system_config.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <camkes.h>
 
