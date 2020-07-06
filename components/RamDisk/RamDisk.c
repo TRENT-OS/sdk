@@ -96,6 +96,25 @@ storage_rpc_erase(
         return OS_ERROR_INVALID_STATE;
     }
 
+    // Erase for a RAM-Disk does not really make sense. It's a command that
+    // comes handy in two cases when dealing with storage hardware:
+    //
+    // * Flash/EEPROM based storage usually does not support random writing,
+    //   but bits can only be toggled in one direction, e.g. 1 -> 0. Toggling
+    //   bits in the other direction does not work, the whole sector must be
+    //   "reloaded" instead ( 0 -> 1). Thus erase is usually valid on full
+    //   sectors only.
+    //
+    // * The trim() command was introduced with SSDs. It tells the disk that a
+    //   certain area is no longer in use and the data there can be discarded.
+    //   It leaves more room for optimization if further wiping details are
+    //   then left to the SSD's controller instead of explicitly writing
+    //   anything (e.g. zeros) there. Reading from wiped space my return
+    //   deterministic data (e.g. zeros) or not, details depend on the SSD.
+    //
+    // Instead of returning  OS_ERROR_NOT_IMPLEMENTED or OS_ERROR_NOT_SUPPORTED
+    // here, we implement erase() as writing all bits to 1, which mimics a
+    // classic EEPROM behavior.
     memset(&storage[offset], 0xFF, size);
     *erased = size;
 
