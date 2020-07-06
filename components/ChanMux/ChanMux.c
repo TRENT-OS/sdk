@@ -28,7 +28,8 @@ get_instance_ChanMux(void)
 
     if (NULL == self)
     {
-        static const ChanMux_ConfigLowerChan_t cfgChanMux_lower = {
+        static const ChanMux_ConfigLowerChan_t cfgChanMux_lower =
+        {
             .port = OS_DATAPORT_ASSIGN(UnderlyingChan_inputDataport),
             .writer = UnderlyingChan_Rpc_write,
         };
@@ -79,11 +80,11 @@ ChanMuxRpc_write(
     size_t*       lenWritten)
 {
     return ChanMux_write(
-            get_instance_ChanMux(),
-            ChanMuxRpc_get_sender_id(),
-            chanNum,
-            len,
-            lenWritten);
+               get_instance_ChanMux(),
+               ChanMuxRpc_get_sender_id(),
+               chanNum,
+               len,
+               lenWritten);
 }
 
 
@@ -96,11 +97,11 @@ ChanMuxRpc_read(
     size_t*       lenRead)
 {
     return ChanMux_read(
-            get_instance_ChanMux(),
-            ChanMuxRpc_get_sender_id(),
-            chanNum,
-            len,
-            lenRead);
+               get_instance_ChanMux(),
+               ChanMuxRpc_get_sender_id(),
+               chanNum,
+               len,
+               lenRead);
 }
 
 int run()

@@ -30,8 +30,8 @@ post_init(void)
                     .write  = chanMux_Rpc_write
                 },
                 .port       = CHANMUX_DATAPORT_ASSIGN(
-                                chanMux_ctrl_portRead,
-                                chanMux_ctrl_portWrite),
+                    chanMux_ctrl_portRead,
+                    chanMux_ctrl_portWrite),
                 .wait       = chanMux_ctrl_EventHasData_wait
             },
             .data =
@@ -42,8 +42,8 @@ post_init(void)
                     .write  = chanMux_Rpc_write
                 },
                 .port       = CHANMUX_DATAPORT_ASSIGN(
-                                chanMux_data_portRead,
-                                chanMux_data_portWrite),
+                    chanMux_data_portRead,
+                    chanMux_data_portWrite),
                 .wait       = chanMux_data_EventHasData_wait
             },
         },

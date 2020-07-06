@@ -10,7 +10,8 @@
 
 #include <camkes.h>
 
-static const ChanMuxClientConfig_t chanMuxClientConfig = {
+static const ChanMuxClientConfig_t chanMuxClientConfig =
+{
     .port  = CHANMUX_DATAPORT_ASSIGN(chanMux_chan_portRead,
                                      chanMux_chan_portWrite),
     .wait  = chanMux_chan_EventHasData_wait,
@@ -33,7 +34,7 @@ void storage_rpc__init(void)
 
     storage = ChanMuxNvmDriver_get_nvm(&chanMuxNvmDriver);
 
-    if(NULL == storage)
+    if (NULL == storage)
     {
         Debug_LOG_ERROR("Failed to get pointer to storage.");
         return;
@@ -75,7 +76,7 @@ storage_rpc_getSize(size_t* const size)
 {
     *size = storage->vtable->getSize(storage);
 
-    if(((size_t)-1) == *size)
+    if (((size_t) -1) == *size)
     {
         return OS_ERROR_GENERIC;
     }
