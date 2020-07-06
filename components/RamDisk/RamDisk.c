@@ -10,6 +10,8 @@
 
 static uint8_t storage[RAMDISK_SIZE_BYTES] = { 0u };
 
+
+//------------------------------------------------------------------------------
 static
 bool
 isOutsideOfTheStorage(
@@ -25,13 +27,15 @@ isOutsideOfTheStorage(
     return (RAMDISK_SIZE_BYTES <= (offset + size));
 }
 
+
+//------------------------------------------------------------------------------
 OS_Error_t
 storage_rpc_write(
     size_t  const offset,
     size_t  const size,
     size_t* const written)
 {
-    if(isOutsideOfTheStorage(offset, size))
+    if (isOutsideOfTheStorage(offset, size))
     {
         *written = 0U;
         return OS_ERROR_INSUFFICIENT_SPACE;
@@ -48,13 +52,15 @@ storage_rpc_write(
     return OS_SUCCESS;
 }
 
+
+//------------------------------------------------------------------------------
 OS_Error_t
 storage_rpc_read(
     size_t  const offset,
     size_t  const size,
     size_t* const read)
 {
-    if(isOutsideOfTheStorage(offset, size))
+    if (isOutsideOfTheStorage(offset, size))
     {
         *read = 0U;
         return OS_ERROR_OVERFLOW_DETECTED;
@@ -71,13 +77,15 @@ storage_rpc_read(
     return OS_SUCCESS;
 }
 
+
+//------------------------------------------------------------------------------
 OS_Error_t
 storage_rpc_erase(
     size_t  const offset,
     size_t  const size,
     size_t* const erased)
 {
-    if(isOutsideOfTheStorage(offset, size))
+    if (isOutsideOfTheStorage(offset, size))
     {
         *erased = 0U;
         return OS_ERROR_OVERFLOW_DETECTED;
@@ -94,14 +102,19 @@ storage_rpc_erase(
     return OS_SUCCESS;
 }
 
+
+//------------------------------------------------------------------------------
 OS_Error_t
-storage_rpc_getSize(size_t* const size)
+storage_rpc_getSize(
+    size_t* const size)
 {
     *size = RAMDISK_SIZE_BYTES;
 
     return OS_SUCCESS;
 }
 
+
+//------------------------------------------------------------------------------
 OS_Error_t
 storage_rpc_getState(
     uint32_t* flags)
