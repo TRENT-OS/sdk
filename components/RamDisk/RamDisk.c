@@ -42,11 +42,6 @@ storage_rpc_write(
         return OS_ERROR_INSUFFICIENT_SPACE;
     }
 
-    if(NULL == storage)
-    {
-        return OS_ERROR_INVALID_STATE;
-    }
-
     memcpy(&storage[offset], storage_port, size);
     *written = size;
 
@@ -67,11 +62,6 @@ storage_rpc_read(
         return OS_ERROR_OVERFLOW_DETECTED;
     }
 
-    if(NULL == storage)
-    {
-        return OS_ERROR_INVALID_STATE;
-    }
-
     memcpy(storage_port, &storage[offset], size);
     *read = size;
 
@@ -90,11 +80,6 @@ storage_rpc_erase(
     {
         *erased = 0U;
         return OS_ERROR_OVERFLOW_DETECTED;
-    }
-
-    if(NULL == storage)
-    {
-        return OS_ERROR_INVALID_STATE;
     }
 
     // Erase for a RAM-Disk does not really make sense. It's a command that
