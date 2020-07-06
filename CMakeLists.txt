@@ -312,6 +312,8 @@ macro(os_sdk_build system_project_dir)
 
         setup_sel4_camkes_build_system()
 
+        setup_sel4_global_components()
+
         CAmkESAddCPPInclude(
             ${OS_COMPONENTS_DIR}
         )
