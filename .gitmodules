@@ -73,3 +73,6 @@
 [submodule "tools/cpt"]
 	path = tools/cpt
 	url = ../../ssdk/config_provisioning_tool.git
+[submodule "tools/rdgen"]
+	path = tools/rdgen
+	url = ../../ssdk/ramdisk_generator.git
