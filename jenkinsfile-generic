@@ -238,6 +238,25 @@ def get_sdk(
 
 
 //------------------------------------------------------------------------------
+def save_current_job_log(
+    name
+) {
+    // get the current jobs log up to now. One day we should find a nicer way
+    // for this thand downloading it
+
+    run_app(
+        'wget',
+        [
+            '-q',
+            '--no-check-certificate',
+            '-O ' + name,
+            BUILD_URL + 'consoleText'
+        ]
+    )
+}
+
+
+//------------------------------------------------------------------------------
 def print_step_info(
     name
 ) {
@@ -419,17 +438,7 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
 
-                        // get the current jobs log up to now. One day we
-                        // should find a nicer way for this ...
-                        run_app(
-                            'wget',
-                            [
-                                '-q',
-                                '--no-check-certificate',
-                                '-O build.log',
-                                BUILD_URL + 'consoleText'
-                            ]
-                        )
+                        save_current_job_log('build.log')
 
                         run_app(
                             'tar',
