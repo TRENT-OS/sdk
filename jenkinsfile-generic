@@ -325,8 +325,8 @@ pipeline {
                 stage('stash_cleanup') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-                        stash \
-                            name: 'test_package', \
+                        stash(
+                            name: 'test_package',
                             includes: [ 'build/camkes-tool/libsel4camkes/gen_config/**',
                                         'build/capdl/capdl-loader-app/gen_config/**',
                                         'build/elfloader/elfloader',
@@ -340,6 +340,7 @@ pipeline {
                                         'build/kernel/generated/**',
                                         'build/os_system/**',
                                       ].join(',')
+                        )
                         cleanWs()
                     }
                 }
@@ -361,7 +362,7 @@ pipeline {
 
                         cleanWs()
 
-                        unstash 'test_package'
+                        unstash('test_package')
 
                         get_sdk('src/sdk')
 
