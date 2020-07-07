@@ -82,3 +82,6 @@
 [submodule "libs/os_filesystem"]
 	path = libs/os_filesystem
 	url = ../../seos/filesystem.git
+[submodule "components/StorageServer"]
+	path = components/StorageServer
+	url = ../../sc/storageserver.git
