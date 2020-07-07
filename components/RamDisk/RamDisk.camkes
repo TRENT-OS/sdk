@@ -25,14 +25,37 @@
 import <if_OS_Storage.camkes>;
 /** @endcond */
 
-/**
- * @hideinitializer
- */
-component RamDisk
-{
-    include "stddef.h";
 
-    // Storage interface
-    provides    if_OS_Storage   storage_rpc;
-    dataport    Buf             storage_port;
-}
+//------------------------------------------------------------------------------
+// Component
+
+#define DECLARE_COMPONENT_RamDisk(                      \
+    _name_)                                             \
+                                                        \
+    component _name_ {                                  \
+        provides    if_OS_Storage   storage_rpc;        \
+        dataport    Buf             storage_port;       \
+    }
+
+
+//------------------------------------------------------------------------------
+// Instance Connection
+
+#define DECLARE_AND_CONNECT_INSTANCE_RamDisk(           \
+    _name_,                                             \
+    _inst_,                                             \
+    _caller_rpc_,                                       \
+    _caller_dp_)                                        \
+                                                        \
+    component   _name_  _inst_;                         \
+                                                        \
+    connection  seL4RPCCall                             \
+        _name_ ## _ ## _inst_ ## _rpc   (               \
+            from    _caller_rpc_,                       \
+            to      _inst_.storage_rpc                  \
+        );                                              \
+    connection seL4SharedData                           \
+        _name_ ## _ ## _inst_ ## _dp (                  \
+            from    _caller_dp_,                        \
+            to      _inst_.storage_port                 \
+        );
