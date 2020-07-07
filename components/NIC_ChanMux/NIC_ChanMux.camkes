@@ -15,7 +15,7 @@
 
 import <if_ChanMux.camkes>;
 import <if_OS_Logger.camkes>;
-import <if_OS_nic.camkes>;
+import <if_OS_Nic.camkes>;
 
 #define DECLARE_COMPONENT_NIC_ChanMux(_name_) \
     component _name_ { \
@@ -31,7 +31,7 @@ import <if_OS_nic.camkes>;
         dataport         Buf                 chanMux_port_data_write; \
         \
         /* upper interface as NIC Driver ---------------------------------- */ \
-        provides         if_OS_nic           nic_rpc; \
+        provides         if_OS_Nic           nic_rpc; \
         emits            EventDataAvailable  nic_event_hasData; \
         dataport         Buf                 nic_port_to; /* driver -> network stack */  \
         dataport         Buf                 nic_port_from; /* network stack -> driver */ \
