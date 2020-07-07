@@ -280,7 +280,7 @@ pipeline {
         // keep their builds. The potential work around is having a conditional
         // stage where "master" and "integration" push a package to an artifact
         // server, which then preserves this.
-        buildDiscarder(logRotator(numToKeepStr: '40'))
+        buildDiscarder(logRotator(numToKeepStr: '100', daysToKeepStr: '5',))
     }
 
     stages {
