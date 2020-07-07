@@ -79,3 +79,6 @@
 [submodule "components/TimeServer"]
 	path = components/TimeServer
 	url = ../../sc/timeserver.git
+[submodule "libs/os_filesystem"]
+	path = libs/os_filesystem
+	url = ../../seos/filesystem.git
