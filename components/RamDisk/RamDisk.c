@@ -27,7 +27,10 @@ isValidStorageArea(
 
 
 //------------------------------------------------------------------------------
+// This is a CAmkES RPC interface handler. It's guaranteed that "written"
+// never points to NULL.
 OS_Error_t
+NONNULL_ALL
 storage_rpc_write(
     size_t  const offset,
     size_t  const size,
@@ -47,7 +50,10 @@ storage_rpc_write(
 
 
 //------------------------------------------------------------------------------
+// This is a CAmkES RPC interface handler. It's guaranteed that "read" never
+// points to NULL.
 OS_Error_t
+NONNULL_ALL
 storage_rpc_read(
     size_t  const offset,
     size_t  const size,
@@ -67,7 +73,10 @@ storage_rpc_read(
 
 
 //------------------------------------------------------------------------------
+// This is a CAmkES RPC interface handler. It's guaranteed that "erased" never
+// points to NULL.
 OS_Error_t
+NONNULL_ALL
 storage_rpc_erase(
     size_t  const offset,
     size_t  const size,
@@ -106,7 +115,10 @@ storage_rpc_erase(
 
 
 //------------------------------------------------------------------------------
+// This is a CAmkES RPC interface handler. It's guaranteed that "size" never
+// points to NULL.
 OS_Error_t
+NONNULL_ALL
 storage_rpc_getSize(
     size_t* const size)
 {
@@ -117,7 +129,10 @@ storage_rpc_getSize(
 
 
 //------------------------------------------------------------------------------
+// This is a CAmkES RPC interface handler. It's guaranteed that "flags" never
+// points to NULL.
 OS_Error_t
+NONNULL_ALL
 storage_rpc_getState(
     uint32_t* flags)
 {
