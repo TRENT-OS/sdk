@@ -19,7 +19,6 @@
 params.each { println it.key + " = " + it.value }
 
 def test_machine_label = TEST_MACHINE_LABEL ?: 'test'
-def build_name_str = BRANCH_OR_COMMIT + ', ' + TEST_SYSTEM + ', '+PLATFORM
 
 def SYSTEM_PACKAGE = 'package.bz2'
 
@@ -61,6 +60,29 @@ def DOCKER_TEST_ENV  = [
                '--group-add=sudo'
               ].join(' ')
 ]
+
+
+//------------------------------------------------------------------------------
+def set_build_info()
+{
+    def build_name_str = BRANCH_OR_COMMIT + ', ' + TEST_SYSTEM + ', '+PLATFORM
+    currentBuild.displayName = build_name_str
+
+    manager.createSummary("text.gif").appendText(
+        '<table style="border: 1px solid black; border-collapse: collapse;">'+
+            params.collect { param ->
+                '<tr>'+
+                    '<td style="border: 1px solid black">'+
+                        '<b><code>'+param.key+'</code></b>'+
+                    '</td>'+
+                    '<td style="border: 1px solid black">'+
+                        (param.value?:'<i>(null)</i>')+
+                    '</td>'+
+                '</tr>'
+            }.join('') +
+        '</table>'
+    )
+}
 
 
 //------------------------------------------------------------------------------
@@ -244,6 +266,13 @@ pipeline {
     stages {
 
         //----------------------------------------------------------------------
+        stage('init') {
+            steps {
+                set_build_info()
+            }
+        }
+
+        //----------------------------------------------------------------------
         stage('Build_stage') {
 
             agent { label "build" }
@@ -254,33 +283,6 @@ pipeline {
                 stage('checkout') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        buildName(build_name_str)
-
-                        // addShortText(
-                        //     text: build_name_str,
-                        //     background: "khaki",
-                        //     border: 1,
-                        //     borderColor: "gray",
-                        //     color: "black"
-                        // )
-
-                        script {
-                            manager.createSummary("text.gif").appendText(
-                                '<table style="border: 1px solid black; border-collapse: collapse;">'+
-                                    params.collect { param ->
-                                        '<tr>'+
-                                            '<td style="border: 1px solid black">'+
-                                                '<b><code>'+param.key+'</code></b>'+
-                                            '</td>'+
-                                            '<td style="border: 1px solid black">'+
-                                                (param.value?:'<i>(null)</i>')+
-                                            '</td>'+
-                                        '</tr>'
-                                    }.join('') +
-                                '</table>'
-                            )
-                        }
 
                         cleanWs()
 
