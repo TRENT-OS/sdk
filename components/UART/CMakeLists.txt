@@ -27,6 +27,6 @@ macro(DeclareCAmkESComponent_UART name)
             os_core_api
             os_libs
             platsupport
-)
+    )
 
 endmacro()
