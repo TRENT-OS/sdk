@@ -367,6 +367,7 @@ pipeline {
                                         'build/kernel/gen_headers/**',
                                         'build/kernel/generated/**',
                                         'build/os_system/**',
+                                        'src/system/**' // PROJECT_DIR
                                       ].join(',')
                         )
                         cleanWs()
@@ -421,21 +422,36 @@ pipeline {
 
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                         {
-                            dir('src/test/tests')
+
+                            dir('test-logs')
                             {
-                                run_app(
-                                    'pytest',
-                                    [
-                                        '-v',
-                                        // '--capture=no',  // show printf() from python scripts in console
-                                        '--proxy=../../../src/sdk/bin/proxy_app,TCP',
-                                        '--target=' + PLATFORM,
-                                        '--system_image=../../../build/images/capdl-loader-image-arm-' + PLATFORM,
-                                        '--log_dir=../../../test-logs',
-                                        '--junitxml=../../../test_results.xml',
-                                        TEST_SCRIPT
-                                    ]
-                                )
+                                script
+                                {
+                                    def prepareTestSystem = '../src/system/prepare_test.sh'
+                                    if (fileExists(prepareTestSystem))
+                                    {
+                                        run_shell_script(
+                                            prepareTestSystem,
+                                            ['../src/sdk'])
+                                    }
+                                }
+
+                                withEnv(
+                                    ['PYTHONPATH=../src/test/common:../src/test/tests'])
+                                {
+                                    run_app(
+                                        'pytest',
+                                        [
+                                            '-v',
+                                            // '--capture=no',  // show printf() from python scripts in console
+                                            '--proxy=../src/sdk/bin/proxy_app,TCP',
+                                            '--target=' + PLATFORM,
+                                            '--system_image=../build/images/capdl-loader-image-arm-' + PLATFORM,
+                                            '--junitxml=../test_results.xml',
+                                            '../src/test/tests/' + TEST_SCRIPT
+                                        ]
+                                    )
+                                }
                             }
                         }
                     }
