@@ -98,7 +98,15 @@ def do_notify_bitbucket()
     }
     else
     {
-        node { notifyBitbucket() }
+        // If we don't specify any node here explicitly, it will not run on the
+        // master node even it if is free, because the master is reserved
+        // exclusively for bound jobs. Then the job is stuck just for sending a
+        // notification much longer than necessary - and in the worst case it
+        // becomes a cleanup candidate before the parent job was able to
+        // collect the results. This would not happen if we were using an
+        // artifact server ... but until then, we use the master node for the
+        // notification
+        node('pipeline-control') { notifyBitbucket() }
     }
 }
 
