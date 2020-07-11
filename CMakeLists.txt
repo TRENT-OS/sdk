@@ -128,6 +128,37 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
+# this must be a macro because we allow the CMakesFile to define variables that
+# can be used in the build later. It might be better not to allow this and
+# require the component to find a way how they can handle their specific needs
+# on their own.
+macro(include_os_components)
+
+    if (SDK_USE_CAMKES)
+
+        CAmkESAddCPPInclude(${OS_COMPONENTS_DIR})
+        CAmkESAddImportPath(${OS_COMPONENTS_DIR})
+
+    endif()
+
+    # include every sub-folder in OS_COMPONENTS_DIR except 3rdParty
+    file(
+        GLOB
+        OS_COMPONENTS_SUBDIRS
+        RELATIVE
+        "${OS_COMPONENTS_DIR}"
+        "${OS_COMPONENTS_DIR}/*")
+
+    foreach(OS_COMPONENTS_SUBDIR ${OS_COMPONENTS_SUBDIRS})
+
+        include("${OS_COMPONENTS_DIR}/${OS_COMPONENTS_SUBDIR}/CMakeLists.txt")
+
+    endforeach()
+
+endmacro()
+
+
+#-------------------------------------------------------------------------------
 # provide a way how libraries can create a documentation build target. Their
 # Doxyfile use DOXYGEN_OUTPUT_DIR env variable. The macro has two string
 # parameters that accept shell script snippets that will run a pre and post
@@ -372,14 +403,6 @@ macro(os_sdk_build system_project_dir)
         setup_sel4_camkes_build_system()
         setup_sel4_global_components()
 
-        CAmkESAddCPPInclude(
-            ${OS_COMPONENTS_DIR}
-        )
-
-        CAmkESAddImportPath(
-            ${OS_COMPONENTS_DIR}
-        )
-
     endif()
 
     # linting does not work on seL4/CAmkES code, thus we define details here,
@@ -393,16 +416,7 @@ macro(os_sdk_build system_project_dir)
 
     # we include the components even if CAmkES is not enabled, because the may
     # provide library code that native systems can use.
-    include("${OS_COMPONENTS_DIR}/ChanMux/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/CryptoServer/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/NIC_ChanMux/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/ChanMux_Storage/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/RamDisk/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/NIC_Dummy/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/TlsServer/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/TimeServer/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/UART/CMakeLists.txt")
-    include("${OS_COMPONENTS_DIR}/EntropySource/CMakeLists.txt")
+    include_os_components()
 
 
     #---------------------------------------------------------------------------
