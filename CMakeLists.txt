@@ -103,33 +103,17 @@ endfunction()
 #-------------------------------------------------------------------------------
 macro(add_os_libs_subdirectories)
 
-    # ToDo: eventually, we want to simply include every sub-folder in
-    #       ${OS_LIBS_DIR}, because they are all supposed to hold libs.
-    #       Currently we have some duplicate libs in there due to the recent
-    #       renaming, so we can use this:
-    #
-    #   file(GLOB OS_LIBS_SUBDIRS RELATIVE "${OS_LIBS_DIR}" "${OS_LIBS_DIR}/*")
-    #
-    # Instead, we manually define the list
-    set(OS_LIBS_SUBDIRS
-            "os_core_api"
-            "os_libs"
-            "os_crypto"
-            "os_cert"
-            "os_partition_manager"
-            "os_filesystem_core"
-            "os_filesystem_fat"
-            "os_filesystem_spiffs"
-            "os_keystore"
-            "os_configuration"
-            "os_logger"
-            "os_network_stack"
-            "os_tls"
-            "chanmux"
-            "chanmux_nic_driver"
-            "3rdParty/tinyframe"
-            "3rdParty/mbedtls"
+    # include every sub-folder in OS_LIBS_DIR except 3rdParty, there we include
+    # all subfolders.
+    file(
+        GLOB
+        OS_LIBS_SUBDIRS
+        RELATIVE
+        "${OS_LIBS_DIR}"
+        "${OS_LIBS_DIR}/*" "${OS_LIBS_DIR}/3rdParty/*"
     )
+
+    list(REMOVE_ITEM OS_LIBS_SUBDIRS 3rdParty)
 
     foreach(OS_LIB_SUBDIR ${OS_LIBS_SUBDIRS})
 
