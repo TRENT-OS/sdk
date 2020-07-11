@@ -394,9 +394,7 @@ macro(os_sdk_build system_project_dir)
         )
 
         CAmkESAddImportPath(
-            ${OS_LIBS_DIR}/os_core_api/camkes
             ${OS_COMPONENTS_DIR}
-            ${OS_LIBS_DIR}/chanmux/camkes
         )
 
     endif()
