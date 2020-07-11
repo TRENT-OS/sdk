@@ -309,6 +309,10 @@ macro(os_sdk_build system_project_dir)
 
     if (SDK_USE_CAMKES)
 
+        # we require that the CCAmkES files are run through the C pre processor
+        # first, so the includes and macros get resolved
+        set(CAmkESCPP ON CACHE BOOL "" FORCE)
+
         setup_sel4_camkes_build_system()
 
         setup_sel4_global_components()
