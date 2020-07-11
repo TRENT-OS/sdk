@@ -358,7 +358,7 @@ pipeline {
                             includes: [ 'build/camkes-tool/libsel4camkes/gen_config/**',
                                         'build/capdl/capdl-loader-app/gen_config/**',
                                         'build/elfloader/elfloader',
-                                        'build/images/*-' + PLATFORM,
+                                        'build/images/os_image.bin',
                                         'build/kernel/kernel_all.c',
                                         'build/kernel/kernel_all.i',
                                         'build/kernel/kernel.elf',
@@ -446,7 +446,7 @@ pipeline {
                                             // '--capture=no',  // show printf() from python scripts in console
                                             '--proxy=../src/sdk/bin/proxy_app,TCP',
                                             '--target=' + PLATFORM,
-                                            '--system_image=../build/images/capdl-loader-image-arm-' + PLATFORM,
+                                            '--system_image=../build/images/os_image.bin',
                                             '--junitxml=../test_results.xml',
                                             '../src/test/tests/' + TEST_SCRIPT
                                         ]
@@ -474,7 +474,7 @@ pipeline {
                                 'test_results.xml',
                                 'build/capdl/capdl-loader-app/gen_config/',
                                 'build/elfloader/elfloader',
-                                'build/images/',
+                                'build/images/os_image.bin',
                                 'build/kernel/kernel_all.c',
                                 'build/kernel/kernel_all.i',
                                 'build/kernel/kernel.elf',

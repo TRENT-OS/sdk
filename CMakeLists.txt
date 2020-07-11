@@ -301,6 +301,22 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
         endif()
 
+        # copy system image to the generic file images/os_image.bin
+        if(target STREQUAL "rootserver_image")
+
+            add_custom_command(
+                TARGET ${target}
+                POST_BUILD
+                COMMAND
+                    ${CMAKE_COMMAND} -E copy
+                    "$<TARGET_PROPERTY:rootserver_image,IMAGE_NAME>"
+                    images/os_image.bin
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+                VERBATIM
+            )
+
+        endif()
+
     endforeach()
 
 endmacro()
