@@ -84,7 +84,6 @@ macro(add_os_libs_subdirectories)
 
     endforeach()
 
-
 endmacro()
 
 
@@ -361,9 +360,7 @@ macro(os_sdk_build system_project_dir)
 
     if (SDK_USE_CAMKES)
 
-        CAmkESAddCPPInclude(
-            ${SYSTEM_PROJECT_DIR}
-        )
+        CAmkESAddCPPInclude(${SYSTEM_PROJECT_DIR})
 
     endif()
 
