@@ -386,7 +386,6 @@ macro(os_sdk_build system_project_dir)
         set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
         setup_sel4_camkes_build_system()
-
         setup_sel4_global_components()
 
         CAmkESAddCPPInclude(
