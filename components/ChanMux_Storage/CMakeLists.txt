@@ -28,7 +28,7 @@ set(
 #   <name>
 #     required, component instance name
 #
-macro(DeclareCAmkESComponent_ChanMux_Storage
+function(DeclareCAmkESComponent_ChanMux_Storage
     name
 )
 
@@ -44,4 +44,4 @@ macro(DeclareCAmkESComponent_ChanMux_Storage
             proxy_nvm
     )
 
-endmacro()
+endfunction()

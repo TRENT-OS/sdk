@@ -32,7 +32,7 @@ set(
 #   <system_config_lib>
 #       system config library with definition for RAMDISK_SIZE_BYTES
 #
-macro(DeclareCAmkESComponent_RamDisk
+function(DeclareCAmkESComponent_RamDisk
     name
     system_config_lib
 )
@@ -49,4 +49,4 @@ macro(DeclareCAmkESComponent_RamDisk
             os_libs
     )
 
-endmacro()
+endfunction()

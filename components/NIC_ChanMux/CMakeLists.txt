@@ -36,7 +36,7 @@ set(
 #     ChanMux data channel ID
 #
 
-macro(DeclareCAmkESComponent_NIC_ChanMux
+function(DeclareCAmkESComponent_NIC_ChanMux
     name
     channel_ctrl
     channel_data
@@ -57,4 +57,4 @@ macro(DeclareCAmkESComponent_NIC_ChanMux
             chanmux_nic_driver
     )
 
-endmacro()
+endfunction()

@@ -43,7 +43,7 @@ endif()
 #   <system_config_lib>
 #       system config library
 #
-macro(DeclareCAmkESComponent_ChanMux
+function(DeclareCAmkESComponent_ChanMux
     name
     config_file
     system_config_lib
@@ -64,4 +64,4 @@ macro(DeclareCAmkESComponent_ChanMux
             chanmux_server
     )
 
-endmacro()
+endfunction()

@@ -29,7 +29,7 @@ set(
 #   <name>
 #       component instance name
 #
-macro(DeclareCAmkESComponent_UART
+function(DeclareCAmkESComponent_UART
     name
 )
 
@@ -45,4 +45,4 @@ macro(DeclareCAmkESComponent_UART
             platsupport
     )
 
-endmacro()
+endfunction()

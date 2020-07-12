@@ -101,7 +101,7 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-macro(add_os_libs_subdirectories)
+function(add_os_libs_subdirectories)
 
     # include every sub-folder in OS_LIBS_DIR except 3rdParty, there we include
     # all subfolders.
@@ -124,15 +124,11 @@ macro(add_os_libs_subdirectories)
 
     endforeach()
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------
-# this must be a macro because we allow the CMakesFile to define variables that
-# can be used in the build later. It might be better not to allow this and
-# require the component to find a way how they can handle their specific needs
-# on their own.
-macro(include_os_components)
+function(include_os_components)
 
     if (SDK_USE_CAMKES)
 
@@ -151,11 +147,13 @@ macro(include_os_components)
 
     foreach(OS_COMPONENTS_SUBDIR ${OS_COMPONENTS_SUBDIRS})
 
+        # since we run in a function, this include can't modify any variables
+        # in our scope. It can just add and modify global (cached) variables.
         include("${OS_COMPONENTS_DIR}/${OS_COMPONENTS_SUBDIR}/CMakeLists.txt")
 
     endforeach()
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------

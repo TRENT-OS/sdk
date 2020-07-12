@@ -29,7 +29,7 @@ set(
 #   <name>
 #       component instance name
 #
-macro(DeclareCAmkESComponent_NIC_Dummy
+function(DeclareCAmkESComponent_NIC_Dummy
     name
 )
 
@@ -45,4 +45,4 @@ macro(DeclareCAmkESComponent_NIC_Dummy
             os_libs
     )
 
-endmacro()
+endfunction()
