@@ -1,6 +1,6 @@
 /* Copyright (C) 2020, HENSOLDT Cyber GmbH
  *
- * Driver for the Volatile Memory storage (RamDisk)
+ * Driver for the Volatile Memory storage (RAM Disk)
  */
 #include "OS_Error.h"
 #include "system_config.h"
@@ -104,7 +104,7 @@ storage_rpc_erase(
     //   anything (e.g. zeros) there. Reading from wiped space my return
     //   deterministic data (e.g. zeros) or not, details depend on the SSD.
     //
-    // Instead of returning  OS_ERROR_NOT_IMPLEMENTED or OS_ERROR_NOT_SUPPORTED
+    // Instead of returning OS_ERROR_NOT_IMPLEMENTED or OS_ERROR_NOT_SUPPORTED
     // here, we implement erase() as writing all bits to 1, which mimics a
     // classic EEPROM behavior.
     memset(&storage[offset], 0xFF, size);

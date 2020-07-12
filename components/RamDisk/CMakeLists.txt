@@ -1,5 +1,5 @@
 #
-# Ram Disk
+# RAM Disk
 #
 # Copyright (C) 2020, Hensoldt Cyber GmbH
 #
