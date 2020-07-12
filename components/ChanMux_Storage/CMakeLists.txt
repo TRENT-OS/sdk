@@ -16,6 +16,13 @@ set(COMPONENT_CHANMUX_STORAGE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+# Declare ChanMux Storage Driver CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#     required, component instance name
+#
 macro(DeclareCAmkESComponent_ChanMux_Storage
     name
 )

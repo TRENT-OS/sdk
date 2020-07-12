@@ -16,6 +16,14 @@ set(COMPONENT_UART_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+#
+# Declare UART driver CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#       component instance name
+#
 macro(DeclareCAmkESComponent_UART
     name
 )

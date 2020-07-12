@@ -16,6 +16,17 @@ set(COMPONENT_RAM_DISK_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+#
+# Declare RAM Disk CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#       component instance name
+#
+#   <system_config_lib>
+#       system config library with definition for RAMDISK_SIZE_BYTES
+#
 macro(DeclareCAmkESComponent_RamDisk
     name
     system_config_lib

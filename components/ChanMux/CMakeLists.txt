@@ -24,6 +24,20 @@ set(COMPONENT_CHANMUX_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+#
+# Declare ChanMux CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#       component instance name
+#
+#   <config_file>
+#       C file with ChanMux configuration
+#
+#   <system_config_lib>
+#       system config library
+#
 macro(DeclareCAmkESComponent_ChanMux
     name
     config_file

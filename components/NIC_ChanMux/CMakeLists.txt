@@ -16,6 +16,21 @@ set(COMPONENT_NIC_CHANMUX_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+#
+# Declare ChanMux NIC Driver CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#     component instance name
+#
+#   <channel_ctrl>
+#     ChanMux control channel ID
+#
+#   <channel_data>
+#     ChanMux data channel ID
+#
+
 macro(DeclareCAmkESComponent_NIC_ChanMux
     name
     channel_ctrl

@@ -16,6 +16,14 @@ set(COMPONENT_NIC_DUMMY_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
 #-------------------------------------------------------------------------------
+#
+# Declare Dummy NIC CAmkES Component
+#
+# Parameters:
+#
+#   <name>
+#       component instance name
+#
 macro(DeclareCAmkESComponent_NIC_Dummy
     name
 )
