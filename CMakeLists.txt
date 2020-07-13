@@ -391,7 +391,7 @@ macro(os_sdk_build system_project_dir)
 
     if (SDK_USE_CAMKES)
 
-        # we require that the CCAmkES files are run through the C pre processor
+        # we require that the CAmkES files are run through the C pre processor
         # first, so the includes and macros get resolved
         set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
@@ -409,7 +409,7 @@ macro(os_sdk_build system_project_dir)
 
     add_os_libs_subdirectories()
 
-    # we include the components even if CAmkES is not enabled, because the may
+    # we include the components even if CAmkES is not enabled, because they may
     # provide library code that native systems can use.
     include_os_components()
 
