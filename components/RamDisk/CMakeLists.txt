@@ -15,7 +15,11 @@ cmake_minimum_required(VERSION 3.7.2)
 set(COMPONENT_RAM_DISK_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_RamDisk name system_config_lib)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_RamDisk
+    name
+    system_config_lib
+)
 
     DeclareCAmkESComponent(
         ${name}
@@ -27,6 +31,6 @@ macro(DeclareCAmkESComponent_RamDisk name system_config_lib)
             ${system_config_lib}
             os_core_api
             os_libs
-)
+    )
 
 endmacro()

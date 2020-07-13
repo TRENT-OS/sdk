@@ -15,7 +15,10 @@ cmake_minimum_required(VERSION 3.7.2)
 set(COMPONENT_CHANMUX_STORAGE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_ChanMux_Storage name)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_ChanMux_Storage
+    name
+)
 
     DeclareCAmkESComponent(
         ${name}
@@ -27,6 +30,6 @@ macro(DeclareCAmkESComponent_ChanMux_Storage name)
             os_core_api
             os_libs
             proxy_nvm
-)
+    )
 
 endmacro()

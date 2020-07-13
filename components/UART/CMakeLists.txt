@@ -15,7 +15,10 @@ cmake_minimum_required(VERSION 3.7.2)
 set(COMPONENT_UART_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_UART name)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_UART
+    name
+)
 
     DeclareCAmkESComponent(
         ${name}

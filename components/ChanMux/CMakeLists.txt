@@ -23,7 +23,12 @@ endif()
 set(COMPONENT_CHANMUX_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_ChanMux name config_file system_config_lib)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_ChanMux
+    name
+    config_file
+    system_config_lib
+)
 
     DeclareCAmkESComponent(
         ${name}

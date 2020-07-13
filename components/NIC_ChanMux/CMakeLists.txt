@@ -15,7 +15,12 @@ cmake_minimum_required(VERSION 3.7.2)
 set(COMPONENT_NIC_CHANMUX_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_NIC_ChanMux name channel_ctrl channel_data)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_NIC_ChanMux
+    name
+    channel_ctrl
+    channel_data
+)
 
     DeclareCAmkESComponent(
         ${name}

@@ -15,7 +15,10 @@ cmake_minimum_required(VERSION 3.7.2)
 set(COMPONENT_NIC_DUMMY_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 
-macro(DeclareCAmkESComponent_NIC_Dummy name)
+#-------------------------------------------------------------------------------
+macro(DeclareCAmkESComponent_NIC_Dummy
+    name
+)
 
     DeclareCAmkESComponent(
         ${name}
