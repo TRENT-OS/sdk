@@ -43,15 +43,6 @@
 [submodule "libs/os_crypto"]
 	path = libs/os_crypto
 	url = ../../seos/crypto.git
-[submodule "libs/os_filesystem_core"]
-	path = libs/os_filesystem_core
-	url = ../../seos/filesystem_core.git
-[submodule "libs/os_filesystem_fat"]
-	path = libs/os_filesystem_fat
-	url = ../../seos/filesystem_fat_lib.git
-[submodule "libs/os_filesystem_spiffs"]
-	path = libs/os_filesystem_spiffs
-	url = ../../seos/filesystem_spiffs_lib.git
 [submodule "libs/os_keystore"]
 	path = libs/os_keystore
 	url = ../../seos/keystore.git
@@ -61,9 +52,6 @@
 [submodule "libs/os_logger"]
 	path = libs/os_logger
 	url = ../../seos/logger.git
-[submodule "libs/os_partition_manager"]
-	path = libs/os_partition_manager
-	url = ../../seos/partition_manager.git
 [submodule "libs/os_tls"]
 	path = libs/os_tls
 	url = ../../seos/tls.git
