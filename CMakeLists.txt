@@ -214,16 +214,16 @@ macro(os_sdk_build_doc)
     add_custom_target( os_sdk_doc )
 
     add_dependencies( os_sdk_doc
-        os_core_api_doc
         os_chanmux_doc
-        os_libs_doc
-        os_crypto_doc
         os_configuration_doc
-        os_tls_doc
+        os_core_api_doc
+        os_crypto_doc
         os_filesystem_doc
         os_keystore_doc
-        os_network_stack_doc
+        os_libs_doc
         os_logger_doc
+        os_network_stack_doc
+        os_tls_doc
     )
 
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/os-api-index.html
