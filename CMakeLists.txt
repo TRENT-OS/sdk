@@ -214,7 +214,9 @@ macro(os_sdk_build_doc)
     add_custom_target( os_sdk_doc )
 
     add_dependencies( os_sdk_doc
+        os_cert_doc
         os_chanmux_doc
+        os_chanmux_nic_driver_doc
         os_configuration_doc
         os_core_api_doc
         os_crypto_doc
@@ -232,22 +234,17 @@ macro(os_sdk_build_doc)
         "  <head></head>\n"
         "  <body>\n"
         "    <ul>\n"
+        "    <li><a href=\"os_cert/index.html\">Certificate Parser</a></li>\n"
+        "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
+        "    <li><a href=\"chanmux_nic_driver/index.html\">ChanMux Network Interface Driver</a></li>\n"
+        "    <li><a href=\"os_configuration/index.html\">ConfigService</a></li>\n"
         "    <li><a href=\"os_core_api/index.html\">Core API</a></li>\n"
         "    <li><a href=\"os_crypto/index.html\">Crypto</a></li>\n"
-        "    <li><a href=\"os_configuration/index.html\">ConfigService</a></li>\n"
-        "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
-        "    <li>\n"
-        "        <a href=\"os_filesystem_core/index.html\">Filesystem Core</a>\n"
-        "        <ul>\n"
-        "        <li><a href=\"os_filesystem_fat/index.html\">Filesystem FAT</a></li>\n"
-        "        <li><a href=\"os_filesystem_spiffs/index.html\">Filesystem SPIFFS</a></li>\n"
-        "        </ul>\n"
-        "    </li>\n"
+        "    <li><a href=\"os_filesystem/index.html\">Filesystem</a></li>\n"
         "    <li><a href=\"os_keystore/index.html\">Keystore</a></li>\n"
         "    <li><a href=\"os_libs/index.html\">Libs</a></li>\n"
         "    <li><a href=\"os_logger/index.html\">Logger</a></li>\n"
         "    <li><a href=\"os_network_stack/index.html\">Network Stack</a></li>\n"
-        "    <li><a href=\"os_partition_manager/index.html\">Partition Manager</a></li>\n"
         "    </ul>\n"
         "  </body>\n"
         "</html>\n"
