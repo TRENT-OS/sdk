@@ -221,11 +221,7 @@ macro(os_sdk_build_doc)
         os_configuration_doc
         os_tls_doc
         os_keystore_doc
-        os_filesystem_spiffs_doc
         os_network_stack_doc
-        os_filesystem_core_doc
-        os_filesystem_fat_doc
-        os_partition_manager_doc
         os_logger_doc
     )
 
