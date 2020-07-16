@@ -3,6 +3,10 @@
  * Driver for the Volatile Memory storage (RAM Disk)
  */
 #include "OS_Error.h"
+
+#include "LibUtil/RleCompressor.h"
+#include "LibDebug/Debug.h"
+
 #include "system_config.h"
 
 #include <stdint.h>
@@ -11,6 +15,9 @@
 
 static uint8_t storage[RAMDISK_SIZE_BYTES] = { 0u };
 
+// The RamDisk can be linked with
+extern uint8_t __attribute__((weak)) RAMDISK_IMAGE[];
+extern size_t  __attribute__((weak)) RAMDISK_IMAGE_SIZE;
 
 //------------------------------------------------------------------------------
 static
@@ -138,4 +145,34 @@ storage_rpc_getState(
 {
     *flags = 0U;
     return OS_ERROR_NOT_SUPPORTED;
+}
+
+//------------------------------------------------------------------------------
+// RamDisk can be linked with an IMAGE, which we decompress here into the
+// storage space
+void
+post_init(void)
+{
+    size_t sz = 0;
+    size_t diskSz = sizeof(storage);
+    uint8_t* ptr = storage;
+
+    Debug_LOG_INFO("RamDisk has size of %zu bytes", diskSz);
+
+    if (RAMDISK_IMAGE && RAMDISK_IMAGE_SIZE)
+    {
+        Debug_LOG_INFO("RamDisk is linked with image of %zu bytes",
+                       RAMDISK_IMAGE_SIZE);
+        OS_Error_t  err;
+        if ((err = RleCompressor_decompress(RAMDISK_IMAGE_SIZE,
+                                            RAMDISK_IMAGE,
+                                            diskSz,
+                                            &sz,
+                                            &ptr)) != OS_SUCCESS)
+        {
+            Debug_LOG_ERROR("RleCompressor_decompress() failed with %i", err);
+            return;
+        }
+        Debug_LOG_INFO("RamDisk initialized with %zu byte from predefined image", sz);
+    }
 }

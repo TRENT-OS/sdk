@@ -37,10 +37,26 @@ function(DeclareCAmkESComponent_RamDisk
     system_config_lib
 )
 
+    # Let pass an IMAGE parameter, which contains an RLE-encoded buffer with
+    # a RamDisk image; this parameter is optional though
+    cmake_parse_arguments(
+        PARSE_ARGV
+        2
+        RAMDISK
+        ""
+        "IMAGE"
+        ""
+    )
+
+    if(DEFINED RAMDISK_IMAGE)
+        message(STATUS "Building RamDisk with image ${RAMDISK_IMAGE}")
+    endif(DEFINED RAMDISK_IMAGE)
+
     DeclareCAmkESComponent(
         ${name}
         SOURCES
             ${OS_COMPONENT_RamDisk_DIR}/RamDisk.c
+            ${RAMDISK_IMAGE}
         C_FLAGS
             -Wall -Werror
         LIBS
