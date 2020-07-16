@@ -7,25 +7,83 @@
 
 #pragma once
 
-#define DECLARE_CHANMUX_CHANNEL_INTERFACE(_component_to_connect_, _chan_name_) \
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR(_component_to_connect_, _chan_name_) \
     dataport  Buf                 _component_to_connect_ ##_## _chan_name_ ##_## portRead; \
     dataport  Buf                 _component_to_connect_ ##_## _chan_name_ ##_## portWrite; \
     emits     DataAvailableEvent  _component_to_connect_ ##_## _chan_name_ ##_## DataAvailable;
 
-#define DECLARE_CHANMUX_INTERFACE_USER(_chanmux_inst_) \
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_0()
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_1(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_0()
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_2(C, N, ...)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_1(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_3(C, N, ...)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_2(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_4(C, N, ...)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_3(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_5(C, N, ...)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_4(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_6(C, N, ...)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_5(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_7(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_6(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_8(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_7(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_9(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_8(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_10(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_9(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_11(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_10(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_12(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_11(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_13(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_12(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_14(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_13(__VA_ARGS__)
+#define ChanMux_DECLARE_CHANNEL_CONNECTOR_15(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR(C, N)\
+    ChanMux_DECLARE_CHANNEL_CONNECTOR_14(__VA_ARGS__)
+
+#define ChanMux_DECLARE_UPPER_CONNECTORS_GET_MACRO(\
+    _0,_1,_1_,_2,_2_,_3,_3_,_4,_4_,_5,_5_,_6,_6_,_7,_7_,\
+    _8,_8_,_9,_9_,_10,_10_,_11,_11_,_12,_12_,_13,_13_,_14,_14_,_15,_15_,\
+    NAME, ...)\
+        ChanMux_DECLARE_CHANNEL_CONNECTOR ## NAME
+#define ChanMux_DECLARE_UPPER_CONNECTORS(...)\
+    ChanMux_DECLARE_UPPER_CONNECTORS_GET_MACRO(\
+    __VA_ARGS__,\
+    _15,_15,_14,_14,_13,_13,_12,_12,_11,_11,_10,_10,_9,_9,_8,_8,\
+    _7,_7,_6,_6,_5,_5,_4,_4,_3,_3,_2,_2,_1,_1)(__VA_ARGS__)
+
+#define ChanMux_CLIENT_DECLARE_INTERFACE(_chanmux_inst_) \
     uses        ChanMuxDriverInf    _chanmux_inst_ ## _Rpc;
 
-#define DECLARE_CHANMUX_CHANNEL_CONNECTOR(_chanmux_inst_, _chan_name_) \
+#define ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(_chanmux_inst_, _chan_name_) \
     dataport    Buf                 _chanmux_inst_ ##_## _chan_name_ ##_## portRead; \
     dataport    Buf                 _chanmux_inst_ ##_## _chan_name_ ##_## portWrite; \
     consumes    DataAvailableEvent  _chanmux_inst_ ##_## _chan_name_ ##_## EventHasData;
 
-#define CHANMUX_INSTANCE_CONNECT_INTERFACE(_chanmux_inst_, _component_to_connect_) \
+#define ChanMux_INSTANCE_CONNECT_INTERFACE(_chanmux_inst_, _component_to_connect_) \
     connection seL4RPCCall _component_to_connect_ ##_## _chanmux_inst_ ##_## rpc( \
         from    _component_to_connect_._chanmux_inst_ ##_## Rpc, \
         to      _chanmux_inst_.ChanMuxRpc); \
 
-#define CHANMUX_INSTANCE_CONNECT_CHANNEL(_chanmux_inst_, _component_to_connect_, _chan_name_) \
+#define ChanMux_INSTANCE_CONNECT_CHANNEL(_chanmux_inst_, _component_to_connect_, _chan_name_) \
     connection seL4SharedData _component_to_connect_ ##_## _chanmux_inst_ ##_## _chan_name_ ##_## portWrite( \
         from    _component_to_connect_._chanmux_inst_ ##_## _chan_name_ ##_## portWrite, \
         to      _chanmux_inst_._component_to_connect_ ##_## _chan_name_ ##_## portWrite); \
@@ -36,5 +94,5 @@
         from    _chanmux_inst_._component_to_connect_ ##_## _chan_name_ ##_## DataAvailable, \
         to      _component_to_connect_._chanmux_inst_ ##_## _chan_name_ ##_## EventHasData);
 
-#define CHANMUX_ASSIGN_CLIENT_BADGE(_chanmux_inst_, _component_to_connect_, _badge_value_) \
+#define ChanMux_ASSIGN_CLIENT_BADGE(_chanmux_inst_, _component_to_connect_, _badge_value_) \
     _component_to_connect_._chanmux_inst_ ## _Rpc_attributes = _badge_value_;

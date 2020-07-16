@@ -26,9 +26,9 @@ import <if_OS_Nic.camkes>;
         has              mutex               mutex_ctrl_channel; \
         \
         /* lower interface to ChanMux ------------------------------------- */ \
-        DECLARE_CHANMUX_INTERFACE_USER(chanMux) \
-        DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, ctrl) \
-        DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, data) \
+        ChanMux_CLIENT_DECLARE_INTERFACE(chanMux) \
+        ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(chanMux, ctrl) \
+        ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(chanMux, data) \
         \
         /* upper interface as NIC Driver ---------------------------------- */ \
         provides         if_OS_Nic           nic_rpc; \

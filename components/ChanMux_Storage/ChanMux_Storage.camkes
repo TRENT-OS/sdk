@@ -24,6 +24,6 @@ component ChanMux_Storage
     dataport Buf            storage_port; //!< Storage interface data port.
 
     // ChanMux interface
-    DECLARE_CHANMUX_INTERFACE_USER(chanMux)
-    DECLARE_CHANMUX_CHANNEL_CONNECTOR(chanMux, chan)
+    ChanMux_CLIENT_DECLARE_INTERFACE(chanMux)
+    ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(chanMux, chan)
 }

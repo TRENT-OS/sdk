@@ -10,52 +10,54 @@ import <if_ChanMux.camkes>;
 
 // platform specific defaults
 #include "ChanMux_plat_defaults.camkes"
+#include "ChanMuxHelper.camkes"
 
 //------------------------------------------------------------------------------
 // Component definitions
+#define ChanMux_DECLARE_BODY()\
+    control;\
+    /*-------------------------------------------------*/\
+    /* generic upper interface */\
+    provides      ChanMuxDriverInf    ChanMuxRpc;\
+\
+    /*-------------------------------------------------*/\
+    /* lower interface to underlying layer */\
+    uses          BlockingWriteInf     UnderlyingChan_Rpc;\
+    dataport      Buf                  UnderlyingChan_inputDataport;\
+    dataport      Buf                  UnderlyingChan_outputFifoDataport;\
+    consumes      EventDataAvailable   UnderlyingChan_EventHasData;\
 
-#if !defined(CHANMUX_COMPONENT_NAME)
-#error "define CHANMUX_COMPONENT_NAME"
-#endif
-#undef CHANMUX_COMPONENT_NAME_helper
-#define CHANMUX_COMPONENT_NAME_helper       CHANMUX_COMPONENT_NAME
-
-#if !defined(CHANMUX_UPPER_INTERFACES)
-#error "define CHANMUX_UPPER_INTERFACES"
-#endif
-#undef CHANMUX_UPPER_INTERFACES_helper
-#define CHANMUX_UPPER_INTERFACES_helper     CHANMUX_UPPER_INTERFACES
-
-component CHANMUX_COMPONENT_NAME_helper {
-    control;
-    //-------------------------------------------------
-    // generic upper interface
-    provides      ChanMuxDriverInf    ChanMuxRpc;
-
-    //-------------------------------------------------
-    // lower interface to underlying layer
-    uses          BlockingWriteInf     UnderlyingChan_Rpc;
-    dataport      Buf                  UnderlyingChan_inputDataport;
-    dataport      Buf                  UnderlyingChan_outputFifoDataport;
-    consumes      EventDataAvailable   UnderlyingChan_EventHasData;
-
-    //-------------------------------------------------
-    // upper interfaces
-    #include CHANMUX_UPPER_INTERFACES_helper
-
+#define ChanMux_DEFINE_COMPONENT(_name_, ...)\
+/* variable argument here is a list of pairs client_instance_name-channel_name
+ * would identify uniquely a channel */\
+component _name_ {\
+    ChanMux_DECLARE_BODY()\
+\
+    /* upper interfaces */\
+    ChanMux_DECLARE_UPPER_CONNECTORS(__VA_ARGS__)\
 }
 
-#undef CHANMUX_COMPONENT_NAME_helper
-#undef CHANMUX_UPPER_INTERFACES_helper
-
+#define ChanMux_DEFINE_COMPONENT_WITH_LOGGER(_name_, ...)\
+/* variable argument here is a list of pairs client_instance_name-channel_name
+ * would identify uniquely a channel */\
+component _name_ {\
+    ChanMux_DECLARE_BODY()\
+\
+    /* upper interfaces */\
+    ChanMux_DECLARE_UPPER_CONNECTORS(__VA_ARGS__)\
+    /* interface to log server */\
+    dataport  Buf           LogServer_buf;\
+    uses      if_OS_Logger  LogServer_rpc;\
+    attribute int           log_lvl;\
+}
 
 //------------------------------------------------------------------------------
 // Interface definitions
 
 // ensure we define this only once if this file in included multiple times
-#if !defined(DECLARE_AND_CONNECT_INSTANCE_CHANMUX)
+#if !defined(ChanMux_DECLARE_AND_CONNECT_INSTANCE)
 
-#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX(_name_, _inst_, _UnderlyingChan_rpc_, _UnderlyingChan_inputDataport_, _UnderlyingChan_outputFifoDataport_, _UnderlyingChan_data_available_) \
+#define ChanMux_DECLARE_AND_CONNECT_INSTANCE(_name_, _inst_, _UnderlyingChan_rpc_, _UnderlyingChan_inputDataport_, _UnderlyingChan_outputFifoDataport_, _UnderlyingChan_data_available_) \
     component   _name_          _inst_; \
     \
     connection  seL4RPCCall     _name_ ## _ ## _inst_ ## _UnderlyingChan_rpc( \
@@ -72,13 +74,21 @@ component CHANMUX_COMPONENT_NAME_helper {
     \
     connection  seL4Notification _name_ ## _UnderlyingChan ## _inst_ ## _notification( \
         from _UnderlyingChan_data_available_, \
-        to _inst_.UnderlyingChan_EventHasData);
+        to   _inst_.UnderlyingChan_EventHasData);
 #endif
 
-#define DECLARE_AND_CONNECT_INSTANCE_CHANMUX_TO_UART(_name_, _inst_, _uart_inst_) \
-DECLARE_AND_CONNECT_INSTANCE_CHANMUX( \
+#define ChanMux_DECLARE_AND_CONNECT_INSTANCE_TO_UART(_name_, _inst_, _uart_inst_) \
+ChanMux_DECLARE_AND_CONNECT_INSTANCE( \
             _name_, _inst_, \
             _uart_inst_.UartDrv, \
             _uart_inst_.Uart_inputDataport,\
             _uart_inst_.Uart_outputFifoDataport, \
             _uart_inst_.Uart_DataAvailable)
+
+#define ChanMux_CONNECT_TO_LOGSERVER(_inst_, _logserver_inst_, _log_server_interface_name_, _log_server_dataport_name_)\
+    connection  seL4RPCCall _inst_ ## _ ## _logserver_inst_ ## _ ## _LogServer_rpc(\
+        from _inst_.LogServer_rpc,\
+        to   _logserver_inst_._log_server_interface_name_);\
+    connection  seL4SharedData _inst_ ## _ ## _logserver_inst_ ## _ ## LogServer_buf(\
+        from _inst_.LogServer_buf,\
+        to   _logserver_inst_._log_server_dataport_name_);
