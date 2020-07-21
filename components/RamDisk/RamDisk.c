@@ -20,16 +20,47 @@ extern uint8_t __attribute__((weak)) RAMDISK_IMAGE[];
 extern size_t  __attribute__((weak)) RAMDISK_IMAGE_SIZE;
 
 //------------------------------------------------------------------------------
+/**
+ * @brief   Checks if given parameters are pointing to the valid area of the
+ *          storage.
+ *
+ * Depending on the context "size" is the `size_t` or `off_t`. If "size" refers
+ * to a buffer in memory, then it's `size_t`. If size refers to an area on a
+ * storage medium, then this can exceed `size_t`, because storage size is not
+ * bound to architectural memory limits. So if we check if it is a valid storage
+ * area and this is called from erase(), where no buffer is involved, size can
+ * be off_t also.
+ *
+ * As a consequence, this function should use `off_t` for size to answer the
+ * question if this is a valid storage are.
+ *
+ * The problem is that signed interger overflow is undefined in C, so we try to
+ * work around this.
+ *
+ * Furthermore, it seems there is no MAX_OFF_T define (which is a bit odd
+ * actually). Using "((off_t)(-1)) >> 1" does not work, as right shift of a
+ * negative signed number has implementation-defined behaviour, which means that
+ * the compiler will do something sensible, but in a platform-dependent manner
+ * i.e. the compiler documentation is supposed to tell you what.
+ */
 static
 bool
 isValidStorageArea(
-    size_t const offset,
-    size_t const size)
+    off_t const offset,
+    off_t const size    /* Argument is of type `off_t` on purpose so that the
+                            arbitrary large storage can be verified. */)
 {
-    size_t const end = offset + size;
+    // Casting to the biggest possible integer for overflow detection purposes.
+    uintmax_t const end = (uintmax_t)offset + (uintmax_t)size;
+
     // Checking integer overflow first. The end index is not part of the area,
-    // but we allow offset = end with size = 0 here
-    return ( (end >= offset) && (end <= sizeof(storage)) );
+    // but we allow offset = end with size = 0 here.
+    //
+    // We also do not accept negative offsets and sizes (`off_t` is signed).
+    return ((offset >= 0)
+            && (size >= 0)
+            && (end >= offset)
+            && (end <= sizeof(storage)));
 }
 
 
@@ -39,7 +70,7 @@ isValidStorageArea(
 OS_Error_t
 NONNULL_ALL
 storage_rpc_write(
-    size_t  const offset,
+    off_t   const offset,
     size_t  const size,
     size_t* const written)
 {
@@ -62,7 +93,7 @@ storage_rpc_write(
 OS_Error_t
 NONNULL_ALL
 storage_rpc_read(
-    size_t  const offset,
+    off_t   const offset,
     size_t  const size,
     size_t* const read)
 {
@@ -85,9 +116,9 @@ storage_rpc_read(
 OS_Error_t
 NONNULL_ALL
 storage_rpc_erase(
-    size_t  const offset,
-    size_t  const size,
-    size_t* const erased)
+    off_t  const offset,
+    off_t  const size,
+    off_t* const erased)
 {
     if (!isValidStorageArea(offset, size))
     {
@@ -127,7 +158,7 @@ storage_rpc_erase(
 OS_Error_t
 NONNULL_ALL
 storage_rpc_getSize(
-    size_t* const size)
+    off_t* const size)
 {
     *size = sizeof(storage);
 

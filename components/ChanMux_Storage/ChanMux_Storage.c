@@ -8,6 +8,7 @@
 #include "LibDebug/Debug.h"
 #include "ChanMuxNvmDriver.h"
 
+#include <inttypes.h>
 #include <camkes.h>
 
 static const ChanMuxClientConfig_t chanMuxClientConfig =
@@ -21,6 +22,13 @@ static const ChanMuxClientConfig_t chanMuxClientConfig =
 
 static ChanMuxNvmDriver chanMuxNvmDriver;
 static Nvm* storage;
+
+// Since signed offset (off_t) gets down casted to size_t, we need to verify
+// the correctness of this cast i.e. 0 <= offset <= max_size_t.
+static bool valueFitsIntoSize_t(off_t const offset)
+{
+    return (0 <= offset) && (offset <= SIZE_MAX);
+}
 
 void storage_rpc__init(void)
 {
@@ -43,44 +51,76 @@ void storage_rpc__init(void)
 
 OS_Error_t
 storage_rpc_write(
-    size_t  const offset,
+    off_t   const offset,
     size_t  const size,
     size_t* const written)
 {
+    if (!valueFitsIntoSize_t(offset))
+    {
+        Debug_LOG_ERROR(
+            "%s: Offset our of range. offset = 0x%" PRIxMAX, __func__, offset);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
     *written = storage->vtable->write(storage, offset, storage_port, size);
     return (size == *written) ? OS_SUCCESS : OS_ERROR_GENERIC;
 }
 
 OS_Error_t
 storage_rpc_read(
-    size_t  const offset,
+    off_t   const offset,
     size_t  const size,
     size_t* const read)
 {
+    if (!valueFitsIntoSize_t(offset))
+    {
+        Debug_LOG_ERROR(
+            "%s: Offset our of range. offset = 0x%" PRIxMAX, __func__, offset);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
     *read = storage->vtable->read(storage, offset, storage_port, size);
     return (size == *read) ? OS_SUCCESS : OS_ERROR_GENERIC;
 }
 
 OS_Error_t
 storage_rpc_erase(
-    size_t  const offset,
-    size_t  const size,
-    size_t* const erased)
+    off_t  const offset,
+    off_t  const size,
+    off_t* const erased)
 {
+    if (!valueFitsIntoSize_t(offset) || !valueFitsIntoSize_t(size))
+    {
+        Debug_LOG_ERROR(
+            "%s: `offset` or `size` out of range: "
+            "offset = 0x%" PRIxMAX ", "
+            "size = 0x%" PRIxMAX,
+            __func__,
+            offset,
+            size);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
     *erased = storage->vtable->erase(storage, offset, size);
     return (size == *erased) ? OS_SUCCESS : OS_ERROR_GENERIC;
 }
 
 OS_Error_t
-storage_rpc_getSize(size_t* const size)
+storage_rpc_getSize(off_t* const size)
 {
-    *size = storage->vtable->getSize(storage);
+    const size_t sizePriorToCast = storage->vtable->getSize(storage);
 
-    if (((size_t) -1) == *size)
+    // -1 is reserved for a generic error on the ChanMux side.
+    if (((size_t) -1) == sizePriorToCast)
     {
+        Debug_LOG_ERROR("%s: Unexpected error.", __func__);
         return OS_ERROR_GENERIC;
     }
 
+    *size = (off_t)sizePriorToCast;
     return OS_SUCCESS;
 }
 
