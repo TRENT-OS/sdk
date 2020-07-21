@@ -73,3 +73,6 @@
 [submodule "components/StorageServer"]
 	path = components/StorageServer
 	url = ../../sc/storageserver.git
+[submodule "components/NIC_RPi"]
+	path = components/NIC_RPi
+	url = ../../sc/nic_rpi.git
