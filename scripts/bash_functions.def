@@ -101,6 +101,8 @@ open_trentos_build_env()
         ${DOCKER_COMMON_ARGS[@]}
         # --tty Allocate a pseudo-TTY
         ${TTY}
+        # add the runtime GID used for the haskell tools
+        --group-add=stack
         # host name is container name with tag
         --hostname $(make_container_hostname ${TRENTOS_BUILD_CONTAINER})
         # parameters passed on the command line
