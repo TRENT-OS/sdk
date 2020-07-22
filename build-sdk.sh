@@ -142,6 +142,9 @@ function build_sdk_demos()
 {
     local SDK_SRC_DIR=$1
     local BUILD_DIR=$2
+    local TARGET=zynq7000
+    local PLAT=zynq7000
+    local ARCH=arm
 
     for SDK_DEMO_NAME in $(ls ${SDK_SRC_DIR}/demos) ; do
         print_info "Building SDK demo: ${SDK_DEMO_NAME}"
@@ -150,16 +153,22 @@ function build_sdk_demos()
         local SDK_DEMO_SRC=${SDK_DEMO_BASE}/src
         local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}
 
+        if [[ ${SDK_DEMO_NAME} =~ "rpi3" ]]; then
+            TARGET="rpi3"
+            PLAT="bcm2837"
+            ARCH="arm"
+        fi
+
         local BUILD_PARAMS=(
             ${SDK_DEMO_SRC}
-            zynq7000
+            ${TARGET}
             ${SDK_DEMO_OUT}
             -D CMAKE_BUILD_TYPE=Debug
         )
         ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
 
         mkdir ${SDK_DEMO_BASE}/bin
-        cp ${SDK_DEMO_OUT}/images/capdl-loader-image-arm-zynq7000 \
+        cp ${SDK_DEMO_OUT}/images/capdl-loader-image-${ARCH}-${PLAT} \
            ${SDK_DEMO_BASE}/bin
     done
 }
