@@ -16,16 +16,66 @@
 import <if_OS_Nic.camkes>;
 import <if_OS_Logger.camkes>;
 
-#define DECLARE_COMPONENT_NIC_Dummy(_name_) \
-    component _name_ { \
-        /* upper interface as NIC Driver ---------------------------------- */ \
-        provides         if_OS_Nic           nic_rpc; \
-        emits            EventDataAvailable  nic_event_hasData; \
-        dataport         Buf                 nic_port_to; /* driver -> network stack */  \
-        dataport         Buf                 nic_port_from; /* network stack -> driver */ \
-        \
-        /* usage of LogServer is optional ----------------------------------*/ \
-        maybe uses      if_OS_Logger        logServer_rpc; \
-        maybe dataport  Buf                 logServer_port; \
-        maybe consumes  EventReady          logServer_event_ready; \
+
+//------------------------------------------------------------------------------
+// Component
+
+#define DECLARE_COMPONENT_NIC_Dummy(                                    \
+    _name_)                                                             \
+                                                                        \
+    component _name_ {                                                  \
+        provides         if_OS_Nic              nic_rpc;                \
+        emits            EventDataAvailable     nic_event_hasData;      \
+        dataport         Buf                    nic_port_to;            \
+        dataport         Buf                    nic_port_from;          \
+                                                                        \
+        maybe uses      if_OS_Logger            logServer_rpc;          \
+        maybe dataport  Buf                     logServer_port;         \
+        maybe consumes  EventReady              logServer_event_ready;  \
     }
+
+
+//------------------------------------------------------------------------------
+// Instance Connection
+
+#define DECLARE_AND_CONNECT_INSTANCE_NIC_Dummy(         \
+    _name_,                                             \
+    _inst_,                                             \
+    _nic_rpc_,                                          \
+    _nic_dp_to_,                                        \
+    _nic_dp_from_,                                      \
+    _nic_ev_,                                           \
+    _log_rpc_,                                          \
+    _log_dp_)                                           \
+                                                        \
+    component   _name_  _inst_;                         \
+                                                        \
+    connection seL4NotificationNative                   \
+        _name_ ## _ ## _inst_ ## _nic_ev (              \
+            from    _inst_.nic_event_hasData,           \
+            to      _nic_ev_);                          \
+                                                        \
+    connection seL4RPCCall                              \
+        _name_ ## _ ## _inst_ ## _nic_rpc (             \
+            from    _nic_rpc_,                          \
+            to      _inst_.nic_rpc);                    \
+                                                        \
+    connection seL4SharedData                           \
+        _name_ ## _ ## _inst_ ## _nic_dp_from (         \
+            from    _inst_.nic_port_to,                 \
+            to      _nic_dp_from_);                     \
+                                                        \
+    connection seL4SharedData                           \
+        _name_ ## _ ## _inst_ ## _nic_dp_to(            \
+            from    _inst_.nic_port_from,               \
+            to      _nic_dp_to_);                       \
+                                                        \
+    connection seL4RPCCall                              \
+        _name_ ## _ ## _inst_ ## _log_rpc (             \
+            from    _inst_.logServer_rpc,               \
+            to      _log_rpc_);                         \
+                                                        \
+    connection seL4SharedData                           \
+        _name_ ## _ ## _inst_ ## _log_dp (              \
+            from    _inst_.logServer_port,              \
+            to      _log_dp_);
