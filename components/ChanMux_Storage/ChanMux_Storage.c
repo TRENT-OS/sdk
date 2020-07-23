@@ -55,6 +55,8 @@ storage_rpc_write(
     size_t  const size,
     size_t* const written)
 {
+    *written = 0U;
+
     if (!valueFitsIntoSize_t(offset))
     {
         Debug_LOG_ERROR(
@@ -73,6 +75,8 @@ storage_rpc_read(
     size_t  const size,
     size_t* const read)
 {
+    *read = 0U;
+
     if (!valueFitsIntoSize_t(offset))
     {
         Debug_LOG_ERROR(
@@ -91,6 +95,8 @@ storage_rpc_erase(
     off_t  const size,
     off_t* const erased)
 {
+    *erased = 0;
+
     if (!valueFitsIntoSize_t(offset) || !valueFitsIntoSize_t(size))
     {
         Debug_LOG_ERROR(

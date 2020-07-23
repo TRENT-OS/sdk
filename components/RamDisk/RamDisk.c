@@ -120,9 +120,10 @@ storage_rpc_erase(
     off_t  const size,
     off_t* const erased)
 {
+    *erased = 0;
+
     if (!isValidStorageArea(offset, size))
     {
-        *erased = 0U;
         return OS_ERROR_OUT_OF_BOUNDS;
     }
 
