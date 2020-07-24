@@ -1,0 +1,48 @@
+PROJECT_NAME           = "Document Templates"
+PROJECT_BRIEF          = "Place for all our plain text document templates."
+
+OUTPUT_DIRECTORY       = build
+CREATE_SUBDIRS         = YES
+SHORT_NAMES            = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+CASE_SENSE_NAMES       = YES
+
+FILE_PATTERNS          += *.camkes
+FILE_PATTERNS          += *.idl4
+
+EXTENSION_MAPPING      += camkes=C
+EXTENSION_MAPPING      += idl4=C
+
+WARN_IF_UNDOCUMENTED   = NO
+
+RECURSIVE              = YES
+
+EXCLUDE                = build
+
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+REFERENCES_LINK_SOURCE = NO
+
+CLANG_ASSISTED_PARSING = YES
+
+HTML_COLORSTYLE_HUE    = 148
+HTML_COLORSTYLE_SAT    = 80
+HTML_COLORSTYLE_GAMMA  = 40
+
+HTML_TIMESTAMP         = YES
+HTML_DYNAMIC_SECTIONS  = YES
+GENERATE_TREEVIEW      = YES
+
+LATEX_TIMESTAMP        = YES
+
+UML_LOOK               = YES
+
+TEMPLATE_RELATIONS     = YES
+
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+
+PLANTUML_JAR_PATH      = "/usr/share/plantuml/plantuml.jar"
