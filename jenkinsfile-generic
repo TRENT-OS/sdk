@@ -141,17 +141,17 @@ def run_shell_script(
 def do_git_checkout(
     repo,
     branch,
-    dir = '.'
+    folder = NULL
 ) {
     println(
         'checkout: ' + repo + '@' + branch +
-        ( dir ? (' into ' + dir) : '' ) +
+        ( folder ? (' into ' + folder) : '' ) +
         ' ...'
     )
 
     try
     {
-        return checkout([
+        def scmVars = checkout([
                     poll: false,
                     scm: [
                         $class: 'GitSCM',
@@ -162,7 +162,7 @@ def do_git_checkout(
                         extensions: [
                             [
                                 $class: 'RelativeTargetDirectory',
-                                relativeTargetDir: dir
+                                relativeTargetDir: (folder ? folder : '.')
                             ],
 
                             [
@@ -187,6 +187,11 @@ def do_git_checkout(
                         ]
                     ]
                 ])
+
+        // delete additional folder that is created by the checkout
+        if (folder) { run_app('rmdir', [folder+'@tmp']) }
+
+        return scmVars
     }
     catch (Exception e)
     {
