@@ -422,7 +422,6 @@ pipeline {
                                     threads: 8,
                                 ]
                             ],
-                            // submoduleCfg: [],
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
                         do_notify_bitbucket()

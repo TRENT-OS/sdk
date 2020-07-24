@@ -187,13 +187,6 @@ def do_git_checkout(
                         ]
                     ]
                 ])
-
-        // scmVars.each { println it.key + " = " + it.value }
-        // GIT_BRANCH = origin/integration
-        // GIT_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
-        // GIT_PREVIOUS_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
-        // GIT_PREVIOUS_SUCCESSFUL_COMMIT = 8cf2d642ded739fa13a621582bbf1d672bcf571f
-        // GIT_URL = ssh://git@bitbucket.hensoldt-cyber.systems:7999/ss/demo_hello_world.git
     }
     catch (Exception e)
     {
@@ -225,7 +218,6 @@ def do_checkout(
         echo 'error'
         return
     }
-
 }
 
 
