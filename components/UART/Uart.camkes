@@ -7,7 +7,7 @@
 
 // ToDo: remove this hard-coded ChanMux dependency
 import <if_ChanMux.camkes>;
-import <../interfaces/if_BlockingWrite.camkes>;
+import <if_OS_BlockingWrite.camkes>;
 
 //------------------------------------------------------------------------------
 // Components
@@ -28,7 +28,7 @@ import <../interfaces/if_BlockingWrite.camkes>;
         dataport  Buf               regBase; \
         consumes  IRQ               irq; \
         \
-        provides  BlockingWriteInf      UartDrv; \
+        provides  if_OS_BlockingWrite   UartDrv; \
         dataport  Buf                   Uart_inputDataport; \
         dataport  Buf                   Uart_outputFifoDataport; \
         emits     EventDataAvailable    Uart_DataAvailable; \

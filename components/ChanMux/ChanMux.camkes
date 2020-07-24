@@ -5,6 +5,7 @@
  *
  */
 
+import <if_OS_BlockingWrite.camkes>;
 import <if_ChanMux.camkes>;
 // caller must import UART interface, since we don't have a generic one yet
 
@@ -22,7 +23,7 @@ import <if_ChanMux.camkes>;
 \
     /*-------------------------------------------------*/\
     /* lower interface to underlying layer */\
-    uses          BlockingWriteInf     UnderlyingChan_Rpc;\
+    uses          if_OS_BlockingWrite  UnderlyingChan_Rpc;\
     dataport      Buf                  UnderlyingChan_inputDataport;\
     dataport      Buf                  UnderlyingChan_outputFifoDataport;\
     consumes      EventDataAvailable   UnderlyingChan_EventHasData;\
