@@ -207,53 +207,6 @@ endmacro()
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-macro(os_sdk_build_doc)
-
-    add_os_libs_subdirectories()
-
-    add_custom_target( os_sdk_doc )
-
-    add_dependencies( os_sdk_doc
-        os_cert_doc
-        os_chanmux_doc
-        os_chanmux_nic_driver_doc
-        os_configuration_doc
-        os_core_api_doc
-        os_crypto_doc
-        os_filesystem_doc
-        os_keystore_doc
-        os_libs_doc
-        os_logger_doc
-        os_network_stack_doc
-        os_tls_doc
-    )
-
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/os-api-index.html
-        "<!doctype html>\n"
-        "<html>\n"
-        "  <head></head>\n"
-        "  <body>\n"
-        "    <ul>\n"
-        "    <li><a href=\"os_cert/index.html\">Certificate Parser</a></li>\n"
-        "    <li><a href=\"chanmux/index.html\">ChanMux</a></li>\n"
-        "    <li><a href=\"chanmux_nic_driver/index.html\">ChanMux Network Interface Driver</a></li>\n"
-        "    <li><a href=\"os_configuration/index.html\">ConfigService</a></li>\n"
-        "    <li><a href=\"os_core_api/index.html\">Core API</a></li>\n"
-        "    <li><a href=\"os_crypto/index.html\">Crypto</a></li>\n"
-        "    <li><a href=\"os_filesystem/index.html\">Filesystem</a></li>\n"
-        "    <li><a href=\"os_keystore/index.html\">Keystore</a></li>\n"
-        "    <li><a href=\"os_libs/index.html\">Libs</a></li>\n"
-        "    <li><a href=\"os_logger/index.html\">Logger</a></li>\n"
-        "    <li><a href=\"os_network_stack/index.html\">Network Stack</a></li>\n"
-        "    </ul>\n"
-        "  </body>\n"
-        "</html>\n"
-    )
-
-endmacro()
-
-
-#-------------------------------------------------------------------------------
 macro(get_all_targets_recursive targets dir)
 
     get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
@@ -438,18 +391,10 @@ endmacro()
 
 if (NOT OS_SDK_PASSIVE_CMAKE)
 
-    if (OS_SDK_DOC)
-
-        os_sdk_build_doc()
-
-    else()
-
-        if (NOT OS_PROJECT_DIR)
-            message(FATAL_ERROR "please set OS_PROJECT_DIR")
-        endif()
-
-        os_sdk_build(${OS_PROJECT_DIR})
-
+    if (NOT OS_PROJECT_DIR)
+        message(FATAL_ERROR "please set OS_PROJECT_DIR")
     endif()
+
+    os_sdk_build(${OS_PROJECT_DIR})
 
 endif()
