@@ -1,7 +1,9 @@
-PROJECT_NAME           = "Document Templates"
-PROJECT_BRIEF          = "Place for all our plain text document templates."
+PROJECT_NAME           = "TRENTOS-M"
+PROJECT_BRIEF = "Trusted Entity Operating System based on the seL4 Microkernel"
 
-OUTPUT_DIRECTORY       = build
+OUTPUT_DIRECTORY       = $(DOXYGEN_OUTPUT_DIR)
+INPUT                  = $(DOXYGEN_INPUT_DIR)
+
 CREATE_SUBDIRS         = YES
 SHORT_NAMES            = YES
 OPTIMIZE_OUTPUT_FOR_C  = YES
@@ -17,7 +19,10 @@ WARN_IF_UNDOCUMENTED   = NO
 
 RECURSIVE              = YES
 
-EXCLUDE                = build
+EXCLUDE_PATTERNS       += **/build
+EXCLUDE_PATTERNS       += **/sdk-sel4-camkes
+EXCLUDE_PATTERNS       += **/sdk-pdfs
+EXCLUDE_PATTERNS       += **/3rdParty
 
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
