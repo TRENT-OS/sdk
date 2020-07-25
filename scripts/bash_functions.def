@@ -20,7 +20,7 @@ DOCKER_COMMON_ARGS=(
         -i
         # discard changes to container on exit
         --rm
-        # set the uid and gid of the user running in the container to that of 
+        # set the uid and gid of the user running in the container to that of
         # the user on the host
         -u $(id -u):$(id -g)
         # mount the current working directory on the host in the container
