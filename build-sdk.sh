@@ -283,12 +283,46 @@ function build_sdk_docs()
 {
     local SDK_SRC_DIR=$1
     local OUT_DIR=$2
+    local SDK_PDF_DIR=${OS_SDK_DIR}/sdk-pdfs
 
     print_info "Building SDK docs into ${OUT_DIR} from ${SDK_SRC_DIR}"
+
+    # clear folder where we collect docs
+    if [[ -e ${OUT_DIR} ]]; then
+        echo "removing attic API documentation collection folder"
+        rm -rf ${OUT_DIR}
+    fi
+
+    mkdir -p ${OUT_DIR}/pdf
 
     export DOXYGEN_INPUT_DIR=${SDK_SRC_DIR}
     export DOXYGEN_OUTPUT_DIR=${OUT_DIR}
     doxygen ${SDK_SRC_DIR}/Doxyfile
+
+    # collect all the pdfs
+    echo "Collecting PDF documentation in ${OUT_DIR}/pdf..."
+    local ABS_OUT_DIR_PDF=$(realpath ${OUT_DIR}/pdf)
+
+    cp -a ${SDK_PDF_DIR}/*.pdf ${ABS_OUT_DIR_PDF}
+    (
+        # substitute the paths to the doxygen documentation
+
+        local SUBS_DIR=$(realpath ${OUT_DIR}/html)
+
+        # HOST_DIR is an environment variable that is defined in case of
+        # usage of the script with the provided docker build wrapper
+        # "seos_build_env.sh" the wrapper binds the folder /host inside the
+        # container to the current working directory from where it is called.
+        # This information is needed in order to provide correct links
+        # to the doxygen htmls inside the PDFs: /host must be replaced by
+        # $HOST_DIR
+        if [ ! -z "${HOST_DIR-}" ]; then
+            SUBS_DIR=$(echo ${SUBS_DIR} | sed 's/\/host//g')
+            SUBS_DIR=${HOST_DIR}/${SUBS_DIR}
+        fi
+        cd ${ABS_OUT_DIR_PDF}
+        ${SDK_PDF_DIR}/substitute_doxygen_path.sh ${SUBS_DIR}
+    )
 }
 
 
