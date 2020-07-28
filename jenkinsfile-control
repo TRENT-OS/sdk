@@ -647,14 +647,6 @@ pipeline {
             }
         }
 
-        //----------------------------------------------------------------------
-        stage('Tests') {
-            steps {
-                print_step_info env.STAGE_NAME
-                do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
-            }
-        }
-
         //-----------------------------------------------------------------------
         stage('publish_docs') {
             agent { label "publish_doc" }
@@ -671,6 +663,15 @@ pipeline {
                 cleanWs()
             }
         }
+
+        //----------------------------------------------------------------------
+        stage('Tests') {
+            steps {
+                print_step_info env.STAGE_NAME
+                do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
+            }
+        }
+
     }
 
     //--------------------------------------------------------------------------
