@@ -341,7 +341,7 @@ def execute_build(ctx, stage_ctx)
 
     // we've set propagate=false above, so we have to fail the stage here.
     if (result in ['FAILURE','ABORTED']) {
-        error('marking stage as failure')
+        error('stage failed: ' + stage_ctx.platform + ', ' + test_system)
     }
 }
 
@@ -424,6 +424,7 @@ def do_jobs_for_test_systems(branch, testConfig)
     // workspace, so we have to allocate a node
 
     def cnt = sub_jobs_ctx.jobStages.size()
+    def was_buiĺd_error = false
 
     node {
         stage('process_results') {
@@ -433,7 +434,7 @@ def do_jobs_for_test_systems(branch, testConfig)
             sub_jobs_ctx.jobStages.eachWithIndex { e, idx ->
 
                 def pkg_name = e.key
-                // def job_stage_ctx = e.value
+                def job_stage_ctx = e.value
 
                 println('processing ' + (idx+1) + '/' + cnt + ': ' + pkg_name)
 
@@ -446,6 +447,10 @@ def do_jobs_for_test_systems(branch, testConfig)
                     run_app('tar', ['-xf ' + SYSTEM_PACKAGE, '-C ' + pkg_dir])
                     run_app('rm', [SYSTEM_PACKAGE])
                 }
+
+                def pkg_build = job_stage_ctx.build
+                was_buiĺd_error |= (!pkg_build) ||
+                                   (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
 
             // ToDo: support multiple platforms here, currently this would see
@@ -463,6 +468,11 @@ def do_jobs_for_test_systems(branch, testConfig)
             cleanWs()
 
         }
+    }
+
+    if (was_buiĺd_error)
+    {
+        error('stage failed: run test systems')
     }
 }
 
