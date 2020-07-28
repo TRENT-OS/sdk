@@ -343,7 +343,7 @@ def do_jobs_for_test_systems(branch, testConfig)
             sub_jobs_ctx.jobStages.eachWithIndex { e, idx ->
 
                 def pkg_name = e.key
-                def jobBuild = e.value
+                // def job_stage_ctx = e.value
 
                 println('processing ' + (idx+1) + '/' + cnt + ': ' + pkg_name)
 
