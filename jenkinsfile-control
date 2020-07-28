@@ -423,7 +423,7 @@ def do_jobs_for_test_systems(branch, testConfig)
     // builds are done, now collect the results and artifacts. This needs a
     // workspace, so we have to allocate a node
 
-    cnt = sub_jobs_ctx.jobStages.size()
+    def cnt = sub_jobs_ctx.jobStages.size()
 
     node {
         stage('process_results') {
