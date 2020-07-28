@@ -356,10 +356,9 @@ elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
 
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
-    # unit testing are a completely separate step, because the usualy build
-    # docker container does not have the unit test tool installed. So we need
-    # to make unit testing available as separate step that can run after an SDK
-    # package build.
+    # unit testing is a separate step, because the build docker container that
+    # is used to collect the files and creates the SDK package not have the
+    # unit test tool installed.
     if [ ! -d ${SDK_PACKAGE_SRC} ]; then
         echo "please build an SDK package first"
         exit 1
@@ -376,6 +375,7 @@ elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
 
 else
-    echo "usage: $0 <all|bin> <OUT_BASE_DIR>"
+    echo "usage: $0 <mode> <OUT_BASE_DIR>"
+    echo "  where mode is: all, build-bin, doc, only-sources, unit-tests"
     exit 1
 fi
