@@ -185,6 +185,7 @@ def execute_build(ctx, stage_ctx)
     def jobBuild = build(
         job: 'generic_jobs/generic_pipeline_sandbox',
         wait: true,   // block call until finished
+        propagate: false, // don't throw exception on error
         parameters: [
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
@@ -246,6 +247,11 @@ def execute_build(ctx, stage_ctx)
         }
 
         cleanWs()
+    }
+
+    // we've set propagate=false above, so we have to fail the stage here.
+    if (result in ['FAILURE','ABORTED']) {
+        error('marking stage as failure')
     }
 }
 
