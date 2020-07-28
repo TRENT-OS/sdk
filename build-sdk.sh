@@ -90,8 +90,9 @@ function copy_files()
 function collect_sdk_sources()
 {
     local SDK_SRC_DIR=$1
-    local OUT_DIR=$2
-    shift 2
+    local DEMO_SRC_DIR=$2
+    local OUT_DIR=$3
+    shift 3
 
     print_info "collecting SDK sources from ${SDK_SRC_DIR}"
 
@@ -119,18 +120,15 @@ function collect_sdk_sources()
     )
     copy_files ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
 
-    # we make assumption about the directory structure of seos_tests now,
-    # but that is acceptable for the moment
-    local SDK_SRC_DEMOS_DIR=${SDK_SRC_DIR}/../src/demos
     local OUT_DEMOS_DIR=${OUT_DIR}/demos
 
-    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DEMOS_DIR}) ; do
+    for SDK_DEMO_NAME in $(ls ${DEMO_SRC_DIR}) ; do
         local SDK_EXCLUDES=(
             --exclude-vcs
             --exclude 'astyle_check.sh'
         )
         copy_files \
-            ${SDK_SRC_DEMOS_DIR}/${SDK_DEMO_NAME} \
+            ${DEMO_SRC_DIR}/${SDK_DEMO_NAME} \
             ${OUT_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
             ${SDK_EXCLUDES[@]}
     done
@@ -143,35 +141,53 @@ function build_sdk_demos()
     local SDK_SRC_DIR=$1
     local BUILD_DIR=$2
 
-    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DIR}/demos) ; do
-        print_info "Building SDK demo: ${SDK_DEMO_NAME}"
+    local TARGETS=(
+        zynq7000
+        rpi3
+        # imx6
+        # migv
+    )
 
-        local SDK_DEMO_BASE=${SDK_SRC_DIR}/demos/${SDK_DEMO_NAME}
-        local SDK_DEMO_SRC=${SDK_DEMO_BASE}/src
-        local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}
+    #
+    #                     | zynq7000 | rpi3 | imx6 | migv | ...
+    # --------------------+----------+------+------+------+-----
+    #  demo_hello_world   | yes      | yes  | yes  | yes  |
+    #  demo_iot_app       | yes      | no   | no   | no   |
+    #  demo_iot_app_rpi3  | no       | yes  | no   | no   |
+    #
+    declare -A TARGET_RESTRICTIONS=(
+        [demo_iot_app]=zynq7000
+        [demo_iot_app_rpi3]=rpi3
+    )
 
-        # default values
-        local TARGET=zynq7000
-        local PLAT=zynq7000
-        local ARCH=arm
+    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DIR}/demos); do
 
-        if [[ ${SDK_DEMO_NAME} =~ "rpi3" ]]; then
-            TARGET="rpi3"
-            PLAT="bcm2837"
-            ARCH="arm"
-        fi
-
-        local BUILD_PARAMS=(
-            ${SDK_DEMO_SRC}
-            ${TARGET}
-            ${SDK_DEMO_OUT}
-            -D CMAKE_BUILD_TYPE=Debug
+        local CUR_TARGETS=(
+            ${TARGET_RESTRICTIONS[${SDK_DEMO_NAME}]:-${TARGETS[@]}}
         )
-        ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
 
-        mkdir ${SDK_DEMO_BASE}/bin
-        cp ${SDK_DEMO_OUT}/images/capdl-loader-image-${ARCH}-${PLAT} \
-           ${SDK_DEMO_BASE}/bin
+        for TARGET in ${CUR_TARGETS[@]}; do
+            print_info "Building SDK demo: ${SDK_DEMO_NAME} for ${TARGET}"
+
+            local SDK_DEMO_BASE=${SDK_SRC_DIR}/demos/${SDK_DEMO_NAME}
+            local SDK_DEMO_SRC=${SDK_DEMO_BASE}/src
+            local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}-${TARGET}
+
+            local BUILD_PARAMS=(
+                ${SDK_DEMO_SRC}
+                ${TARGET}
+                ${SDK_DEMO_OUT}
+                -D CMAKE_BUILD_TYPE=Debug
+            )
+            ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
+
+            # we just build the demos to check that there is no error, but we
+            # don't release prebuilt images
+            #
+            # mkdir -p ${SDK_DEMO_BASE}/bin
+            # cp ${SDK_DEMO_OUT}/images/os_image.bin \
+            #    ${SDK_DEMO_BASE}/bin/os_image-${TARGET}.bin
+        done
     done
 }
 
@@ -339,20 +355,30 @@ SDK_PACKAGE_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
 SDK_PACKAGE_DOC=${OUT_BASE_DIR}/pkg/doc
 SDK_PACKAGE_BIN=${OUT_BASE_DIR}/pkg/bin
 
+# we make an assumption about the directory structure of seos_tests here, which
+# acceptable for the moment. CI adapts to this layout.
+DEMOS_SRC_DIR=${OS_SDK_DIR}/../src/demos
+
+
 # for development purposes, all the steps can also run directly from the SDK
 # sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
 # to OS_SDK_DIR for all steps
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
+
+elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
+    # create SDK snapshot from repos sources and build SDK from snapshot
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
 
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
@@ -367,15 +393,15 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
     # do not build the documentation
-    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     # do not build the documentation and binaries
-    collect_sdk_sources ${OS_SDK_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
 
 else
     echo "usage: $0 <mode> <OUT_BASE_DIR>"
-    echo "  where mode is: all, build-bin, doc, only-sources, unit-tests"
+    echo "  where mode is: all, build-bin, demos, doc, only-sources, unit-tests"
     exit 1
 fi

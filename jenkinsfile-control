@@ -21,6 +21,7 @@ def TEST_CONFIG = [
     tests: [
         ['demo_hello_world',              null,                'test_demo_hello_world.py'],
         ['demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py'],
+        //['demo_iot_app_rpi3',             'test_in_isolation', 'test_demo_iot_app_rpi3.py'], // compiles for rpi3 only
         ['test_chanmux',                  null,                null],
         ['test_proxy_nvm',                null,                null],
         ['test_cert_lib',                 null,                'test_certparser.py'],
@@ -172,6 +173,95 @@ def run_shell_script(
     param_array = null
 ) {
     run_app(script, param_array)
+}
+
+
+//------------------------------------------------------------------------------
+def do_git_checkout(
+    repo,
+    branch,
+    folder = NULL
+) {
+    println(
+        'checkout ' + repo + '@' + branch +
+        ( folder ? (' into ' + folder) : '' ) +
+        ' ...'
+    )
+
+    try
+    {
+        def scmVars = checkout([
+                    poll: false,
+                    scm: [
+                        $class: 'GitSCM',
+                        branches: [
+                            [name: branch]
+                        ],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [
+                            [
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: (folder ? folder : '.')
+                            ],
+
+                            [
+                                $class: 'SubmoduleOption',
+                                disableSubmodules: false,
+                                recursiveSubmodules: true,
+                                trackingSubmodules: false,
+                                parentCredentials: true,
+                                // parallel checkouts speed up things, but too
+                                // many threads (from too man parallel jobs)
+                                // will eventually overload the GIT server and
+                                // we get failures due to timeouts. We've seen
+                                // this happening with 8 threads, so try 4 now.
+                                threads: 4
+                            ]
+                        ],
+                        userRemoteConfigs: [
+                            [
+                                credentialsId: 'ac3a90b4-fd3f-4aa4-b28e-bd78878588ad',
+                                url: 'ssh://git@bitbucket.hensoldt-cyber.systems:7999/' + repo + '.git'
+                            ]
+                        ]
+                    ]
+                ])
+
+        // clean up some strange folders jenkins creates for an unknown reason
+        if (folder) { run_app('rmdir', [folder+'@tmp']) }
+
+        return scmVars
+    }
+    catch (Exception e)
+    {
+        println 'Exception: ' + e;
+        return null
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def do_checkout(
+    repo,
+    branch,
+    dir = '.'
+) {
+    manager.createSummary("text.gif").appendText('<hr>' + repo)
+
+    def scmVars = do_git_checkout(repo, branch, dir)
+
+    // if this is a custom branch, then fall back to integration
+    if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
+    {
+        manager.createSummary("text.gif").appendText('no dedicated branch: ' + branch)
+        scmVars = do_git_checkout(repo, 'integration', dir)
+    }
+
+    if (!scmVars)
+    {
+        echo 'checkout error'
+        return
+    }
 }
 
 
@@ -430,7 +520,23 @@ pipeline {
                             ],
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
+
                         do_notify_bitbucket()
+
+                        do_checkout(
+                            'ss/demo_hello_world',
+                            scm.branches[0],
+                            'src/demos/demo_hello_world')
+
+                        do_checkout(
+                            'ss/demo_iot_app',
+                             scm.branches[0],
+                            'src/demos/demo_iot_app')
+
+                        do_checkout(
+                            'ss/demo_iot_app_rpi3',
+                            scm.branches[0],
+                            'src/demos/demo_iot_app_rpi3')
                     }
                 }
 
