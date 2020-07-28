@@ -25,7 +25,7 @@ set(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 #
 #  CREATE_CONFIG_PROJECT
 #    optional, create config project with base name of file, ie if <cfg_file>
-#    is "configs/system_config.h", the project's name will be "system_config"-
+#    is "configs/system_config.h", the project's name will be "system_config".
 #    The project creates an interface library that provides the config file's
 #    include path. This allows including the config file easily in other files
 #    then.
