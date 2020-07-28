@@ -63,7 +63,6 @@ function(os_set_config_file cfg_file)
     # re-build.
     set(DEBUG_CONFIG_H_FILE             "${CFG_FILE_ABS}" CACHE STRING "")
     set(MEMORY_CONFIG_H_FILE            "${CFG_FILE_ABS}" CACHE STRING "")
-    set(LOGS_CONFIG_H_FILE              "${CFG_FILE_ABS}" CACHE STRING "")
     set(OS_Logger_CONFIG_H_FILE         "${CFG_FILE_ABS}" CACHE STRING "")
 
     #-----------------------------------------------
