@@ -105,7 +105,7 @@ def print_step_info(name)
 //------------------------------------------------------------------------------
 def do_notify_bitbucket()
 {
-    // the StashNotifier requires to ru in a node block, which should not be
+    // the StashNotifier requires to run in a node block, which should not be
     // necessary technically. See also the open issue issue at
     // https://github.com/jenkinsci/stashnotifier-plugin/issues/234 which
 
