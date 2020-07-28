@@ -653,7 +653,6 @@ pipeline {
                 print_step_info env.STAGE_NAME
                 do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
             }
-
         }
 
         //-----------------------------------------------------------------------
