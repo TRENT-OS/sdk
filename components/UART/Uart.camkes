@@ -5,8 +5,6 @@
  */
 
 
-// ToDo: remove this hard-coded ChanMux dependency
-import <if_ChanMux.camkes>;
 import <if_OS_BlockingWrite.camkes>;
 
 //------------------------------------------------------------------------------
