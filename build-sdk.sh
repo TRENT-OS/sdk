@@ -61,7 +61,7 @@ function cmake_check_init_and_build()
 
 
 #-------------------------------------------------------------------------------
-function copy_files()
+function copy_files_via_tar()
 {
     SRC_DIR=$1
     DST_DIR=$2
@@ -112,25 +112,26 @@ function collect_sdk_sources()
         --exclude 'astyle_check.sh'
         --exclude './astyle_check_sdk.sh'
         --exclude './build-sdk.sh'
+        #--exclude './Doxyfile' # build_sdk_docs() still needs this file
         --exclude './jenkinsfile-control'
         --exclude './jenkinsfile-generic'
         --exclude './publish_doc.sh'
         --exclude './sdk-pdfs'
         --exclude './sdk-sel4-camkes/tools/riscv-pk'
     )
-    copy_files ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
+    copy_files_via_tar ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
 
+    # copy demos
     local OUT_DEMOS_DIR=${OUT_DIR}/demos
-
     for SDK_DEMO_NAME in $(ls ${DEMO_SRC_DIR}) ; do
-        local SDK_EXCLUDES=(
+        local DEMO_EXCLUDES=(
             --exclude-vcs
             --exclude 'astyle_check.sh'
         )
-        copy_files \
+        copy_files_via_tar \
             ${DEMO_SRC_DIR}/${SDK_DEMO_NAME} \
             ${OUT_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
-            ${SDK_EXCLUDES[@]}
+            ${DEMO_EXCLUDES[@]}
     done
 }
 
