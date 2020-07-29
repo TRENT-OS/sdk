@@ -525,17 +525,17 @@ pipeline {
 
                         do_checkout(
                             'ss/demo_hello_world',
-                            scm.branches[0],
+                            env.BRANCH_NAME,
                             'src/demos/demo_hello_world')
 
                         do_checkout(
                             'ss/demo_iot_app',
-                             scm.branches[0],
+                             env.BRANCH_NAME,
                             'src/demos/demo_iot_app')
 
                         do_checkout(
                             'ss/demo_iot_app_rpi3',
-                            scm.branches[0],
+                            env.BRANCH_NAME,
                             'src/demos/demo_iot_app_rpi3')
                     }
                 }
