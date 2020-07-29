@@ -19,6 +19,8 @@ DISTRIBUTE_GROUP_DOC   = YES
 
 # TODO To be removed once the documentation is in the correct state.
 EXTRACT_ALL            = YES
+SORT_GROUP_NAMES       = YES
+SORT_BRIEF_DOCS        = YES
 
 WARN_IF_UNDOCUMENTED   = NO
 
