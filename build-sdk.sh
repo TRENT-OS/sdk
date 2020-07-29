@@ -311,7 +311,11 @@ function build_sdk_docs()
 
     mkdir -p ${OUT_DIR}/pdf
 
-    export DOXYGEN_INPUT_DIR=${SDK_SRC_DIR}
+    # TODO We only create the documentation of the os_core_api.
+    #
+    # It is planned to do a documentation of the entire SDK once it is well
+    # documented.
+    export DOXYGEN_INPUT_DIR=${SDK_SRC_DIR}/libs/os_core_api
     export DOXYGEN_OUTPUT_DIR=${OUT_DIR}
     doxygen ${SDK_SRC_DIR}/Doxyfile
 
