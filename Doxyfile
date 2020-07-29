@@ -24,9 +24,7 @@ WARN_IF_UNDOCUMENTED   = NO
 
 RECURSIVE              = YES
 
-EXCLUDE_PATTERNS       += **/build
-EXCLUDE_PATTERNS       += **/sdk-sel4-camkes
-EXCLUDE_PATTERNS       += **/sdk-pdfs
+EXCLUDE_PATTERNS       += sdk-sel4-camkes
 EXCLUDE_PATTERNS       += **/3rdParty
 
 SOURCE_BROWSER         = YES
