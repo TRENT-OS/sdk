@@ -118,6 +118,7 @@ function collect_sdk_sources()
         --exclude './publish_doc.sh'
         --exclude './sdk-pdfs'
         --exclude './sdk-sel4-camkes/tools/riscv-pk'
+        --exclude './tools/kpt'
     )
     copy_files_via_tar ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
 
@@ -261,17 +262,6 @@ function build_sdk_tools()
         build_sdk_tool ${SDK_SRC_DIR} ${TOOLS_SRC_DIR} ${TOOLS_BUILD_DIR}
 
         cp ${TOOLS_BUILD_DIR}/proxy_app ${OUT_DIR}
-    )
-
-    # build keystore provisioning tool
-    (
-        local TOOLS_SRC_DIR=tools/kpt
-        local TOOLS_BUILD_DIR=${BUILD_DIR}/kpt
-
-        build_sdk_tool ${SDK_SRC_DIR} ${TOOLS_SRC_DIR} ${TOOLS_BUILD_DIR}
-
-        cp ${TOOLS_BUILD_DIR}/keystore_provisioning_tool ${OUT_DIR}/kpt
-        cp -v ${SDK_SRC_DIR}/${TOOLS_SRC_DIR}/xmlParser.py ${OUT_DIR}
     )
 
     # build config provisioning tool
