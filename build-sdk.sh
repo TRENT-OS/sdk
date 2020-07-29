@@ -348,6 +348,27 @@ function build_sdk_docs()
 
 
 #-------------------------------------------------------------------------------
+function package_sdk()
+{
+    local SDK_SRC_DIR=$1
+    shift 1
+
+    local SDK_PACKAGE_BZ2=sdk-package.bz2
+    print_info "Packaging SDK to ${SDK_PACKAGE_BZ2}"
+
+    du -sh ${SDK_PACKAGE_SRC}
+
+    local SDK_PACKAGE_EXCLUDES=(
+        # --exclude './Doxyfile'
+    )
+
+    tar -cjf ${SDK_PACKAGE_BZ2} ${SDK_PACKAGE_EXCLUDES[@]} \
+        -C ${SDK_PACKAGE_SRC} .
+
+    du -sh ${SDK_PACKAGE_BZ2}
+}
+
+#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 PACKAGE_MODE=$1
@@ -376,6 +397,7 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
     build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
+    package_sdk ${SDK_PACKAGE_SRC}
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot

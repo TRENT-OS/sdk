@@ -52,9 +52,6 @@ def TEST_CONFIG = [
 ]
 
 
-def SDK_PACKAGE_ARCHIVE = 'sdk-package.bz2'
-
-
 //------------------------------------------------------------------------------
 // Docker
 //
@@ -573,34 +570,15 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('package') {
+                stage('archive') {
                     steps {
                         print_step_info env.STAGE_NAME
-
-                        run_app('du',['-sh sdk-package/pkg'])
-
-                        run_app(
-                            'tar',
-                            [
-                                '-cjf ' + SDK_PACKAGE_ARCHIVE,
-                                '-C sdk-package/pkg',
-                                '.'
-                            ]
-                        )
-
-                        run_app('du', ['-sh ' + SDK_PACKAGE_ARCHIVE])
 
                         archiveArtifacts(
-                            artifacts: SDK_PACKAGE_ARCHIVE,
+                            artifacts: 'sdk-package.bz2',
                             fingerprint: true
                         )
-                    }
-                }
 
-                //--------------------------------------------------------------
-                stage('stash_doc') {
-                    steps {
-                        print_step_info env.STAGE_NAME
                         stash(
                             name: 'stash_doc',
                             includes: [
