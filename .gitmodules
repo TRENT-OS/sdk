@@ -82,3 +82,6 @@
 [submodule "tools/rpi3_flasher"]
 	path = tools/rpi3_flasher
 	url = ../../ss/rpi3_flasher.git
+[submodule "resources/rpi3_sd_card"]
+	path = resources/rpi3_sd_card
+	url = ../../ssdk/plat_raspi
