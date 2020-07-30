@@ -108,7 +108,7 @@ open_trentos_build_env()
         # parameters passed on the command line
         ${DOCKER_ARGS[@]}
     )
-    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_BUILD_CONTAINER} ${ARGS[@]}
+    docker run "${DOCKER_PARAMS[@]}" ${TRENTOS_BUILD_CONTAINER} "${ARGS[@]}"
 }
 
 
@@ -136,5 +136,5 @@ open_trentos_test_env()
         # parameters passed on the command line
         ${DOCKER_ARGS[@]}
     )
-    docker run ${DOCKER_PARAMS[@]} ${TRENTOS_TEST_CONTAINER} ${ARGS[@]}
+    docker run "${DOCKER_PARAMS[@]}" ${TRENTOS_TEST_CONTAINER} "${ARGS[@]}"
 }
