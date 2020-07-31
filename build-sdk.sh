@@ -104,15 +104,50 @@ function collect_sdk_sources()
     fi
 
     local SDK_EXCLUDES=(
+        # remove all astyle files
         astyle_check.sh
+        # remove files in the sandbox root folder
         ./astyle_check_sdk.sh
         ./build-sdk.sh
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
+        # remove the complete submodules
         ./sdk-pdfs
         ./sdk-sel4-camkes/tools/riscv-pk
         ./tools/kpt
+        # remove all readme files our code because they are in a bad shape,
+        # the only exception is libs/os_core_api/README.md, it looks nice and
+        # is used in the doxygen process. We remove it later when creating the
+        # SDK package
+        ./README.md
+        ./components/CryptoServer/README.md
+        ./components/EntropySource/README.md
+        ./components/NIC_RPi/README.md
+        ./components/RPI_SPI_Flash/README.md
+        ./components/StorageServer/README.md
+        ./components/TimeServer/README.md
+        ./components/TlsServer/README.md
+        ./libs/chanmux/README.md
+        ./libs/chanmux_nic_driver/README.md
+        ./libs/os_cert/README.md
+        ./libs/os_configuration/README.md
+        ./libs/os_crypto/README.md
+        ./libs/os_filesystem/README.md
+        ./libs/os_keystore/README.md
+        ./libs/os_libs/README.md
+        ./libs/os_logger/Readme.md
+        ./libs/os_network_stack/3rdParty/picotcp/README.md
+        ./libs/os_network_stack/3rdParty/picotcp/docs/user_manual/README.md
+        ./libs/os_network_stack/3rdParty/picotcp/test/README.md
+        ./libs/os_network_stack/README.md
+        ./libs/os_tls/README.md
+        ./scripts/README.md
+        ./sdk-sel4-camkes/README.md
+        ./tools/cpt/README.md
+        ./tools/proxy/README.md
+        ./tools/rdgen/README.md
+        ./tools/rpi3_flasher/README.md
     )
 
     # copy files using tar and filtering. Seems there is a bug in tar, for
@@ -127,10 +162,15 @@ function collect_sdk_sources()
     # copy demos
     local OUT_DEMOS_DIR=${OUT_DIR}/demos
     for SDK_DEMO_NAME in $(ls ${DEMO_SRC_DIR}) ; do
+
+        print_info "collecting demo sources from ${DEMO_SRC_DIR}/${SDK_DEMO_NAME}"
+
         local DEMO_EXCLUDES=(
             --exclude-vcs
             --exclude 'astyle_check.sh'
+            --exclude './README.md'
         )
+
         copy_files_via_tar \
             ${DEMO_SRC_DIR}/${SDK_DEMO_NAME} \
             ${OUT_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
@@ -343,8 +383,24 @@ function package_sdk()
     du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
+        # remove prepare_test.sh from demos
         prepare_test.sh
-        # ./Doxyfile
+        # remove readme that we needed for doxygen
+        ./libs/os_core_api/README.md
+        # remove all doxygen files from our modules
+        ./Doxyfile
+        ./libs/chanmux/Doxyfile
+        ./libs/chanmux_nic_driver/Doxyfile
+        ./libs/os_cert/Doxyfile
+        ./libs/os_configuration/Doxyfile
+        ./libs/os_core_api/Doxyfile
+        ./libs/os_crypto/Doxyfile
+        ./libs/os_filesystem/Doxyfile
+        ./libs/os_keystore/Doxyfile
+        ./libs/os_libs/Doxyfile
+        ./libs/os_logger/Doxyfile
+        ./libs/os_network_stack/Doxyfile
+        ./libs/os_tls/Doxyfile
     )
 
     # prefix everything in SDK_EXCLUDE_ELEMENTS with "--exclude "
