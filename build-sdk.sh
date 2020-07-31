@@ -349,6 +349,7 @@ function package_sdk()
     du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
+        --exclude 'prepare_test.sh'
         # --exclude './Doxyfile'
     )
 
