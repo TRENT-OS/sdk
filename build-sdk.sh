@@ -184,7 +184,8 @@ function build_sdk_demos()
             ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
 
             # we just build the demos to check that there is no error, but we
-            # don't release prebuilt images
+            # don't release prebuilt images. If we are here, we've created the
+            # SDK package alewady anyway, so we can't simply copy the images.
             #
             # mkdir -p ${SDK_DEMO_BASE}/bin
             # cp ${SDK_DEMO_OUT}/images/os_image.bin \
@@ -378,8 +379,9 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
     collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
     package_sdk ${SDK_PACKAGE_SRC}
+    # demo builds are not part of the SDK package, this is just a test.
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
