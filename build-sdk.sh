@@ -91,17 +91,39 @@ function collect_sdk_sources()
 {
     local SDK_SRC_DIR=$1
     local DEMO_SRC_DIR=$2
-    local OUT_DIR=$3
+    local OUT_BASE_DIR=$3
+    local OUT_PKG_DIR=$4
     shift 3
 
     print_info "collecting SDK sources from ${SDK_SRC_DIR}"
 
-    # ToDo: create file with git infos
+    # remove any existing output directory
+    mkdir -p ${OUT_BASE_DIR}
 
     # remove any existing output directory
-    if [ -d ${OUT_DIR} ]; then
-        rm -rf ${OUT_DIR}
+    if [ -d ${OUT_PKG_DIR} ]; then
+        rm -rf ${OUT_PKG_DIR}
     fi
+    mkdir -p ${OUT_PKG_DIR}
+
+    local VERSION_INFO_FILE=${OUT_BASE_DIR}/version.info
+
+    # create file with git infos
+    local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
+    (
+        cd ${SDK_SRC_DIR}
+        git submodule status --recursive >${ABS_VERSION_INFO_FILE}
+    )
+
+    local SDK_EXCLUDE_REPOS=(
+        sdk-pdfs
+        sdk-sel4-camkes/tools/riscv-pk
+        tools/kpt
+    )
+    for repo in ${SDK_EXCLUDE_REPOS[@]}; do
+        # replace "/" by "\/" via bash magic ${repo//\//\\/}
+        sed --in-place "/ ${repo//\//\\/} /d" ${VERSION_INFO_FILE}
+    done
 
     local SDK_EXCLUDES=(
         # remove all astyle files
@@ -112,10 +134,7 @@ function collect_sdk_sources()
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
-        # remove the complete submodules
-        ./sdk-pdfs
-        ./sdk-sel4-camkes/tools/riscv-pk
-        ./tools/kpt
+        ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
         # remove all readme files our code because they are in a bad shape,
         # the only exception is libs/os_core_api/README.md, it looks nice and
         # is used in the doxygen process. We remove it later when creating the
@@ -155,12 +174,15 @@ function collect_sdk_sources()
     # trust in "--exclude-vcs" to do the job properly.
     copy_files_via_tar \
         ${SDK_SRC_DIR} \
-        ${OUT_DIR} \
+        ${OUT_PKG_DIR} \
         --exclude-vcs \
         ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
 
+    # put a version.info into the SDK package for the seL4/CAmkES repos
+    #sed "/ sdk-sel4-camkes\//!d" ${VERSION_INFO_FILE} > ${OUT_PKG_DIR}/sdk-sel4-camkes/version.info
+
     # copy demos
-    local OUT_DEMOS_DIR=${OUT_DIR}/demos
+    local OUT_DEMOS_DIR=${OUT_PKG_DIR}/demos
     for SDK_DEMO_NAME in $(ls ${DEMO_SRC_DIR}) ; do
 
         print_info "collecting demo sources from ${DEMO_SRC_DIR}/${SDK_DEMO_NAME}"
@@ -438,7 +460,7 @@ DEMOS_SRC_DIR=${OS_SDK_DIR}/../src/demos
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
     package_sdk ${SDK_PACKAGE_SRC}
@@ -447,12 +469,12 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
 
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
@@ -467,12 +489,12 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
     # do not build the documentation
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     # do not build the documentation and binaries
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
 
 else
     echo "usage: $0 <mode> <OUT_BASE_DIR>"
