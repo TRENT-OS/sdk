@@ -104,23 +104,25 @@ function collect_sdk_sources()
     fi
 
     local SDK_EXCLUDES=(
-        --exclude-vcs
-        ### seems there is a bug in tar, the file .gitmodules is not
-        ### excluded as specified. Using --exclude-vcs instead.
-        #--exclude '.gitmodules'
-        #--exclude '.git*'
-        --exclude 'astyle_check.sh'
-        --exclude './astyle_check_sdk.sh'
-        --exclude './build-sdk.sh'
-        #--exclude './Doxyfile' # build_sdk_docs() still needs this file
-        --exclude './jenkinsfile-control'
-        --exclude './jenkinsfile-generic'
-        --exclude './publish_doc.sh'
-        --exclude './sdk-pdfs'
-        --exclude './sdk-sel4-camkes/tools/riscv-pk'
-        --exclude './tools/kpt'
+        astyle_check.sh
+        ./astyle_check_sdk.sh
+        ./build-sdk.sh
+        ./jenkinsfile-control
+        ./jenkinsfile-generic
+        ./publish_doc.sh
+        ./sdk-pdfs
+        ./sdk-sel4-camkes/tools/riscv-pk
+        ./tools/kpt
     )
-    copy_files_via_tar ${SDK_SRC_DIR} ${OUT_DIR} ${SDK_EXCLUDES[@]}
+
+    # copy files using tar and filtering. Seems there is a bug in tar, for
+    # "--exclude '.gitmodules'" the file .gitmodules is not excluded. So we
+    # trust in "--exclude-vcs" to do the job properly.
+    copy_files_via_tar \
+        ${SDK_SRC_DIR} \
+        ${OUT_DIR} \
+        --exclude-vcs \
+        ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
 
     # copy demos
     local OUT_DEMOS_DIR=${OUT_DIR}/demos
@@ -341,12 +343,16 @@ function package_sdk()
     du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
-        --exclude 'prepare_test.sh'
-        # --exclude './Doxyfile'
+        prepare_test.sh
+        # ./Doxyfile
     )
 
-    tar -cjf ${SDK_PACKAGE_BZ2} ${SDK_PACKAGE_EXCLUDES[@]} \
-        -C ${SDK_PACKAGE_SRC} .
+    # prefix everything in SDK_EXCLUDE_ELEMENTS with "--exclude "
+    tar \
+        -cjf ${SDK_PACKAGE_BZ2} \
+        -C ${SDK_PACKAGE_SRC} \
+        ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
+        .
 
     du -sh ${SDK_PACKAGE_BZ2}
 }
