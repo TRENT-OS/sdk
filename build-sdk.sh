@@ -311,29 +311,20 @@ function build_sdk_docs()
     doxygen ${SDK_SRC_DIR}/Doxyfile
 
     # collect all the pdfs
-    echo "Collecting PDF documentation in ${OUT_DIR}/pdf..."
-    local ABS_OUT_DIR_PDF=$(realpath ${OUT_DIR}/pdf)
+    local OUT_DIR_PDF=${OUT_DIR}/pdf
+    echo "Collecting PDF documentation in ${OUT_DIR_PDF}/..."
 
-    cp -a ${SDK_PDF_DIR}/*.pdf ${ABS_OUT_DIR_PDF}
-    (
-        # substitute the paths to the doxygen documentation
-
-        local SUBS_DIR=$(realpath ${OUT_DIR}/html)
-
-        # HOST_DIR is an environment variable that is defined in case of
-        # usage of the script with the provided docker build wrapper
-        # "seos_build_env.sh" the wrapper binds the folder /host inside the
-        # container to the current working directory from where it is called.
-        # This information is needed in order to provide correct links
-        # to the doxygen htmls inside the PDFs: /host must be replaced by
-        # $HOST_DIR
-        if [ ! -z "${HOST_DIR-}" ]; then
-            SUBS_DIR=$(echo ${SUBS_DIR} | sed 's/\/host//g')
-            SUBS_DIR=${HOST_DIR}/${SUBS_DIR}
-        fi
-        cd ${ABS_OUT_DIR_PDF}
-        ${SDK_PDF_DIR}/substitute_doxygen_path.sh ${SUBS_DIR}
+    PDF_FILES=(
+        TRENTOS-M_GettingStarted_SDK_V1.0.pdf
+        TRENTOS-M_Handbook_SDK_V1.0.pdf
+        TRENTOS-M_ReleaseNotes_SDK_V1.0.pdf
     )
+
+    for PDF_FILE in ${PDF_FILES[@]}; do
+        cp -a ${SDK_PDF_DIR}/${PDF_FILE} ${OUT_DIR_PDF}
+    done
+
+    cp -a ${SDK_PDF_DIR}/3rd_party_pdf/ ${OUT_DIR_PDF}/3rd_party
 }
 
 
