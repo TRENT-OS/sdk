@@ -182,7 +182,7 @@ def do_git_checkout(
                         userRemoteConfigs: [
                             [
                                 credentialsId: 'ac3a90b4-fd3f-4aa4-b28e-bd78878588ad',
-                                url: 'ssh://git@bitbucket.hensoldt-cyber.systems:7999/' + repo + '.git'
+                                url: 'ssh://git@git_server:7999/' + repo + '.git'
                             ]
                         ]
                     ]
