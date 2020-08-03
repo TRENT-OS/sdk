@@ -371,9 +371,12 @@ function build_sdk_docs()
     #
     # It is planned to do a documentation of the entire SDK once it is well
     # documented.
-    export DOXYGEN_INPUT_DIR=${SDK_SRC_DIR}/libs/os_core_api
-    export DOXYGEN_OUTPUT_DIR=${OUT_DIR}
-    doxygen ${SDK_SRC_DIR}/Doxyfile
+    (
+        export DOXYGEN_OUTPUT_DIR=$(realpath ${OUT_DIR})
+        cd ${SDK_SRC_DIR}
+        export DOXYGEN_INPUT_DIR=libs/os_core_api
+        doxygen Doxyfile
+    )
 
     # collect all the pdfs
     local OUT_DIR_PDF=${OUT_DIR}/pdf
