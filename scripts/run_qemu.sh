@@ -10,32 +10,17 @@ if [[ -z "${1:-}" ]]; then
     echo "ERROR: missing test image"
     exit 1
 fi
-TEST_NAME=${1}
+SYSTEM_IMAGE=${1}
 shift
+if [[ ! -e "${SYSTEM_IMAGE}" ]]; then
+    echo "system image not found: ${SYSTEM_IMAGE}"
+    exit 1
+fi
 
 PARAM_CON_QEMU=${1:-}
 if [[ ! -z "${1:-}" ]]; then
     shift
 fi
-
-
-#-------------------------------------------------------------------------------
-# test image
-
-if [ -z "${TEST_NAME}" ]; then
-    echo "ERROR: missing test name"
-    exit 1
-fi
-
-# default is the zynq7000 platform and debug build
-PLATFORM=zynq7000
-BUILD_MODE=Debug
-IMAGE_PATH=build-${PLATFORM}-${BUILD_MODE}-${TEST_NAME}/images/capdl-loader-image-arm-${PLATFORM}
-if [ ! -f ${IMAGE_PATH} ]; then
-    echo "ERROR: missing test image ${IMAGE_PATH}"
-    exit 1
-fi
-
 
 #-------------------------------------------------------------------------------
 # QEMU serial port 0 connection
@@ -72,7 +57,7 @@ QEMU_PARAMS=(
     -nographic
     ${CON_QEMU_UART_PROXY} # serial port 0 is used for Proxy connection
     -serial mon:stdio      # serial port 1 is used for console
-    -kernel ${IMAGE_PATH}
+    -kernel ${SYSTEM_IMAGE}
 )
 
 # run QEMU showing command line
