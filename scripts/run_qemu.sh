@@ -75,4 +75,6 @@ QEMU_PARAMS=(
     -kernel ${IMAGE_PATH}
 )
 
+# run QEMU showing command line
+set -x
 qemu-system-arm ${QEMU_PARAMS[@]}
