@@ -90,9 +90,8 @@ function copy_files_via_tar()
 function collect_sdk_sources()
 {
     local SDK_SRC_DIR=$1
-    local DEMO_SRC_DIR=$2
-    local OUT_BASE_DIR=$3
-    local OUT_PKG_DIR=$4
+    local OUT_BASE_DIR=$2
+    local OUT_PKG_DIR=$3
     shift 3
 
     print_info "collecting SDK sources from ${SDK_SRC_DIR}"
@@ -180,12 +179,21 @@ function collect_sdk_sources()
 
     # put a version.info into the SDK package for the seL4/CAmkES repos
     #sed "/ sdk-sel4-camkes\//!d" ${VERSION_INFO_FILE} > ${OUT_PKG_DIR}/sdk-sel4-camkes/version.info
+}
 
-    # copy demos
-    local OUT_DEMOS_DIR=${OUT_PKG_DIR}/demos
-    for SDK_DEMO_NAME in $(ls ${DEMO_SRC_DIR}) ; do
 
-        print_info "collecting demo sources from ${DEMO_SRC_DIR}/${SDK_DEMO_NAME}"
+#-------------------------------------------------------------------------------
+function collect_sdk_demos()
+{
+    local DEMOS_DIR=$1
+    local SDK_DEMOS_DIR=$2
+    shift 2
+
+    for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
+
+        local DEMO_SRC_DIR=${DEMOS_SRC_DIR}/${SDK_DEMO_NAME}
+
+        print_info "collecting demo sources from ${DEMO_SRC_DIR}"
 
         local DEMO_EXCLUDES=(
             --exclude-vcs
@@ -194,8 +202,8 @@ function collect_sdk_sources()
         )
 
         copy_files_via_tar \
-            ${DEMO_SRC_DIR}/${SDK_DEMO_NAME} \
-            ${OUT_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
+            ${DEMO_SRC_DIR} \
+            ${SDK_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
             ${DEMO_EXCLUDES[@]}
     done
 }
@@ -204,8 +212,10 @@ function collect_sdk_sources()
 #-------------------------------------------------------------------------------
 function build_sdk_demos()
 {
-    local SDK_SRC_DIR=$1
-    local BUILD_DIR=$2
+    local SDK_DEMOS_DIR=$1
+    local SDK_SRC_DIR=$2
+    local BUILD_DIR=$3
+    shift 3
 
     local TARGETS=(
         zynq7000
@@ -226,7 +236,7 @@ function build_sdk_demos()
         [demo_iot_app_rpi3]=rpi3
     )
 
-    for SDK_DEMO_NAME in $(ls ${SDK_SRC_DIR}/demos); do
+    for SDK_DEMO_NAME in $(ls ${SDK_DEMOS_DIR}) ; do
 
         local CUR_TARGETS=(
             ${TARGET_RESTRICTIONS[${SDK_DEMO_NAME}]:-${TARGETS[@]}}
@@ -235,12 +245,10 @@ function build_sdk_demos()
         for TARGET in ${CUR_TARGETS[@]}; do
             print_info "Building SDK demo: ${SDK_DEMO_NAME} for ${TARGET}"
 
-            local SDK_DEMO_BASE=${SDK_SRC_DIR}/demos/${SDK_DEMO_NAME}
-            local SDK_DEMO_SRC=${SDK_DEMO_BASE}/src
             local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}-${TARGET}
 
             local BUILD_PARAMS=(
-                ${SDK_DEMO_SRC}
+                ${SDK_DEMOS_DIR}/${SDK_DEMO_NAME}/src
                 ${TARGET}
                 ${SDK_DEMO_OUT}
                 -D CMAKE_BUILD_TYPE=Debug
@@ -451,6 +459,7 @@ SDK_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
 SDK_PACKAGE_SRC=${OUT_BASE_DIR}/pkg
 SDK_PACKAGE_DOC=${SDK_PACKAGE_SRC}/doc
 SDK_PACKAGE_BIN=${SDK_PACKAGE_SRC}/bin
+SDK_PACKAGE_DEMOS=${SDK_PACKAGE_SRC}/demos
 
 # we make an assumption about the directory structure of seos_tests here, which
 # acceptable for the moment. CI adapts to this layout.
@@ -462,22 +471,25 @@ DEMOS_SRC_DIR=${OS_SDK_DIR}/../src/demos
 # to OS_SDK_DIR for all steps
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
-    # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # create SDK package including demos
+    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
+    collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
     package_sdk ${SDK_PACKAGE_SRC}
     # demo builds are not part of the SDK package, this is just a test.
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_BUILD}
+    build_sdk_demos ${SDK_PACKAGE_DEMOS} ${SDK_PACKAGE_SRC} ${SDK_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
-    # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_BUILD}
+    # create SDK snapshot build demos from it
+    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
+    build_sdk_demos ${SDK_PACKAGE_DEMOS} ${SDK_PACKAGE_SRC} ${SDK_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
-    # create SDK snapshot from repos sources and build SDK from snapshot
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # create SDK snapshot build documentation from it
+    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # note that there are no demos collected here
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
 
 elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
@@ -491,13 +503,13 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
     sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
-    # do not build the documentation
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # create SDK snapshot and build SDK tools
+    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
-    # do not build the documentation and binaries
-    collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # create SDK snapshot, no docs, tool or demo
+    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
 
 else
     echo "usage: $0 <mode> <OUT_BASE_DIR>"
