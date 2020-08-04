@@ -446,8 +446,8 @@ OUT_BASE_DIR=$2
 shift 2
 
 
-SDK_PACKAGE_BUILD=${OUT_BASE_DIR}/build
-SDK_PACKAGE_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
+SDK_BUILD=${OUT_BASE_DIR}/build
+SDK_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
 SDK_PACKAGE_SRC=${OUT_BASE_DIR}/pkg
 SDK_PACKAGE_DOC=${SDK_PACKAGE_SRC}/doc
 SDK_PACKAGE_BIN=${SDK_PACKAGE_SRC}/bin
@@ -464,16 +464,16 @@ DEMOS_SRC_DIR=${OS_SDK_DIR}/../src/demos
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
     collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
+    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
     package_sdk ${SDK_PACKAGE_SRC}
     # demo builds are not part of the SDK package, this is just a test.
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
     collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD}
+    build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
     # create SDK snapshot from repos sources and build SDK from snapshot
@@ -488,12 +488,12 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
         echo "please build an SDK package first"
         exit 1
     fi
-    sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_UNIT_TEST}
+    sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
     # do not build the documentation
     collect_sdk_sources ${OS_SDK_DIR} ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_BUILD} ${SDK_PACKAGE_BIN}
+    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     # do not build the documentation and binaries
