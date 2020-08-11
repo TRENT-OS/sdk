@@ -111,18 +111,105 @@ void pre_init(void)
 //------------------------------------------------------------------------------
 int run()
 {
-    FifoDataport* underlyingFifo =
-        (FifoDataport*) UnderlyingChan_outputFifoDataport;
+    OS_Dataport_t out_dp = OS_DATAPORT_ASSIGN(UnderlyingChan_outputFifoDataport);
+
+    // the last byte of the dataport holds an overflow flag
+    char* isFifoOverflow = (char*)( (uintptr_t)OS_Dataport_getBuf(out_dp)
+                                    + OS_Dataport_getSize(out_dp) - 1 );
+
+
+    FifoDataport* underlyingFifo = (FifoDataport*)OS_Dataport_getBuf(out_dp);
+
+    static char fifo_buffer[2048]; // value found from testing
+    CharFifo fifo;
+    if (!CharFifo_ctor(&fifo, fifo_buffer, sizeof(fifo_buffer)))
+    {
+        Debug_LOG_ERROR("CharFifo_ctor() failed");
+        return -1;
+    }
+
     ChanMux* chanMux = get_instance_ChanMux();
 
     for (;;)
     {
-        UnderlyingChan_EventHasData_wait();
-        while (FifoDataport_getSize(underlyingFifo) > 0)
+        // if there is no data in the FIFO then wait for new data
+        if (CharFifo_isEmpty(&fifo) && FifoDataport_isEmpty(underlyingFifo))
         {
-            char const* c = FifoDataport_getFirst(underlyingFifo);
-            ChanMux_takeByte(chanMux, *c);
-            FifoDataport_remove(underlyingFifo, 1);
+            // no new data will arrive if there was an overflow
+            if (0 != *isFifoOverflow)
+            {
+                Debug_LOG_ERROR("dataport FIFO overflow detected");
+                // ToDo: clear overflow, reset ChanMux engine and continue
+                return -1;
+            }
+
+            // block waiting for an event. Such an event indicates either
+            // new data or a state change that needs attention.
+            UnderlyingChan_EventHasData_wait();
         }
-    }
+
+        // by default we prefer reading data from the dataport FIFO over
+        // processing the data. This ensures the dataport FIFO has space for
+        // new data. However, when out FIFO is full, we prefer processing data
+        // over reading more data from the underlying FIFO. This variable
+        // defines, how much data bytes we process in a row now, before looking
+        // at the underlying FIFO again.
+        size_t processing_boost = 0;
+
+        // try to read new data to drain the lower FIFO as quickly as possible
+        for (;;)
+        {
+            size_t avail = FifoDataport_getAmountConsecutives(underlyingFifo);
+            if (0 == avail)
+            {
+                break;
+            }
+
+            char const* buf_port = FifoDataport_getFirst(underlyingFifo);
+            assert( NULL != buf_port );
+
+            // copy from dataport to internal fifo
+            size_t copied = 0;
+            do
+            {
+                if (!CharFifo_push(&fifo, &buf_port[copied] ))
+                {
+                    break;
+                }
+                copied++;
+            }
+            while (copied < avail);
+            FifoDataport_remove(underlyingFifo, copied);
+
+            // if our internal FIFO is more than 75% filled, give processing
+            // of data a boost
+            size_t watermark = (CharFifo_getCapacity(&fifo) / 4) * 3;
+            size_t used = CharFifo_getSize(&fifo);
+            if (used > watermark)
+            {
+                processing_boost = used - watermark;
+                if (copied < avail)
+                {
+                    Debug_LOG_DEBUG("avail %zu, copied %zu, boost %zu",
+                                    avail, copied, processing_boost);
+                }
+                break;
+            }
+        }
+
+        // get data to process from our internal  FIFO
+        do
+        {
+            char const* char_container = CharFifo_getFirst(&fifo);
+            if (NULL == char_container)
+            {
+                break; // FIFO is empty
+            }
+
+            ChanMux_takeByte(chanMux, *char_container);
+            CharFifo_pop(&fifo);
+
+        }
+        while (0 < processing_boost--);
+    } // for (;;) main loop
 }
