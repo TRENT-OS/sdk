@@ -12,6 +12,7 @@
 
 extern const ChanMux_Config_t cfgChanMux;
 
+
 //------------------------------------------------------------------------------
 static ChanMux*
 get_instance_ChanMux(void)
