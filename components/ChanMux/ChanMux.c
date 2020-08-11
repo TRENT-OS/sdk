@@ -48,20 +48,6 @@ get_instance_ChanMux(void)
 }
 
 
-//==============================================================================
-// CAmkES component
-//==============================================================================
-
-//---------------------------------------------------------------------------
-// called before any other init function is called. Full runtime support is not
-// available, e.g. interfaces cannot be expected to be accessible.
-void pre_init(void)
-{
-    Debug_LOG_DEBUG("create ChanMUX instance");
-
-    // ensure the instance is set up
-    (void)get_instance_ChanMux();
-}
 
 //==============================================================================
 // CAmkES Interface "ChanMuxDriverInf" (ChanMUX top)
@@ -104,6 +90,24 @@ ChanMuxRpc_read(
                lenRead);
 }
 
+
+//==============================================================================
+// CAmkES component
+//==============================================================================
+
+//---------------------------------------------------------------------------
+// called before any other init function is called. Full runtime support is not
+// available, e.g. interfaces cannot be expected to be accessible.
+void pre_init(void)
+{
+    Debug_LOG_DEBUG("create ChanMUX instance");
+
+    // ensure the instance is set up
+    (void)get_instance_ChanMux();
+}
+
+
+//------------------------------------------------------------------------------
 int run()
 {
     FifoDataport* underlyingFifo =
