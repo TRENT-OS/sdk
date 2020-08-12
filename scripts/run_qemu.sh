@@ -7,7 +7,7 @@
 #-------------------------------------------------------------------------------
 
 if [[ -z "${1:-}" ]]; then
-    echo "ERROR: missing test image"
+    echo "ERROR: missing system image parameter"
     exit 1
 fi
 SYSTEM_IMAGE=${1}
