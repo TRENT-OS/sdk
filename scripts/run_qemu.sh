@@ -48,11 +48,22 @@ else
 fi
 
 
-#-------------------------------------------------------------------------------
-# run QEMU
+BUILD_PLATFORM=${BUILD_PLATFORM:-"zynq7000"}
+
+declare -A QEMU_MACHINE_MAPPING=(
+    [zynq7000]=xilinx-zynq-a9
+    [imx6]=sabrelite
+)
+
+QEMU_MACHINE=${QEMU_MACHINE_MAPPING[${BUILD_PLATFORM}]:-}
+if [ -z "${QEMU_MACHINE}" ]; then
+    echo "ERROR: missing QEMU machine mapping for ${BUILD_PLATFORM}"
+    exit 1
+fi
+
 
 QEMU_PARAMS=(
-    -machine xilinx-zynq-a9
+    -machine ${QEMU_MACHINE}
     -m size=512M
     -nographic
     ${CON_QEMU_UART_PROXY} # serial port 0 is used for Proxy connection
