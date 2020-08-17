@@ -201,7 +201,7 @@ int run()
             }
         }
 
-        // get data to process from our internal  FIFO
+        // get data to process from our internal FIFO
         do
         {
             char const* char_container = CharFifo_getFirst(&fifo);
