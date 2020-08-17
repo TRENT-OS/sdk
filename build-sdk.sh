@@ -267,15 +267,17 @@ function build_sdk_demos()
     )
 
     #
-    #                     | zynq7000 | rpi3 | imx6 | migv | ...
-    # --------------------+----------+------+------+------+-----
-    #  demo_hello_world   | yes      | yes  | yes  | yes  |
-    #  demo_iot_app       | yes      | no   | no   | no   |
-    #  demo_iot_app_rpi3  | no       | yes  | no   | no   |
+    #                      | zynq7000 | rpi3 | imx6 | migv | ...
+    # ---------------------+----------+------+------+------+-----
+    #  demo_hello_world    | yes      | yes  | yes  | yes  |
+    #  demo_iot_app        | yes      | no   | no   | no   |
+    #  demo_iot_app_rpi3   | no       | yes  | no   | no   |
+    #  demo_raspi_ethernet | no       | yes  | no   | no   |
     #
     declare -A TARGET_RESTRICTIONS=(
         [demo_iot_app]=zynq7000
         [demo_iot_app_rpi3]=rpi3
+        [demo_raspi_ethernet]=rpi3
     )
 
     for SDK_DEMO_NAME in $(ls ${SDK_DEMOS_DIR}) ; do
