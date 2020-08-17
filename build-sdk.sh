@@ -8,9 +8,14 @@
 #
 #-------------------------------------------------------------------------------
 
-# This script assumes it is located in the SDK root folder and should be invoked
-# from the desired build output directory.
-OS_SDK_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+
+# This script assumes it is located in the SDK root folder
+OS_SDK_PATH="${SCRIPT_DIR}"
+
+# This script assumes is exists in the directory structure of seos_tests, the
+# SDK creatin CI job adapts to this layout.
+DEMOS_SRC_DIR="${SCRIPT_DIR}/../src/demos"
 
 
 #-------------------------------------------------------------------------------
@@ -285,7 +290,7 @@ function build_sdk_tool()
         # SDK_SRC_DIR may be a relative path to the current directory, but the
         # build will change the working directory to BUILD_DIR. Thus we must
         # pass an absolute path here
-        -D OS_SDK_SOURCE_PATH:PATH=$(realpath ${SDK_SRC_DIR})
+        -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
@@ -408,7 +413,7 @@ function build_sdk_docs()
     )
 
     # collect all the PDFs from the sandbox directory
-    local SDK_PDF_DIR=${OS_SDK_DIR}/sdk-pdfs
+    local SDK_PDF_DIR=${OS_SDK_PATH}/sdk-pdfs
     local OUT_DIR_PDF=${OUT_DIR}/pdf
     echo "Collecting PDF documentation in ${OUT_DIR_PDF}/..."
 
@@ -483,18 +488,14 @@ SDK_PACKAGE_DOC=${SDK_PACKAGE_SRC}/doc
 SDK_PACKAGE_BIN=${SDK_PACKAGE_SRC}/bin
 SDK_PACKAGE_DEMOS=${SDK_PACKAGE_SRC}/demos
 
-# we make an assumption about the directory structure of seos_tests here, which
-# acceptable for the moment. CI adapts to this layout.
-DEMOS_SRC_DIR=${OS_SDK_DIR}/../src/demos
-
 
 # for development purposes, all the steps can also run directly from the SDK
 # sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
-# to OS_SDK_DIR for all steps
+# to OS_SDK_PATH for all steps
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
     # create SDK package including demos
-    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
     collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
@@ -504,13 +505,13 @@ if [[ "${PACKAGE_MODE}" == "all" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
     # create SDK snapshot build demos from it
-    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
     build_sdk_demos ${SDK_PACKAGE_DEMOS} ${SDK_PACKAGE_SRC} ${SDK_BUILD}
 
 elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
     # create SDK snapshot build documentation from it
-    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     # note that there are no demos collected here
     build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
 
@@ -526,12 +527,12 @@ elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
     # create SDK snapshot and build SDK tools
-    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
     build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
     # create SDK snapshot, no docs, tool or demo
-    collect_sdk_sources ${OS_SDK_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
 
 else
     echo "usage: $0 <mode> <OUT_BASE_DIR>"

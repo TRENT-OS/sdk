@@ -41,9 +41,12 @@
 #
 #-------------------------------------------------------------------------------
 
-# This script assumes it is located in the SDK root folder, so we can determine
-# the SDK location easily by getting this script's directory.
-OS_SDK_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+
+# This script assumes it is located in the SDK root folder. We need the
+# absolute SDK path, because we change the current working directory in the
+# build  process
+ABS_OS_SDK_PATH="$(realpath ${SCRIPT_DIR})"
 
 # read parameters
 OS_PROJECT_DIR=$1
@@ -103,10 +106,12 @@ case "${BUILD_PLATFORM}" in
         ;;
 esac
 
+
+
 CMAKE_PARAMS=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
-    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
+    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${ABS_OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
     -D KernelVerificationBuild=OFF
@@ -132,7 +137,7 @@ if [[ ! -e ${BUILD_DIR} ]]; then
         cd ${BUILD_DIR}
         (
             set -x
-            cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${OS_SDK_DIR}
+            cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${ABS_OS_SDK_PATH}
         )
 
         # cmake must run twice, so the config settings propagate properly. The
