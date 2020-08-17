@@ -191,7 +191,7 @@ function collect_sdk_demos()
 
     for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
 
-        local DEMO_SRC_DIR=${DEMOS_SRC_DIR}/${SDK_DEMO_NAME}
+        local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
 
         print_info "collecting demo sources from ${DEMO_SRC_DIR}"
 
