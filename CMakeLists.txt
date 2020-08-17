@@ -241,6 +241,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
                 COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${target} > ${target}.lst
                 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
                 VERBATIM
+                COMMENT "create disassembly for ${target}"
             )
 
         endif()
@@ -253,6 +254,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
                 COMMAND dot -Tsvg graph.dot -o graph.svg
                 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
                 VERBATIM
+                COMMENT "create system picture"
             )
 
         endif()
@@ -269,6 +271,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
                     images/os_image.bin
                 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                 VERBATIM
+                COMMENT "create system image os_image.bin"
             )
 
         endif()
