@@ -101,6 +101,8 @@ ChanMuxRpc_read(
 // available, e.g. interfaces cannot be expected to be accessible.
 void pre_init(void)
 {
+    Debug_LOG_DEBUG("[%s] %s", get_instance_name(), __func__);
+
     Debug_LOG_DEBUG("create ChanMUX instance");
 
     // ensure the instance is set up
@@ -111,6 +113,8 @@ void pre_init(void)
 //------------------------------------------------------------------------------
 int run()
 {
+    Debug_LOG_DEBUG("[%s] %s", get_instance_name(), __func__);
+
     OS_Dataport_t out_dp = OS_DATAPORT_ASSIGN(UnderlyingChan_outputFifoDataport);
 
     // the last byte of the dataport holds an overflow flag
