@@ -188,8 +188,8 @@ int run()
 
             // if our internal FIFO is more than 75% filled, give processing
             // of data a boost
-            size_t watermark = (CharFifo_getCapacity(&fifo) / 4) * 3;
-            size_t used = CharFifo_getSize(&fifo);
+            const size_t watermark = (CharFifo_getCapacity(&fifo) / 4) * 3;
+            const size_t used = CharFifo_getSize(&fifo);
             if (used > watermark)
             {
                 processing_boost = used - watermark;
