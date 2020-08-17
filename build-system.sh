@@ -106,17 +106,17 @@ esac
 CMAKE_PARAMS=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
-    -D CMAKE_TOOLCHAIN_FILE=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
+    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${OS_SDK_DIR}/sdk-sel4-camkes/kernel/gcc.cmake
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
     -D KernelVerificationBuild=OFF
     # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
     # musllibc and capDL-tool) that are project agnostic, so we don't have
     # to rebuild them every time. This reduces the build time a lot.
-    -D SEL4_CACHE_DIR=cache-${BUILD_PLATFORM}
+    -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
     # location of the OS project to be build. Since we will change the current
     # working directory, we have to ensure this is an absolute path
-    -D OS_PROJECT_DIR=$(realpath ${OS_PROJECT_DIR})
+    -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
 )
 
 # check if cmake init has failed previously

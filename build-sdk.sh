@@ -285,7 +285,7 @@ function build_sdk_tool()
         # SDK_SRC_DIR may be a relative path to the current directory, but the
         # build will change the working directory to BUILD_DIR. Thus we must
         # pass an absolute path here
-        -D OS_SDK_SOURCE_PATH:STRING=$(realpath ${SDK_SRC_DIR})
+        -D OS_SDK_SOURCE_PATH:PATH=$(realpath ${SDK_SRC_DIR})
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
