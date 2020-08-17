@@ -118,8 +118,9 @@ int run()
     OS_Dataport_t out_dp = OS_DATAPORT_ASSIGN(UnderlyingChan_outputFifoDataport);
 
     // the last byte of the dataport holds an overflow flag
-    char* isFifoOverflow = (char*)( (uintptr_t)OS_Dataport_getBuf(out_dp)
-                                    + OS_Dataport_getSize(out_dp) - 1 );
+    volatile char* isFifoOverflow = (volatile char*)(
+                                        (uintptr_t)OS_Dataport_getBuf(out_dp)
+                                        + OS_Dataport_getSize(out_dp) - 1 );
 
 
     FifoDataport* underlyingFifo = (FifoDataport*)OS_Dataport_getBuf(out_dp);
