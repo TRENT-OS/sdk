@@ -363,7 +363,6 @@ function build_sdk_docs()
 {
     local SDK_SRC_DIR=$1
     local OUT_DIR=$2
-    local SDK_PDF_DIR=${OS_SDK_DIR}/sdk-pdfs
 
     print_info "Building SDK docs into ${OUT_DIR} from ${SDK_SRC_DIR}"
 
@@ -386,7 +385,8 @@ function build_sdk_docs()
         doxygen Doxyfile
     )
 
-    # collect all the pdfs
+    # collect all the PDFs from the sandbox directory
+    local SDK_PDF_DIR=${OS_SDK_DIR}/sdk-pdfs
     local OUT_DIR_PDF=${OUT_DIR}/pdf
     echo "Collecting PDF documentation in ${OUT_DIR_PDF}/..."
 
