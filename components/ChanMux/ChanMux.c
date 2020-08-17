@@ -177,7 +177,7 @@ int run()
             size_t copied = 0;
             do
             {
-                if (!CharFifo_push(&fifo, &buf_port[copied] ))
+                if (!CharFifo_push(&fifo, &buf_port[copied]))
                 {
                     break;
                 }
