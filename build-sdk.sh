@@ -356,6 +356,28 @@ function build_sdk_tools()
 
         cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
     )
+
+    # build RPi3 flasher using a sample file from the IoT demo
+    print_info "Building SDK tool: rpi3_flasher"
+
+    FLASHER_SRC=${SDK_SRC_DIR}/tools/rpi3_flasher
+    FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
+    FLASHER_SRC_DATA=${DEMOS_SRC_DIR}/demo_iot_app_rpi3/flash.c
+    if [ ! -w ${FLASHER_SRC_DATA} ]; then
+        echo "missing ${FLASHER_SRC_DATA}"
+        exit 1
+    fi
+    copy_files_via_tar ${FLASHER_SRC} ${FLASHER_SRC_TEST} --exclude-vcs
+    cp ${FLASHER_SRC_DATA} ${FLASHER_SRC_TEST}/
+
+    local BUILD_PARAMS=(
+        ${FLASHER_SRC_TEST}
+        rpi3
+        ${BUILD_DIR}/rpi3_flasher_test
+        -D CMAKE_BUILD_TYPE=Debug
+    )
+    ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
+
 }
 
 #-------------------------------------------------------------------------------
