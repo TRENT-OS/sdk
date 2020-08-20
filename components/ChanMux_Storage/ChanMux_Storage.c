@@ -131,6 +131,14 @@ storage_rpc_getSize(off_t* const size)
 }
 
 OS_Error_t
+storage_rpc_getBlockSize(
+    size_t* const blockSize)
+{
+    *blockSize = 1;
+    return OS_SUCCESS;
+}
+
+OS_Error_t
 storage_rpc_getState(
     uint32_t* flags)
 {
