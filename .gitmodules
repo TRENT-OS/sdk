@@ -88,3 +88,6 @@
 [submodule "components/UART"]
 	path = components/UART
 	url = ../../sc/uart.git
+[submodule "components/SdHostController"]
+	path = components/SdHostController
+	url = ../../sc/sdhostcontroller.git
