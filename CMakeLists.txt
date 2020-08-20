@@ -239,7 +239,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
                 TARGET ${target}
                 POST_BUILD
                 COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${target} > ${target}.lst
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
+                WORKING_DIRECTORY "$<TARGET_PROPERTY:${target},BINARY_DIR>"
                 VERBATIM
                 COMMENT "create disassembly for ${target}"
             )
@@ -252,7 +252,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
                 TARGET ${target}
                 POST_BUILD
                 COMMAND dot -Tsvg graph.dot -o graph.svg
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/os_system"
+                WORKING_DIRECTORY "$<TARGET_PROPERTY:${target},BINARY_DIR>"
                 VERBATIM
                 COMMENT "create system picture"
             )
@@ -262,14 +262,14 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
         if(target STREQUAL "rootserver_image")
 
             # copy system image to the generic file images/os_image.bin
+            get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
+            get_filename_component(IMG_DIR "${IMAGE_NAME}" DIRECTORY)
+            get_filename_component( IMG_NAME "${IMAGE_NAME}" NAME)
             add_custom_command(
                 TARGET ${target}
                 POST_BUILD
-                COMMAND
-                    ${CMAKE_COMMAND} -E copy
-                    "$<TARGET_PROPERTY:rootserver_image,IMAGE_NAME>"
-                    images/os_image.bin
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E copy "${IMG_NAME}" os_image.bin
+                WORKING_DIRECTORY "${IMG_DIR}"
                 VERBATIM
                 COMMENT "create system image os_image.bin"
             )
