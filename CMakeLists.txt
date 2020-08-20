@@ -259,9 +259,9 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
         endif()
 
-        # copy system image to the generic file images/os_image.bin
         if(target STREQUAL "rootserver_image")
 
+            # copy system image to the generic file images/os_image.bin
             add_custom_command(
                 TARGET ${target}
                 POST_BUILD
