@@ -217,7 +217,7 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
-macro(DeclareAndCreateCamkESSystem camkes_system_file)
+function(DeclareAndCreateCamkESSystem camkes_system_file)
 
     DeclareCAmkESRootserver(
         ${camkes_system_file}
@@ -278,7 +278,7 @@ macro(DeclareAndCreateCamkESSystem camkes_system_file)
 
     endforeach()
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------
