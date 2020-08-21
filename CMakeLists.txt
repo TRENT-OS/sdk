@@ -217,6 +217,20 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
+function(cmd_disassemble_elf binary_file lst_file)
+
+    add_custom_command(
+        OUTPUT "${lst_file}"
+        DEPENDS "${binary_file}"
+        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${binary_file} > ${lst_file}
+        VERBATIM
+        COMMENT "create disassembly for ${binary_file}"
+    )
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
 function(DeclareAndCreateCamkESSystem camkes_system_file)
 
     DeclareCAmkESRootserver(
@@ -231,17 +245,18 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
     get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
     foreach(target ${targets})
 
-        # each CAmkES component is in a *.instance.bin file. Disassemble with
-        # source interleaved, print section headers and symbol table
+        # each CAmkES component is in a *.instance.bin file.
         if(target MATCHES "(.*\.instance\.bin)|capdl-loader")
 
-            add_custom_command(
-                TARGET ${target}
-                POST_BUILD
-                COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${target} > ${target}.lst
-                WORKING_DIRECTORY "$<TARGET_PROPERTY:${target},BINARY_DIR>"
-                VERBATIM
-                COMMENT "create disassembly for ${target}"
+            get_target_property(BINARY_DIR ${target} BINARY_DIR)
+            set(TARGET_BIN_FILE "${BINARY_DIR}/${target}")
+            set(TARGET_LST_FILE "${TARGET_BIN_FILE}.lst")
+
+            cmd_disassemble_elf("${TARGET_BIN_FILE}" "${TARGET_LST_FILE}")
+
+            add_custom_target(
+                ${target}_disassemble ALL
+                DEPENDS "${TARGET_LST_FILE}"
             )
 
         endif()
@@ -255,23 +270,6 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
                 WORKING_DIRECTORY "$<TARGET_PROPERTY:${target},BINARY_DIR>"
                 VERBATIM
                 COMMENT "create system picture"
-            )
-
-        endif()
-
-        if(target STREQUAL "rootserver_image")
-
-            # copy system image to the generic file images/os_image.bin
-            get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
-            get_filename_component(IMG_DIR "${IMAGE_NAME}" DIRECTORY)
-            get_filename_component( IMG_NAME "${IMAGE_NAME}" NAME)
-            add_custom_command(
-                TARGET ${target}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy "${IMG_NAME}" os_image.bin
-                WORKING_DIRECTORY "${IMG_DIR}"
-                VERBATIM
-                COMMENT "create system image os_image.bin"
             )
 
         endif()
@@ -380,6 +378,56 @@ macro(os_sdk_build system_project_dir)
     endif()
 
     add_subdirectory("${SYSTEM_PROJECT_DIR}" "os_system")
+
+    set(targets "")
+    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    foreach(target ${targets})
+
+        if(target STREQUAL "elfloader")
+
+            get_target_property(BINARY_DIR ${target} BINARY_DIR)
+            set(TARGET_BIN_FILE "${BINARY_DIR}/${target}")
+            set(TARGET_LST_FILE "${TARGET_BIN_FILE}.lst")
+
+            cmd_disassemble_elf("${TARGET_BIN_FILE}" "${TARGET_LST_FILE}")
+
+            add_custom_target(
+                ${target}_disassemble ALL
+                DEPENDS "${TARGET_LST_FILE}"
+            )
+
+        endif()
+
+        if(target STREQUAL "rootserver_image")
+
+            get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
+            get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
+
+            set(OS_SYS_IMG "${IMAGE_DIR}/os_image.bin")
+            set(OS_SYS_IMG_LST "${OS_SYS_IMG}.lst")
+
+            # copy system image to the generic file images/os_image.bin
+            add_custom_command(
+                OUTPUT "${OS_SYS_IMG}"
+                DEPENDS "${IMAGE_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG}"
+                VERBATIM
+                COMMENT "create disassembly for ${target}"
+            )
+
+            cmd_disassemble_elf("${OS_SYS_IMG}" "${OS_SYS_IMG_LST}")
+
+            add_custom_target(
+                os_image ALL
+                DEPENDS
+                    "${OS_SYS_IMG}"
+                    "${OS_SYS_IMG_LST}"
+            )
+
+
+        endif()
+
+    endforeach()
 
 endmacro()
 
