@@ -11,13 +11,23 @@
 #include <inttypes.h>
 #include <camkes.h>
 
-static const ChanMuxClientConfig_t chanMuxClientConfig =
+static struct
 {
-    .port  = CHANMUX_DATAPORT_ASSIGN(chanMux_chan_portRead,
-                                     chanMux_chan_portWrite),
-    .wait  = chanMux_chan_EventHasData_wait,
-    .write = chanMux_Rpc_write,
-    .read  = chanMux_Rpc_read
+    bool                        init_ok;
+    const ChanMuxClientConfig_t chanMuxClientConfig;
+    OS_Dataport_t               port_storage;
+
+} ctx =
+{
+    .init_ok             = false,
+    .chanMuxClientConfig = {
+        .port  = CHANMUX_DATAPORT_ASSIGN(chanMux_chan_portRead,
+                                         chanMux_chan_portWrite),
+        .wait  = chanMux_chan_EventHasData_wait,
+        .write = chanMux_Rpc_write,
+        .read  = chanMux_Rpc_read
+    },
+    .port_storage = OS_DATAPORT_ASSIGN(storage_port),
 };
 
 static ChanMuxNvmDriver chanMuxNvmDriver;
@@ -34,7 +44,7 @@ void storage_rpc__init(void)
 {
     if (!ChanMuxNvmDriver_ctor(
             &chanMuxNvmDriver,
-            &chanMuxClientConfig))
+            &ctx.chanMuxClientConfig))
     {
         Debug_LOG_ERROR("Failed to construct ChanMuxNvmDriver");
         return;
@@ -47,6 +57,8 @@ void storage_rpc__init(void)
         Debug_LOG_ERROR("Failed to get pointer to storage.");
         return;
     }
+
+    ctx.init_ok = true;
 }
 
 OS_Error_t
@@ -57,6 +69,12 @@ storage_rpc_write(
 {
     *written = 0U;
 
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     if (!valueFitsIntoSize_t(offset))
     {
         Debug_LOG_ERROR(
@@ -65,7 +83,24 @@ storage_rpc_write(
         return OS_ERROR_INVALID_PARAMETER;
     }
 
-    *written = storage->vtable->write(storage, offset, storage_port, size);
+    size_t dataport_size = OS_Dataport_getSize(ctx.port_storage);
+    if (size > dataport_size)
+    {
+        // the client did a bogus request, it knows the data port size and
+        // never ask for more data
+        Debug_LOG_ERROR(
+            "size %zu exceeds dataport size %zu",
+            size,
+            dataport_size);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
+    *written = storage->vtable->write(
+                   storage,
+                   offset,
+                   OS_Dataport_getBuf(ctx.port_storage),
+                   size);
     return (size == *written) ? OS_SUCCESS : OS_ERROR_GENERIC;
 }
 
@@ -77,6 +112,12 @@ storage_rpc_read(
 {
     *read = 0U;
 
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     if (!valueFitsIntoSize_t(offset))
     {
         Debug_LOG_ERROR(
@@ -85,7 +126,25 @@ storage_rpc_read(
         return OS_ERROR_INVALID_PARAMETER;
     }
 
-    *read = storage->vtable->read(storage, offset, storage_port, size);
+
+    size_t dataport_size = OS_Dataport_getSize(ctx.port_storage);
+    if (size > dataport_size)
+    {
+        // the client did a bogus request, it knows the data port size and
+        // never ask for more data
+        Debug_LOG_ERROR(
+            "size %zu exceeds dataport size %zu",
+            size,
+            dataport_size);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
+    *read = storage->vtable->read(
+                storage,
+                offset,
+                OS_Dataport_getBuf(ctx.port_storage),
+                size);
     return (size == *read) ? OS_SUCCESS : OS_ERROR_GENERIC;
 }
 
@@ -96,6 +155,12 @@ storage_rpc_erase(
     off_t* const erased)
 {
     *erased = 0;
+
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
 
     if (!valueFitsIntoSize_t(offset) || !valueFitsIntoSize_t(size))
     {
@@ -117,6 +182,11 @@ storage_rpc_erase(
 OS_Error_t
 storage_rpc_getSize(off_t* const size)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
     const size_t sizePriorToCast = storage->vtable->getSize(storage);
 
     // -1 is reserved for a generic error on the ChanMux side.
@@ -134,6 +204,12 @@ OS_Error_t
 storage_rpc_getBlockSize(
     size_t* const blockSize)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     *blockSize = 1;
     return OS_SUCCESS;
 }
@@ -142,6 +218,12 @@ OS_Error_t
 storage_rpc_getState(
     uint32_t* flags)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     *flags = 0U;
     return OS_ERROR_NOT_SUPPORTED;
 }

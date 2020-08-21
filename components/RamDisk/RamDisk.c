@@ -3,6 +3,7 @@
  * Driver for the Volatile Memory storage (RAM Disk)
  */
 #include "OS_Error.h"
+#include "OS_Dataport.h"
 
 #include "LibUtil/RleCompressor.h"
 #include "LibDebug/Debug.h"
@@ -14,6 +15,17 @@
 #include <camkes.h>
 
 static uint8_t storage[RAMDISK_SIZE_BYTES] = { 0u };
+
+static struct
+{
+    bool          init_ok;
+    OS_Dataport_t port_storage;
+
+} ctx =
+{
+    .init_ok       = false,
+    .port_storage  = OS_DATAPORT_ASSIGN(storage_port),
+};
 
 // The RamDisk can be linked with
 extern uint8_t __attribute__((weak)) RAMDISK_IMAGE[];
@@ -74,13 +86,32 @@ storage_rpc_write(
     size_t  const size,
     size_t* const written)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
+    size_t dataport_size = OS_Dataport_getSize(ctx.port_storage);
+    if (size > dataport_size)
+    {
+        // The client did a bogus request, it knows the data port size but
+        // sends more data.
+        Debug_LOG_ERROR(
+            "size %zu exceeds dataport size %zu",
+            size,
+            dataport_size);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
     if (!isValidStorageArea(offset, size))
     {
         *written = 0U;
         return OS_ERROR_OUT_OF_BOUNDS;
     }
 
-    memcpy(&storage[offset], storage_port, size);
+    memcpy(&storage[offset], OS_Dataport_getBuf(ctx.port_storage), size);
     *written = size;
 
     return OS_SUCCESS;
@@ -97,13 +128,32 @@ storage_rpc_read(
     size_t  const size,
     size_t* const read)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
+    size_t dataport_size = OS_Dataport_getSize(ctx.port_storage);
+    if (size > dataport_size)
+    {
+        // The client did a bogus request, it knows the data port size but
+        // asks for too much data.
+        Debug_LOG_ERROR(
+            "size %zu exceeds dataport size %zu",
+            size,
+            dataport_size);
+
+        return OS_ERROR_INVALID_PARAMETER;
+    }
+
     if (!isValidStorageArea(offset, size))
     {
         *read = 0U;
         return OS_ERROR_OUT_OF_BOUNDS;
     }
 
-    memcpy(storage_port, &storage[offset], size);
+    memcpy(OS_Dataport_getBuf(ctx.port_storage), &storage[offset], size);
     *read = size;
 
     return OS_SUCCESS;
@@ -121,6 +171,12 @@ storage_rpc_erase(
     off_t* const erased)
 {
     *erased = 0;
+
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
 
     if (!isValidStorageArea(offset, size))
     {
@@ -161,6 +217,12 @@ NONNULL_ALL
 storage_rpc_getSize(
     off_t* const size)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     *size = sizeof(storage);
 
     return OS_SUCCESS;
@@ -175,6 +237,12 @@ NONNULL_ALL
 storage_rpc_getState(
     uint32_t* flags)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     *flags = 0U;
     return OS_ERROR_NOT_SUPPORTED;
 }
@@ -187,6 +255,12 @@ NONNULL_ALL
 storage_rpc_getBlockSize(
     size_t* const blockSize)
 {
+    if (!ctx.init_ok)
+    {
+        Debug_LOG_ERROR("initialization failed, fail call %s()", __func__);
+        return OS_ERROR_INVALID_STATE;
+    }
+
     *blockSize = 1;
     return OS_SUCCESS;
 }
@@ -219,4 +293,6 @@ post_init(void)
         }
         Debug_LOG_INFO("RamDisk initialized with %zu byte from predefined image", sz);
     }
+
+    ctx.init_ok = true;
 }
