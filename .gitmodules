@@ -84,7 +84,7 @@
 	url = ../../ss/rpi3_flasher.git
 [submodule "resources/rpi3_sd_card"]
 	path = resources/rpi3_sd_card
-	url = ../../ssdk/plat_raspi
+	url = ../../ssdk/plat_raspi.git
 [submodule "components/UART"]
 	path = components/UART
 	url = ../../sc/uart.git
