@@ -443,7 +443,7 @@ function package_sdk()
     local SDK_PACKAGE_BZ2=sdk-package.bz2
     print_info "Packaging SDK to ${SDK_PACKAGE_BZ2}"
 
-    du -sh ${SDK_PACKAGE_SRC}
+    du -sh ${SDK_SRC_DIR}
 
     local SDK_PACKAGE_EXCLUDES=(
         # remove prepare_test.sh from demos
@@ -469,7 +469,7 @@ function package_sdk()
     # prefix everything in SDK_EXCLUDE_ELEMENTS with "--exclude "
     tar \
         -cjf ${SDK_PACKAGE_BZ2} \
-        -C ${SDK_PACKAGE_SRC} \
+        -C ${SDK_SRC_DIR} \
         ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
         .
 
