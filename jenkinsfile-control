@@ -566,7 +566,7 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('build') {
+                stage('package') {
                     agent {
                         docker {
                             reuseNode true
@@ -580,7 +580,7 @@ pipeline {
                         run_shell_script(
                             'scm-src/build-sdk.sh',
                             [
-                                'all',
+                                'package',
                                 'sdk-package'
                             ]
                         )
@@ -646,6 +646,31 @@ pipeline {
                         print_step_info env.STAGE_NAME
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             run_shell_script('scm-src/astyle_check_sdk.sh')
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('build-demos') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script(
+                                'scm-src/build-sdk.sh',
+                                [
+                                    'build-demos',
+                                    'sdk-package'
+                                ]
+                            )
                         }
                     }
                 }

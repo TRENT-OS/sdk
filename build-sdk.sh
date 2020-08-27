@@ -217,10 +217,22 @@ function collect_sdk_demos()
 #-------------------------------------------------------------------------------
 function build_sdk_demos()
 {
-    local SDK_DEMOS_DIR=$1
-    local SDK_SRC_DIR=$2
+    local SDK_SRC_DIR=$1
+    local SDK_DEMOS_DIR=$2
     local BUILD_DIR=$3
     shift 3
+
+    print_info "Building SDK demos"
+
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
+    if [ ! -d ${SDK_DEMOS_DIR} ]; then
+        echo "missing SDK demo folder, did you run the collect step?"
+        exit 1
+    fi
 
     # build RPi3 flasher using a sample file from the IoT demo
     print_info "Building SDK tool: rpi3_flasher"
@@ -306,6 +318,11 @@ function build_sdk_tool()
 
     print_info "Building SDK tool: ${SDK_TOOL} -> ${BUILD_DIR}"
 
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
     local BUILD_PARAMS=(
         ${BUILD_DIR}                # build output folder
         all                         # ninja target
@@ -331,6 +348,11 @@ function sdk_unit_test()
 
     print_info "running SDK Libs Unit Tests"
 
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
     local BUILD_PARAMS=(
         ${BUILD_DIR}/test_seos_libs       # build output folder
         cov                               # ninja target
@@ -350,6 +372,11 @@ function build_sdk_tools()
     shift 3
 
     print_info "building SDK tools into ${OUT_DIR} from ${SDK_SRC_DIR}"
+
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
 
     # remove any existing output directory
     if [ -d ${OUT_DIR} ]; then
@@ -396,6 +423,11 @@ function build_sdk_docs()
 
     print_info "Building SDK docs into ${OUT_DIR} from ${SDK_SRC_DIR}"
 
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
     # clear folder where we collect docs
     if [[ -e ${OUT_DIR} ]]; then
         echo "removing attic API documentation collection folder"
@@ -440,6 +472,11 @@ function package_sdk()
     local SDK_SRC_DIR=$1
     shift 1
 
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
     local SDK_PACKAGE_BZ2=sdk-package.bz2
     print_info "Packaging SDK to ${SDK_PACKAGE_BZ2}"
 
@@ -483,6 +520,10 @@ PACKAGE_MODE=$1
 OUT_BASE_DIR=$2
 shift 2
 
+# for development purposes, all the steps can also run directly from the SDK
+# sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
+# to OS_SDK_PATH for all steps
+
 
 SDK_BUILD=${OUT_BASE_DIR}/build
 SDK_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
@@ -492,53 +533,112 @@ SDK_PACKAGE_BIN=${SDK_PACKAGE_SRC}/bin
 SDK_PACKAGE_DEMOS=${SDK_PACKAGE_SRC}/demos
 
 
-# for development purposes, all the steps can also run directly from the SDK
-# sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
-# to OS_SDK_PATH for all steps
+#-------------------------------------------------------------------------------
+function do_sdk_step()
+{
+    local STEP=$1
+
+    case "${STEP}" in
+        collect_sdk_sources)
+            ${STEP} ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+            ;;
+
+        sdk_unit_test)
+            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
+            ;;
+
+        build_sdk_docs)
+            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
+            ;;
+
+        build_sdk_tools)
+            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
+            ;;
+
+        package_sdk)
+            ${STEP} ${SDK_PACKAGE_SRC}
+            ;;
+
+        collect_sdk_demos)
+            ${STEP} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
+            ;;
+
+        build_sdk_demos)
+            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DEMOS} ${SDK_BUILD}
+            ;;
+
+        *)
+            echo "invalid STEP: ${STEP}"
+            exit 1
+            ;;
+    esac
+}
+
+#-------------------------------------------------------------------------------
+function do_sdk_multi_step()
+{
+    local MULTISTEP=$1
+
+    case "${MULTISTEP}" in
+        package)
+            # create SDK package including demos
+            do_sdk_step collect_sdk_sources
+            do_sdk_step build_sdk_tools
+            do_sdk_step collect_sdk_demos
+            do_sdk_step build_sdk_docs
+            do_sdk_step package_sdk
+            ;;
+
+        *)
+            echo "invalid MULTISTEP: ${MULTISTEP}"
+            exit 1
+            ;;
+    esac
+}
+
 
 if [[ "${PACKAGE_MODE}" == "all" ]]; then
-    # create SDK package including demos
-    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
-    collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
-    build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
-    package_sdk ${SDK_PACKAGE_SRC}
+    do_sdk_multi_step package
+    # unit test are not part of the SDK package
+    do_sdk_step sdk_unit_test
     # demo builds are not part of the SDK package, this is just a test.
-    build_sdk_demos ${SDK_PACKAGE_DEMOS} ${SDK_PACKAGE_SRC} ${SDK_BUILD}
-
-elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
-    # create SDK snapshot build demos from it
-    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
-    build_sdk_demos ${SDK_PACKAGE_DEMOS} ${SDK_PACKAGE_SRC} ${SDK_BUILD}
-
-elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
-    # create SDK snapshot build documentation from it
-    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    # note that there are no demos collected here
-    build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
-
-elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
-    # unit testing is a separate step, because the build docker container that
-    # is used to collect the files and creates the SDK package not have the
-    # unit test tool installed.
-    if [ ! -d ${SDK_PACKAGE_SRC} ]; then
-        echo "please build an SDK package first"
-        exit 1
-    fi
-    sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
+    do_sdk_step build_sdk_demos
 
 elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
-    # create SDK snapshot and build SDK tools
-    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
-    build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
+    # collect sources and build the SDK binaries
+    do_sdk_step collect_sdk_sources
+    do_sdk_step build_sdk_tools
+
+elif [[ "${PACKAGE_MODE}" == "build-demos" ]]; then
+    # build demos against a created package, used by CI
+    do_sdk_step build_sdk_demos
+
+elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
+    # create SDK snapshot, collect demos and build them
+    do_sdk_step collect_sdk_sources
+    do_sdk_step collect_sdk_demos
+    do_sdk_step build_sdk_demos
+
+elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
+    # create SDK snapshot and build documentation from it
+    do_sdk_step collect_sdk_sources
+    # note that there are no demos collected here
+    do_sdk_step build_sdk_docs
 
 elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
-    # create SDK snapshot, no docs, tool or demo
-    collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+    # create SDK snapshot, no docs, tool or demos
+    do_sdk_step collect_sdk_sources
+
+elif [[ "${PACKAGE_MODE}" == "package" ]]; then
+    # create an SDK package, used by CI
+    do_sdk_multi_step package
+
+elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
+    # run units test on a created package, used by CI
+    do_sdk_step sdk_unit_test
 
 else
     echo "usage: $0 <mode> <OUT_BASE_DIR>"
-    echo "  where mode is: all, build-bin, demos, doc, only-sources, unit-tests"
+    echo "  where mode is: all, build-bin, build-demos, demos, doc, only-sources, package, unit-tests"
     exit 1
 fi
