@@ -608,24 +608,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('astyle') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            run_shell_script('scm-src/astyle_check_sdk.sh')
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
                 stage('unit-test') {
                     agent {
                         docker {
@@ -646,6 +628,24 @@ pipeline {
                                     'sdk-package'
                                 ]
                             )
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('astyle') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script('scm-src/astyle_check_sdk.sh')
                         }
                     }
                 }
