@@ -109,6 +109,121 @@ void pre_init(void)
     (void)get_instance_ChanMux();
 }
 
+/**
+ * @brief loads bytes from the underlying FIFO into the internal one
+ *
+ * @param fifo the internal FIFO
+ * @param underlyingFifo the underlying FIFO
+ *
+ * @return processing_boost, by default we prefer reading data from the dataport
+ * FIFO over processing the data. This ensures the dataport FIFO has space for
+ * new data. However, when out FIFO is full, we prefer processing data
+ * over reading more data from the underlying FIFO. This return value
+ * defines, how much data bytes we should process in a row now, before looking
+ * at the underlying FIFO again.
+ */
+size_t
+loadInternalFifo(
+    CharFifo* fifo,
+    FifoDataport* underlyingFifo)
+{
+    size_t processing_boost = 0;
+
+    // try to read new data to drain the lower FIFO as quickly as possible
+    for (;;)
+    {
+        size_t avail = FifoDataport_getAmountConsecutives(underlyingFifo);
+        if (0 == avail)
+        {
+            break;
+        }
+
+        char const* buf_port = FifoDataport_getFirst(underlyingFifo);
+        assert( NULL != buf_port );
+
+        // copy from dataport to internal fifo
+        size_t copied = 0;
+        do
+        {
+            if (!CharFifo_push(fifo, &buf_port[copied]))
+            {
+                break;
+            }
+            copied++;
+        }
+        while (copied < avail);
+        FifoDataport_remove(underlyingFifo, copied);
+
+        // if our internal FIFO is more than 75% filled, give processing
+        // of data a boost
+        const size_t watermark = (CharFifo_getCapacity(fifo) / 4) * 3;
+        const size_t used = CharFifo_getSize(fifo);
+        if (used > watermark)
+        {
+            processing_boost = used - watermark;
+            if (copied < avail)
+            {
+                Debug_LOG_DEBUG("avail %zu, copied %zu, boost %zu",
+                                avail, copied, processing_boost);
+            }
+            break;
+        }
+    }
+    return processing_boost;
+}
+
+/**
+ * @brief waits for new data event from the underlying layer and then executes
+ *  loadInternalFifo() which provides the bytes to be processed into the
+ *  internal FIFO. Finally it does process the bytes with ChanMux_takeByte() and
+ *  consume them from the internal FIFO
+ *
+ * @param fifo the internal FIFO
+ * @param underlyingFifo the underlying FIFO
+ *
+ * @return true if successful
+ */
+bool
+extractAndProcessData(
+    CharFifo* fifo,
+    FifoDataport* underlyingFifo,
+    volatile char* isFifoOverflow)
+{
+    // if there is no data in the FIFO then wait for new data
+    if (CharFifo_isEmpty(fifo) && FifoDataport_isEmpty(underlyingFifo))
+    {
+        // no new data will arrive if there was an overflow
+        if (0 != *isFifoOverflow)
+        {
+            Debug_LOG_ERROR("dataport FIFO overflow detected");
+            // ToDo: clear overflow, reset ChanMux engine and continue
+            return false;
+        }
+
+        // block waiting for an event. Such an event indicates either
+        // new data or a state change that needs attention.
+        UnderlyingChan_EventHasData_wait();
+    }
+
+    size_t processing_boost = loadInternalFifo(fifo, underlyingFifo);
+
+    // get data to process from our internal FIFO
+    do
+    {
+        char const* char_container = CharFifo_getFirst(fifo);
+        if (NULL == char_container)
+        {
+            break; // FIFO is empty
+        }
+
+        ChanMux_takeByte(get_instance_ChanMux(), *char_container);
+        CharFifo_pop(fifo);
+
+    }
+    while (0 < processing_boost--);
+
+    return true;
+}
 
 //------------------------------------------------------------------------------
 int run()
@@ -133,88 +248,11 @@ int run()
         return -1;
     }
 
-    ChanMux* chanMux = get_instance_ChanMux();
-
     for (;;)
     {
-        // if there is no data in the FIFO then wait for new data
-        if (CharFifo_isEmpty(&fifo) && FifoDataport_isEmpty(underlyingFifo))
+        if (!extractAndProcessData(&fifo, underlyingFifo, isFifoOverflow))
         {
-            // no new data will arrive if there was an overflow
-            if (0 != *isFifoOverflow)
-            {
-                Debug_LOG_ERROR("dataport FIFO overflow detected");
-                // ToDo: clear overflow, reset ChanMux engine and continue
-                return -1;
-            }
-
-            // block waiting for an event. Such an event indicates either
-            // new data or a state change that needs attention.
-            UnderlyingChan_EventHasData_wait();
+            return -1;
         }
-
-        // by default we prefer reading data from the dataport FIFO over
-        // processing the data. This ensures the dataport FIFO has space for
-        // new data. However, when out FIFO is full, we prefer processing data
-        // over reading more data from the underlying FIFO. This variable
-        // defines, how much data bytes we process in a row now, before looking
-        // at the underlying FIFO again.
-        size_t processing_boost = 0;
-
-        // try to read new data to drain the lower FIFO as quickly as possible
-        for (;;)
-        {
-            size_t avail = FifoDataport_getAmountConsecutives(underlyingFifo);
-            if (0 == avail)
-            {
-                break;
-            }
-
-            char const* buf_port = FifoDataport_getFirst(underlyingFifo);
-            assert( NULL != buf_port );
-
-            // copy from dataport to internal fifo
-            size_t copied = 0;
-            do
-            {
-                if (!CharFifo_push(&fifo, &buf_port[copied]))
-                {
-                    break;
-                }
-                copied++;
-            }
-            while (copied < avail);
-            FifoDataport_remove(underlyingFifo, copied);
-
-            // if our internal FIFO is more than 75% filled, give processing
-            // of data a boost
-            const size_t watermark = (CharFifo_getCapacity(&fifo) / 4) * 3;
-            const size_t used = CharFifo_getSize(&fifo);
-            if (used > watermark)
-            {
-                processing_boost = used - watermark;
-                if (copied < avail)
-                {
-                    Debug_LOG_DEBUG("avail %zu, copied %zu, boost %zu",
-                                    avail, copied, processing_boost);
-                }
-                break;
-            }
-        }
-
-        // get data to process from our internal FIFO
-        do
-        {
-            char const* char_container = CharFifo_getFirst(&fifo);
-            if (NULL == char_container)
-            {
-                break; // FIFO is empty
-            }
-
-            ChanMux_takeByte(chanMux, *char_container);
-            CharFifo_pop(&fifo);
-
-        }
-        while (0 < processing_boost--);
     } // for (;;) main loop
 }
