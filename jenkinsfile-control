@@ -682,6 +682,7 @@ pipeline {
         stage('publish_docs') {
             agent { label "publish_doc" }
             when {
+                beforeAgent true
                 expression {
                     return (env.BRANCH_NAME in ["master", "integration"])
                 }
