@@ -420,7 +420,6 @@ pipeline {
 
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                         {
-
                             dir('test-logs')
                             {
                                 script
