@@ -469,8 +469,11 @@ pipeline {
                                     ['PYTHONPATH=../src/test/common:../src/test/tests'])
                                 {
                                     run_app(
-                                        'pytest',
+                                        'python3',
                                         [
+                                            '-B',
+                                            '-m', 'pytest',
+                                            '-p', 'no:cacheprovider',
                                             '-v',
                                             // '--capture=no',  // show printf() from python scripts in console
                                             '--proxy=../src/sdk/bin/proxy_app,TCP',
