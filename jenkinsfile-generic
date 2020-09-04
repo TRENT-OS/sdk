@@ -22,6 +22,7 @@ def test_machine_label = TEST_MACHINE_LABEL ?: 'test'
 
 def SYSTEM_PACKAGE = 'package.bz2'
 
+def testScript = 'src/test/tests/' + TEST_SCRIPT
 
 //------------------------------------------------------------------------------
 // Docker
@@ -406,6 +407,37 @@ pipeline {
                 }
 
                 //----------------------------------------------------------------------
+                stage('test-doc') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                        {
+                            dir('test-doc')
+                            {
+                                withEnv(
+                                    ['PYTHONPATH=../src/test/common:../src/test/tests'])
+                                {
+                                    run_app(
+                                        'python3',
+                                        [
+                                            '-B',
+                                            '-m', 'pydoc',
+                                            '-w', '../'+testScript
+                                        ]
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //----------------------------------------------------------------------
                 stage('test') {
                     agent {
                         docker {
@@ -445,7 +477,7 @@ pipeline {
                                             '--target=' + PLATFORM,
                                             '--system_image=../build/images/os_image.bin',
                                             '--junitxml=../test_results.xml',
-                                            '../src/test/tests/' + TEST_SCRIPT
+                                            '../'+testScript
                                         ]
                                     )
                                 }
@@ -468,6 +500,7 @@ pipeline {
                                 '--ignore-failed-read',
                                 '-cjf ' + SYSTEM_PACKAGE,
                                 'build.log',
+                                'test-doc',
                                 'test_results.xml',
                                 'build/capdl/capdl-loader-app/gen_config/',
                                 'build/elfloader/elfloader',
