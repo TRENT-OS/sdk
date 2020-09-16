@@ -122,7 +122,7 @@ void pre_init(void)
  * defines, how much data bytes we should process in a row now, before looking
  * at the underlying FIFO again.
  */
-size_t
+static size_t
 loadInternalFifo(
     CharFifo* fifo,
     FifoDataport* underlyingFifo)
@@ -183,7 +183,7 @@ loadInternalFifo(
  *
  * @return true if successful
  */
-bool
+static bool
 extractAndProcessData(
     CharFifo* fifo,
     FifoDataport* underlyingFifo,
