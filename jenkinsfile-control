@@ -121,7 +121,7 @@ def do_notify_bitbucket()
 //------------------------------------------------------------------------------
 def get_build_relative_url(build)
 {
-    // getAbsoluteUrl() is deprecate and generally regarded as a bad idea for
+    // getAbsoluteUrl() is deprecated and generally regarded as a bad idea for
     // generating HTML page content. This workaround avoids accessing the raw
     // build, which can't be done by scripts by default
 
@@ -451,12 +451,13 @@ def do_jobs_for_test_systems(branch, testConfig)
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
 
-            // sometimes this job run just to test the SDK generation, so there
-            // are no test systems enabled. We don't want to see things fail
-            // with junit complaining about missing test files in this case.
+            // sometimes this job runs just to test the SDK generation, so
+            // there are no test systems enabled. We don't want to see things
+            // fail with junit complaining about missing test files in this
+            // case.
             if (cnt > 0)
             {
-                // ToDo: support multiple platforms here, currently this would
+                // ToDo: support multiple platforms here, currently this will
                 //       see the same test case for each platform and it's
                 //       likely messing up the analysis
                 junit('package-*/test_results.xml')
@@ -464,8 +465,8 @@ def do_jobs_for_test_systems(branch, testConfig)
 
             // create a package of all files, so the next stage can process
             // them. Ensure we never fail here if a file is missing, because
-            // there is not much we can do. The next stage is supposed to
-            // handle this.
+            // there is not much we can do anyway. The next stage is supposed
+            // to handle this.
             run_app(
                 'tar',
                 [

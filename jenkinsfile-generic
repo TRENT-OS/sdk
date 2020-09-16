@@ -249,8 +249,8 @@ def get_sdk(
 def save_current_job_log(
     name
 ) {
-    // get the current jobs log up to now. One day we should find a nicer way
-    // for this thand downloading it
+    // get the current job's log up to now. One day we should find a nicer way
+    // for this than downloading it
 
     run_app(
         'wget',
