@@ -119,6 +119,25 @@ def do_notify_bitbucket()
 
 
 //------------------------------------------------------------------------------
+def save_current_job_log(
+    name
+) {
+    // get the current job's log up to now. One day we should find a nicer way
+    // for this than downloading it
+
+    run_app(
+        'wget',
+        [
+            '-q',
+            '--no-check-certificate',
+            '-O ' + name,
+            BUILD_URL + 'consoleText'
+        ]
+    )
+}
+
+
+//------------------------------------------------------------------------------
 def get_build_relative_url(build)
 {
     // getAbsoluteUrl() is deprecated and generally regarded as a bad idea for
@@ -463,6 +482,8 @@ def do_jobs_for_test_systems(branch, testConfig)
                 junit('package-*/test_results.xml')
             }
 
+            save_current_job_log('build.log')
+
             // create a package of all files, so the next stage can process
             // them. Ensure we never fail here if a file is missing, because
             // there is not much we can do anyway. The next stage is supposed
@@ -472,6 +493,7 @@ def do_jobs_for_test_systems(branch, testConfig)
                 [
                     '--ignore-failed-read',
                     '-cjf '+SYSTEM_PACKAGE,
+                    'build.log',
                     'package-*/'
                 ]
             )
