@@ -252,6 +252,8 @@ int run()
     {
         if (!extractAndProcessData(&fifo, underlyingFifo, isFifoOverflow))
         {
+            Debug_LOG_ERROR("[%s] extractAndProcessData() failed",
+                            get_instance_name());
             return -1;
         }
     } // for (;;) main loop
