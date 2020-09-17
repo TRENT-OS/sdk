@@ -187,13 +187,13 @@ static bool
 extractAndProcessData(
     CharFifo* fifo,
     FifoDataport* underlyingFifo,
-    volatile char* isFifoOverflow)
+    volatile char* fifoOverflow)
 {
     // if there is no data in the FIFO then wait for new data
     if (CharFifo_isEmpty(fifo) && FifoDataport_isEmpty(underlyingFifo))
     {
         // no new data will arrive if there was an overflow
-        if (0 != *isFifoOverflow)
+        if (0 != *fifoOverflow)
         {
             Debug_LOG_ERROR("dataport FIFO overflow detected");
             // ToDo: clear overflow, reset ChanMux engine and continue
@@ -233,9 +233,9 @@ int run()
     OS_Dataport_t out_dp = OS_DATAPORT_ASSIGN(UnderlyingChan_outputFifoDataport);
 
     // the last byte of the dataport holds an overflow flag
-    volatile char* isFifoOverflow = (volatile char*)(
-                                        (uintptr_t)OS_Dataport_getBuf(out_dp)
-                                        + OS_Dataport_getSize(out_dp) - 1 );
+    volatile char* fifoOverflow = (volatile char*)(
+                                      (uintptr_t)OS_Dataport_getBuf(out_dp)
+                                      + OS_Dataport_getSize(out_dp) - 1 );
 
 
     FifoDataport* underlyingFifo = (FifoDataport*)OS_Dataport_getBuf(out_dp);
@@ -250,7 +250,7 @@ int run()
 
     for (;;)
     {
-        if (!extractAndProcessData(&fifo, underlyingFifo, isFifoOverflow))
+        if (!extractAndProcessData(&fifo, underlyingFifo, fifoOverflow))
         {
             Debug_LOG_ERROR("[%s] extractAndProcessData() failed",
                             get_instance_name());
