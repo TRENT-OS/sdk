@@ -8,7 +8,7 @@
 #
 #-------------------------------------------------------------------------------
 
-DOC_ROOT=/var/www
+DOC_ROOT=/artefacts/documentation
 
 BRANCH_NAME=$1
 DOC_DIR=${DOC_ROOT}/seos_sdk/${BRANCH_NAME}
