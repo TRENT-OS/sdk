@@ -347,6 +347,11 @@ macro(os_sdk_build system_project_dir)
 
     endif()
 
+    # Generates a compile_commands.json file containing the exact compiler calls
+    # for all translation units of the project. Used by static analyzers running
+    # independently of the compilation job.
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
     # linting does not work on seL4/CAmkES code, thus we define details here,
     # after we've including the seL4/CAmkES build system.
     if (ENABLE_LINT)
