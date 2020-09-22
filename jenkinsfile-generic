@@ -24,6 +24,8 @@ def SYSTEM_PACKAGE = 'package.bz2'
 
 def testScript = 'src/test/tests/' + TEST_SCRIPT
 
+compile_commands_file = 'build/compile_commands.json'
+
 //------------------------------------------------------------------------------
 // Docker
 //------------------------------------------------------------------------------
@@ -349,6 +351,25 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
+                stage('Static analyzer') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh 'src/sdk/check_static_analyzer.sh '
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
                 stage('stash_cleanup') {
                     steps {
                         print_step_info(env.STAGE_NAME)
@@ -366,6 +387,7 @@ pipeline {
                                         'build/kernel/gen_headers/**',
                                         'build/kernel/generated/**',
                                         'build/os_system/**',
+                                         compile_commands_file,
                                         'src/system/**' // PROJECT_DIR
                                       ].join(',')
                         )
