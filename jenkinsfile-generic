@@ -465,24 +465,32 @@ pipeline {
                                     }
                                 }
 
-                                withEnv(
-                                    ['PYTHONPATH=../src/test/common:../src/test/tests'])
+                                // It can happen that the test framework doesn't kill all threads
+                                // it started, and these threads keep this stage from finishing.
+                                // The highest test execution time in the last 10 integration runs
+                                // was 240 seconds for test_crypto_api, so 300 seconds looks like a
+                                // good value to start from.
+                                timeout(time: 300, unit: 'SECONDS')
                                 {
-                                    run_app(
-                                        'python3',
-                                        [
-                                            '-B',
-                                            '-m', 'pytest',
-                                            '-p', 'no:cacheprovider',
-                                            '-v',
-                                            // '--capture=no',  // show printf() from python scripts in console
-                                            '--proxy=../src/sdk/bin/proxy_app,TCP',
-                                            '--target=' + PLATFORM,
-                                            '--system_image=../build/images/os_image.bin',
-                                            '--junitxml=../test_results.xml',
-                                            '../'+testScript
-                                        ]
-                                    )
+                                    withEnv(
+                                        ['PYTHONPATH=../src/test/common:../src/test/tests'])
+                                    {
+                                        run_app(
+                                            'python3',
+                                            [
+                                                '-B',
+                                                '-m', 'pytest',
+                                                '-p', 'no:cacheprovider',
+                                                '-v',
+                                                // '--capture=no',  // show printf() from python scripts in console
+                                                '--proxy=../src/sdk/bin/proxy_app,TCP',
+                                                '--target=' + PLATFORM,
+                                                '--system_image=../build/images/os_image.bin',
+                                                '--junitxml=../test_results.xml',
+                                                '../'+testScript
+                                            ]
+                                        )
+                                    }
                                 }
                             }
                         }
