@@ -54,6 +54,16 @@ def TEST_CONFIG = [
 
 
 //------------------------------------------------------------------------------
+// Demos
+
+def DEMO_LIST = [
+    'demo_hello_world',
+    'demo_iot_app',
+    'demo_iot_app_rpi3',
+]
+
+
+//------------------------------------------------------------------------------
 // Docker
 //
 // Notes:
@@ -278,6 +288,19 @@ def do_checkout(
     {
         echo 'checkout error'
         return
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def do_checkout_demos(demo_list, folder)
+{
+    for (demo in demo_list)
+    {
+        do_checkout(
+            'ss/' + demo,
+            env.BRANCH_NAME,
+            folder + '/' + demo)
     }
 }
 
@@ -569,22 +592,9 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
+                        do_checkout_demos(DEMO_LIST, 'src/demos')
+
                         do_notify_bitbucket()
-
-                        do_checkout(
-                            'ss/demo_hello_world',
-                            env.BRANCH_NAME,
-                            'src/demos/demo_hello_world')
-
-                        do_checkout(
-                            'ss/demo_iot_app',
-                             env.BRANCH_NAME,
-                            'src/demos/demo_iot_app')
-
-                        do_checkout(
-                            'ss/demo_iot_app_rpi3',
-                            env.BRANCH_NAME,
-                            'src/demos/demo_iot_app_rpi3')
                     }
                 }
 
