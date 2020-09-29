@@ -7,14 +7,6 @@
 cmake_minimum_required(VERSION 3.17)
 
 
-if (SDK_USE_CAMKES)
-
-    # folder contains platform specific defaults
-    CAmkESAddCPPInclude("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/plat/${KernelPlatform}")
-
-endif()
-
-
 #-------------------------------------------------------------------------------
 #
 # Declare ChanMux CAmkES Component
@@ -35,6 +27,8 @@ function(DeclareCAmkESComponent_ChanMux
     config_file
     system_config_lib
 )
+    CAmkESAddCPPInclude(
+        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/plat/${KernelPlatform}")
 
     DeclareCAmkESComponent(
         ${name}
