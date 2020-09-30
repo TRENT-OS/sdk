@@ -342,6 +342,9 @@ macro(os_sdk_build system_project_dir)
         # first, so the includes and macros get resolved
         set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
+        # use device tree
+        set(CAmkESDTS ON CACHE BOOL "" FORCE)
+
         setup_sel4_camkes_build_system()
         setup_sel4_global_components()
 
