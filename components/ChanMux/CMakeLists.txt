@@ -46,3 +46,20 @@ function(DeclareCAmkESComponent_ChanMux
     )
 
 endfunction()
+
+
+#-------------------------------------------------------------------------------
+# declare components for ChanMux and UARTs
+function(DeclareCAmkESComponents_ChanMux_UART
+    name
+    config_file
+    system_config_lib
+)
+    DeclareCAmkESComponents_for_UARTs()
+
+    DeclareCAmkESComponent_ChanMux(
+        ${name}
+        ${config_file}
+        ${system_config_lib}
+    )
+endfunction()

@@ -89,7 +89,12 @@ function(os_set_config_file cfg_file)
         # file include paths. This allows including the config file easily.
         project(${CFG_CONFIG_PROJECT_NAME} C)
         add_library(${PROJECT_NAME} INTERFACE)
-        target_include_directories(${PROJECT_NAME} INTERFACE ${CFG_FILE_DIR})
+        target_include_directories(
+            ${PROJECT_NAME}
+            INTERFACE
+                ${CFG_FILE_DIR}
+                ${CFG_FILE_DIR}/plat/${KernelPlatform}
+        )
 
     endif()
 
@@ -381,7 +386,10 @@ macro(os_sdk_build system_project_dir)
 
     if (SDK_USE_CAMKES)
 
-        CAmkESAddCPPInclude(${SYSTEM_PROJECT_DIR})
+        CAmkESAddCPPInclude(
+            ${SYSTEM_PROJECT_DIR}
+            ${SYSTEM_PROJECT_DIR}/plat/${KernelPlatform}
+        )
 
     endif()
 

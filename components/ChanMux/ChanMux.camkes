@@ -7,7 +7,9 @@
 
 import <if_OS_BlockingWrite.camkes>;
 import <if_ChanMux.camkes>;
-// caller must import UART interface, since we don't have a generic one yet
+
+// ChanMux is running on top of a UART
+#include "UART/Uart.camkes"
 
 // platform specific defaults
 #include "ChanMux_plat_defaults.camkes"
@@ -97,16 +99,17 @@ import <if_ChanMux.camkes>;
 
 #define ChanMux_DECLARE_AND_CONNECT_INSTANCE_TO_UART( \
     _name_, \
-    _inst_, \
-    _uart_inst_) \
+    _inst_) \
+    \
+    component   UART_CHANMUX   uart_ ## _name_; \
     \
     ChanMux_DECLARE_AND_CONNECT_INSTANCE( \
         _name_, \
         _inst_, \
-        _uart_inst_.UartDrv, \
-        _uart_inst_.Uart_inputDataport, \
-        _uart_inst_.Uart_outputFifoDataport, \
-        _uart_inst_.Uart_DataAvailable)
+        uart_ ## _name_.UartDrv, \
+        uart_ ## _name_.Uart_inputDataport, \
+        uart_ ## _name_.Uart_outputFifoDataport, \
+        uart_ ## _name_.Uart_DataAvailable)
 
 
 #define ChanMux_CONNECT_TO_LOGSERVER( \

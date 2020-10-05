@@ -5,5 +5,10 @@
  *
  */
 
-#define CFG_CHANMUX_DEFAULT_UART_PHYS_ADDR  0xe0000000
-#define CFG_CHANMUX_DEFAULT_UART_INTR       59
+
+#if !defined(UART_CHANMUX)
+
+// kernel log uses UART_1, so we can use UART_0 for ChanMux
+#define UART_CHANMUX    UART_0
+
+#endif // !defined(UART_CHANMUX)
