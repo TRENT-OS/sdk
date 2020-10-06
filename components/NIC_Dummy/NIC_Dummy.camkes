@@ -8,8 +8,9 @@
  *
  *      #include "NIC_Dummy/NIC_Dummy.camkes"
  *
- *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_1)
- *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_2)
+ *      // The chosen ringbuffer size below is an arbitrary example value
+ *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_1, 4096)
+ *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_2, 4096)
  *
  */
 
@@ -20,14 +21,12 @@ import <if_OS_Logger.camkes>;
 //------------------------------------------------------------------------------
 // Component
 
-#define DECLARE_COMPONENT_NIC_Dummy(                                    \
-    _name_)                                                             \
-                                                                        \
+#define DECLARE_COMPONENT_NIC_Dummy(_name_, _ringbuffer_size_)          \
     component _name_ {                                                  \
-        provides         if_OS_Nic              nic_rpc;                \
-        emits            EventDataAvailable     nic_event_hasData;      \
-        dataport         Buf                    nic_port_to;            \
-        dataport         Buf                    nic_port_from;          \
+        provides        if_OS_Nic               nic_rpc;                \
+        emits           EventDataAvailable      nic_event_hasData;      \
+        dataport        Buf(_ringbuffer_size_)  nic_port_to;            \
+        dataport        Buf                     nic_port_from;          \
                                                                         \
         maybe uses      if_OS_Logger            logServer_rpc;          \
         maybe dataport  Buf                     logServer_port;         \
