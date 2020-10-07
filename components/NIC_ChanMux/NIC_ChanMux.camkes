@@ -8,8 +8,8 @@
  *
  *      #include "NIC_ChanMux/NIC_ChanMux.camkes"
  *
- *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_1)
- *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_2)
+ *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_1, 16384)
+ *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_2, 16384)
  *
  */
 
@@ -21,11 +21,8 @@ import <if_OS_Nic.camkes>;
 
 #include "ChanMux/ChanMuxHelper.camkes"
 
-// If we pass the define from a system configuration header. CAmkES generation
-// crashes when parsing this file. As a workaround we hardcode the value here
-#define NIC_DRIVER_RINGBUFFER_SIZE 16*4096
 
-#define DECLARE_COMPONENT_NIC_ChanMux(_name_) \
+#define DECLARE_COMPONENT_NIC_ChanMux(_name_, _ringbuffer_size_) \
     component _name_ { \
         control; \
         \
@@ -39,8 +36,8 @@ import <if_OS_Nic.camkes>;
         /* upper interface as NIC Driver ---------------------------------- */ \
         provides         if_OS_Nic           nic_rpc; \
         emits            EventDataAvailable  nic_event_hasData; \
-        dataport         Buf(NIC_DRIVER_RINGBUFFER_SIZE) nic_port_to; /* driver -> network stack */  \
-        dataport         Buf                             nic_port_from; /* network stack -> driver */ \
+        dataport         Buf(_ringbuffer_size_) nic_port_to; /* driver -> network stack */  \
+        dataport         Buf                    nic_port_from; /* network stack -> driver */ \
         \
         /* usage of LogServer is optional ----------------------------------*/ \
         maybe uses      if_OS_Logger        logServer_rpc; \
