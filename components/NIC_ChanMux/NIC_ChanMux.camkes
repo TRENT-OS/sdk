@@ -13,6 +13,8 @@
  *
  */
 
+#pragma once
+
 import <if_ChanMux.camkes>;
 import <if_OS_Logger.camkes>;
 import <if_OS_Nic.camkes>;
