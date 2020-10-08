@@ -161,7 +161,7 @@ fi
 # build in subshell
 (
     cd ${BUILD_DIR}
-    ninja all
+    cmake --build . --target all
 )
 
 echo "##-----------------------------------------------------------------------"
