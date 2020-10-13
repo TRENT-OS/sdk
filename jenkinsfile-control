@@ -9,39 +9,52 @@
 
 //------------------------------------------------------------------------------
 // Test system list
-//
-// Elements:
-//   <SYSTEM_NAME>:  system name
-//   <TEST_MACHINE>: defaults to 'test'
-//   <TEST_SCRTIPT>: defaults to <SYSTEM_NAME>.py
-//   <PLATFORMS>:    List of supported plarforms. `null` if full support.
-//
+class TestCtx {
+    String      systemName;  // Name of the system to build.
+    String      testMachine; // Test machine label. Defaults to 'test'.
+    String      testScript;  // Test script to be executed. Defaults to
+                             // <systemName>.py.
+    ArrayList   platforms;   // List of supported platforms. `null` if full
+                             // support.
+
+    public TestCtx(
+        String systemName,
+        String testMachine,
+        String testScript,
+        ArrayList platforms)
+    {
+        this.systemName  = systemName;
+        this.testMachine = testMachine;
+        this.testScript  = testScript;
+        this.platforms   = platforms;
+    }
+}
 
 def TEST_CONFIG = [
 
     tests: [
-        ['demo_hello_world',              null,                'test_demo_hello_world.py',      null],
-        ['demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py',          null],
-        ['demo_iot_app_rpi3',             'test_in_isolation', 'test_demo_iot_app_rpi3.py',     ['rpi3']],
-        ['test_uart',                     null,                null,                            null],
-        ['test_chanmux',                  null,                null,                            null],
-        ['test_proxy_nvm',                null,                null,                            null],
-        ['test_cert_lib',                 null,                'test_certparser.py',            null],
-        ['test_crypto_api',               null,                null,                            null],
-        ['test_cryptoserver',             null,                null,                            null],
-        ['test_entropysource',            null,                null,                            null],
-        ['test_storage_interface',        null,                null,                            null],
-        //['test_partition_manager',        null,                null,                            null], // redundant with new FS
-        //['test_seos_filestream',          null,                null,                            null], // broken build:
-        //['test_filesystem_as_lib',        null,                null,                            null], // redundant with new FS
-        ['test_filesystem',               null,                null,                            null],
-        ['test_config_server_fs_backend', null,                null,                            null],
-        ['test_config_server',            null,                null,                            null],
-        ['test_keystore',                 null,                null,                            null],
-        ['test_logserver',                null,                null,                            null],
-        ['test_network_api',              'test_network',      null,                            null],
-        ['test_tls_api',                  'test_tls',          null,                            null],
-        ['test_tlsserver',                'test_tls',          null,                            null],
+        new TestCtx('demo_hello_world',              null,                'test_demo_hello_world.py',      null),
+        new TestCtx('demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py',          null),
+        new TestCtx('demo_iot_app_rpi3',             'test_in_isolation', 'test_demo_iot_app_rpi3.py',     ['rpi3']),
+        new TestCtx('test_uart',                     null,                null,                            null),
+        new TestCtx('test_chanmux',                  null,                null,                            null),
+        new TestCtx('test_proxy_nvm',                null,                null,                            null),
+        new TestCtx('test_cert_lib',                 null,                'test_certparser.py',            null),
+        new TestCtx('test_crypto_api',               null,                null,                            null),
+        new TestCtx('test_cryptoserver',             null,                null,                            null),
+        new TestCtx('test_entropysource',            null,                null,                            null),
+        new TestCtx('test_storage_interface',        null,                null,                            null),
+        // new TestCtx('test_partition_manager',        null,                null,                            null), // redundant with new FS
+        // new TestCtx('test_seos_filestream',          null,                null,                            null), // broken build:
+        // new TestCtx('test_filesystem_as_lib',        null,                null,                            null), // redundant with new FS
+        new TestCtx('test_filesystem',               null,                null,                            null),
+        new TestCtx('test_config_server_fs_backend', null,                null,                            null),
+        new TestCtx('test_config_server',            null,                null,                            null),
+        new TestCtx('test_keystore',                 null,                null,                            null),
+        new TestCtx('test_logserver',                null,                null,                            null),
+        new TestCtx('test_network_api',              'test_network',      null,                            null),
+        new TestCtx('test_tls_api',                  'test_tls',          null,                            null),
+        new TestCtx('test_tlsserver',                'test_tls',          null,                            null)
     ],
 
     platforms: [
@@ -309,10 +322,6 @@ def do_checkout_demos(demo_list, folder)
 //------------------------------------------------------------------------------
 def execute_build(ctx, stage_ctx)
 {
-    def test_system        = stage_ctx.test_ctx[0]
-    def test_machine_label = stage_ctx.test_ctx[1]
-    def test_script        = stage_ctx.test_ctx[2]
-
     def jobBuild = build(
         job: 'generic_jobs/generic_pipeline_sandbox',
         wait: true,   // block call until finished
@@ -320,9 +329,9 @@ def execute_build(ctx, stage_ctx)
         parameters: [
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
-            string(name: 'TEST_SYSTEM',        value: 'ss/'+test_system),
-            string(name: 'TEST_MACHINE_LABEL', value: test_machine_label ?: ''),
-            string(name: 'TEST_SCRIPT',        value: test_script ?: test_system+'.py'),
+            string(name: 'TEST_SYSTEM',        value: 'ss/'+stage_ctx.test_ctx.systemName),
+            string(name: 'TEST_MACHINE_LABEL', value: stage_ctx.test_ctx.testMachine ?: ''),
+            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: stage_ctx.test_ctx.systemName + '.py'),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
         ]
@@ -339,11 +348,11 @@ def execute_build(ctx, stage_ctx)
         def num = cnt - (--ctx.running);
 
         println(num + '/' + cnt + ': ' +
-                test_system + ' system build/test stage took ' + duration +
-                ', result: ' + result)
+                stage_ctx.test_ctx.systemName + ' system build/test stage took '
+                + duration + ', result: ' + result)
 
         ctx.summary.appendText(
-            stage_ctx.platform + ', ' + test_system + ':' +
+            stage_ctx.platform + ', ' + stage_ctx.test_ctx.systemName + ':' +
             ' <a href="' + get_build_relative_url(jobBuild) + '">' +
                 '#' + jobBuild.getNumber() +
             '</a>' +
@@ -368,7 +377,8 @@ def execute_build(ctx, stage_ctx)
             copyArtifacts(
                 filter: stage_ctx.system_pkg,
                 projectName: jobBuild.getFullProjectName(),
-                selector: specific("${jobBuild.getNumber()}") // need to ensure this is a string
+                // need to ensure this is a string
+                selector: specific("${jobBuild.getNumber()}")
             )
 
             stash(
@@ -382,7 +392,8 @@ def execute_build(ctx, stage_ctx)
 
     // we've set propagate=false above, so we have to fail the stage here.
     if (result in ['FAILURE','ABORTED']) {
-        error('stage failed: ' + stage_ctx.platform + ', ' + test_system)
+        error('stage failed: ' + stage_ctx.platform + ', '
+        + stage_ctx.test_ctx.systemName)
     }
 }
 
@@ -412,13 +423,15 @@ def do_jobs_for_test_systems(branch, testConfig)
 
     testConfig.tests.each { test_ctx ->
 
-        def test_system = test_ctx[0]
+        def test_system = test_ctx.systemName
 
         testConfig.platforms.each { platform ->
 
             def pkg_name = platform + '-' + test_system
 
-            if(test_ctx[3] == null || test_ctx[3].any{ it == platform} ){
+            def filter = test_ctx.platforms
+            if(filter == null
+            || filter.any{ it == platform} ){
                 def job_stage_ctx = [
                     // do not try storing "sub_jobs_ctx" in here, this ends in a
                     // stragen recursion when transforming the maps/lists
