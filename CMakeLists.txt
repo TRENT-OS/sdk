@@ -104,8 +104,8 @@ endfunction()
 #-------------------------------------------------------------------------------
 function(add_os_libs_subdirectories)
 
-    # include every sub-folder in OS_LIBS_DIR except 3rdParty, there we include
-    # all subfolders.
+    # include every sub-folder in OS_LIBS_DIR except "3rdParty", there we
+    # include all subfolders.
     file(
         GLOB
         OS_LIBS_SUBDIRS
@@ -113,7 +113,7 @@ function(add_os_libs_subdirectories)
         "${OS_LIBS_DIR}/*" "${OS_LIBS_DIR}/3rdParty/*"
     )
 
-    list(REMOVE_ITEM OS_LIBS_SUBDIRS 3rdParty)
+    list(REMOVE_ITEM OS_LIBS_SUBDIRS "3rdParty")
 
     foreach(OS_LIB_SUBDIR ${OS_LIBS_SUBDIRS})
 
