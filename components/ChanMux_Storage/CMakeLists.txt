@@ -1,5 +1,5 @@
 #
-# ChanMux_Storage
+# ChanMux Storage driver
 #
 # Copyright (C) 2020, Hensoldt Cyber GmbH
 #
