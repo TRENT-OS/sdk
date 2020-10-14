@@ -148,8 +148,12 @@ function(include_os_components)
 
     foreach(OS_COMPONENTS_SUBDIR ${OS_COMPONENTS_SUBDIRS})
 
-        # since we run in a function, this include can't modify any variables
-        # in our scope. It can just add and modify global (cached) variables.
+        # components aren't CMake projects, their CMakeLists.text file
+        # contains functions that must be called to create the actual
+        # component's CMake project. Thus we don't use add_subdirectory()
+        # here but include(). Note that an included files can't modify any
+        # variables in our scope, it can just add and modify the global
+        # (cached) variables.
         include("${OS_COMPONENTS_DIR}/${OS_COMPONENTS_SUBDIR}/CMakeLists.txt")
 
     endforeach()
