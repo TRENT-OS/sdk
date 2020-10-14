@@ -109,8 +109,7 @@ function(add_os_libs_subdirectories)
     file(
         GLOB
         OS_LIBS_SUBDIRS
-        RELATIVE
-        "${OS_LIBS_DIR}"
+        RELATIVE "${OS_LIBS_DIR}"
         "${OS_LIBS_DIR}/*" "${OS_LIBS_DIR}/3rdParty/*"
     )
 
@@ -142,8 +141,7 @@ function(include_os_components)
     file(
         GLOB
         OS_COMPONENTS_SUBDIRS
-        RELATIVE
-        "${OS_COMPONENTS_DIR}"
+        RELATIVE "${OS_COMPONENTS_DIR}"
         "${OS_COMPONENTS_DIR}/*")
 
     foreach(OS_COMPONENTS_SUBDIR ${OS_COMPONENTS_SUBDIRS})
