@@ -40,7 +40,7 @@ def TEST_CONFIG = [
         new TestCtx('test_uart',                     null,                null,                            null),
         new TestCtx('test_chanmux',                  null,                null,                            null),
         new TestCtx('test_proxy_nvm',                null,                null,                            null),
-        new TestCtx('test_cert_lib',                 null,                'test_certparser.py',            null),
+        new TestCtx('test_certparser',               null,                null,                            null),
         new TestCtx('test_crypto_api',               null,                null,                            null),
         new TestCtx('test_cryptoserver',             null,                null,                            null),
         new TestCtx('test_entropysource',            null,                null,                            null),
