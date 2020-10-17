@@ -228,14 +228,21 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
-function(cmd_disassemble_elf binary_file lst_file)
+function(create_disassembly elf_file target_base)
+
+    set(LST_FILE "${elf_file}.lst")
 
     add_custom_command(
-        OUTPUT "${lst_file}"
-        DEPENDS "${binary_file}"
-        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt ${binary_file} > ${lst_file}
+        OUTPUT "${LST_FILE}"
+        DEPENDS "${elf_file}"
+        COMMAND ${CROSS_COMPILER_PREFIX}objdump -dhSt "${elf_file}" > "${LST_FILE}"
         VERBATIM
-        COMMENT "create disassembly for ${binary_file}"
+        COMMENT "create disassembly for ${elf_file}"
+    )
+
+    add_custom_target(
+        ${target_base}_disassemble ALL
+        DEPENDS "${LST_FILE}"
     )
 
 endfunction()
@@ -256,15 +263,7 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
         if(target MATCHES "^(.*\.instance\.bin|capdl-loader)$")
 
             get_target_property(BINARY_DIR ${target} BINARY_DIR)
-            set(TARGET_BIN_FILE "${BINARY_DIR}/${target}")
-            set(TARGET_LST_FILE "${TARGET_BIN_FILE}.lst")
-
-            cmd_disassemble_elf("${TARGET_BIN_FILE}" "${TARGET_LST_FILE}")
-
-            add_custom_target(
-                ${target}_disassemble ALL
-                DEPENDS "${TARGET_LST_FILE}"
-            )
+            create_disassembly("${BINARY_DIR}/${target}" ${target})
 
         endif()
 
@@ -404,15 +403,7 @@ macro(os_sdk_build system_project_dir)
         if(target STREQUAL "elfloader")
 
             get_target_property(BINARY_DIR ${target} BINARY_DIR)
-            set(TARGET_BIN_FILE "${BINARY_DIR}/${target}")
-            set(TARGET_LST_FILE "${TARGET_BIN_FILE}.lst")
-
-            cmd_disassemble_elf("${TARGET_BIN_FILE}" "${TARGET_LST_FILE}")
-
-            add_custom_target(
-                ${target}_disassemble ALL
-                DEPENDS "${TARGET_LST_FILE}"
-            )
+            create_disassembly("${BINARY_DIR}/${target}" ${target})
 
         endif()
 
@@ -422,7 +413,6 @@ macro(os_sdk_build system_project_dir)
             get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
 
             set(OS_SYS_IMG "${IMAGE_DIR}/os_image.bin")
-            set(OS_SYS_IMG_LST "${OS_SYS_IMG}.lst")
 
             # copy system image to the generic file images/os_image.bin
             add_custom_command(
@@ -433,14 +423,7 @@ macro(os_sdk_build system_project_dir)
                 COMMENT "create disassembly for ${target}"
             )
 
-            cmd_disassemble_elf("${OS_SYS_IMG}" "${OS_SYS_IMG_LST}")
-
-            add_custom_target(
-                os_image ALL
-                DEPENDS
-                    "${OS_SYS_IMG}"
-                    "${OS_SYS_IMG_LST}"
-            )
+            create_disassembly("${OS_SYS_IMG}" ${target})
 
 
         endif()
