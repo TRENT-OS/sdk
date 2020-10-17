@@ -1,0 +1,77 @@
+/*
+ * SPI driver
+ *
+ * Copyright (C) 2020, HENSOLDT Cyber GmbH
+ */
+
+
+import <SPI/if_SPI.camkes>;
+
+//------------------------------------------------------------------------------
+// Components
+
+#define DECLARE_COMPONENT_SPI_HW(_type_hw_) \
+    \
+    component spi_ ## _type_hw_ { \
+        hardware; \
+        dataport Buf(32768) regBase; \
+    }
+
+
+#define DECLARE_COMPONENT_SPI_DRV(_type_drv_) \
+    \
+    component _type_drv_ { \
+        dataport  Buf(32768) regBase; \
+        \
+        provides  if_SPI     spi_rpc; \
+        dataport  Buf        spi_port; \
+    }
+
+
+//------------------------------------------------------------------------------
+// Instance creation and connection
+
+#define DECLARE_AND_CONNECT_INSTANCE_SPI_DRV_HW( \
+    _type_hw_, \
+    _inst_hw_, \
+    _type_drv_, \
+    _inst_drv_) \
+    \
+    component   spi_ ## _type_hw_   _inst_hw_; \
+    component   _type_drv_          _inst_drv_; \
+    \
+    connection  seL4HardwareMMIO       _inst_drv_ ## _inst_hw_ ## _mmio( \
+                from _inst_drv_.regBase, \
+                to   _inst_hw_.regBase); \
+
+
+//------------------------------------------------------------------------------
+// Instance Configuration
+
+#define CONFIGURE_INSTANCE_SPI_HW( \
+            _inst_hw_, \
+            _phys_addr_, \
+            _size_) \
+    \
+    _inst_hw_.regBase_paddr  = _phys_addr_; \
+    _inst_hw_.regBase_size   = _size_; \
+
+
+//------------------------------------------------------------------------------
+// convenience macros, since SPI = Driver + HW
+
+#define DECLARE_COMPONENT_SPI(_type_) \
+            DECLARE_COMPONENT_SPI_HW(_type_ ## _hw) \
+            DECLARE_COMPONENT_SPI_DRV(_type_)
+
+#define DECLARE_AND_CONNECT_INSTANCE_SPI(_type_, _inst_) \
+    DECLARE_AND_CONNECT_INSTANCE_SPI_DRV_HW( \
+        _type_ ## _hw, \
+        _inst_ ## _hw, \
+        _type_, \
+        _inst_)
+
+
+
+#define CONFIGURE_INSTANCE_SPI(_inst_, _phys_addr_, _size_) \
+    CONFIGURE_INSTANCE_SPI_HW(_inst_ ## _hw, _phys_addr_, _size_)

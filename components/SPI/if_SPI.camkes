@@ -1,0 +1,17 @@
+/*
+ * SPI Driver interface
+ *
+ * Copyright (C) 2020, HENSOLDT Cyber GmbH
+ */
+
+
+procedure if_SPI {
+
+    include "OS_Error.h";
+
+
+    OS_Error_t cs(unsigned int cs);
+
+    OS_Error_t txrx(size_t tx_len, size_t rx_len);
+
+};

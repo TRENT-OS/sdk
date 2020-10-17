@@ -1,0 +1,46 @@
+/*
+ * Flash storage driver
+ *
+ * Copyright (C) 2020, HENSOLDT Cyber GmbH
+ */
+
+import <if_OS_Timer.camkes>;
+import <if_OS_Storage.camkes>;
+import <SPI/if_SPI.camkes>;
+
+
+//------------------------------------------------------------------------------
+// Component
+
+#define DECLARE_COMPONENT_Storage_Flash_SPI(_name_) \
+    \
+    component _name_ { \
+        \
+        provides  if_OS_Storage        storage_rpc; \
+        dataport  Buf                  storage_port; \
+        \
+        uses      if_OS_Timer          timeServer_rpc; \
+        \
+        uses      if_SPI               spi_rpc; \
+        dataport  Buf                  spi_port; \
+    }
+
+
+//------------------------------------------------------------------------------
+// Instance creation and connection
+
+#define DECLARE_AND_CONNECT_INSTANCE_Storage_Flash_SPI( \
+    _name_, \
+    _inst_, \
+    _peer_inst_spi_rpc_, \
+    _peer_inst_spi_port_) \
+    \
+    component   _name_          _inst_; \
+    \
+    connection  seL4RPCCall     conn_ ## _name_ ## _ ## _inst_ ## _spi_rpc( \
+        from  _inst_.spi_rpc, \
+        to    _peer_inst_spi_rpc_ ); \
+    \
+    connection  seL4SharedData  conn_ ## _name_ ## _ ## _inst_ ## _spi_port ( \
+        from  _peer_inst_spi_port_, \
+        to    _inst_.spi_port);
