@@ -400,7 +400,7 @@ macro(os_sdk_build system_project_dir)
     get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
     foreach(target ${targets})
 
-        if(target STREQUAL "elfloader")
+        if(target MATCHES "^(elfloader|kernel\.elf)$")
 
             get_target_property(BINARY_DIR ${target} BINARY_DIR)
             create_disassembly("${BINARY_DIR}/${target}" ${target})
