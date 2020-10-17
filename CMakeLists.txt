@@ -347,7 +347,9 @@ macro(os_sdk_build system_project_dir)
     if (SDK_USE_CAMKES)
 
         setup_sel4_camkes_build_system()
-        setup_sel4_global_components()
+
+        # we do not enable the global-components by default, any project that
+        # needs them must call global_components_import_project() then.
 
     endif()
 
