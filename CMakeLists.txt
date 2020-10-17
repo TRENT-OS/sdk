@@ -253,7 +253,7 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
     foreach(target ${targets})
 
         # each CAmkES component is in a *.instance.bin file.
-        if(target MATCHES "(.*\.instance\.bin)|capdl-loader")
+        if(target MATCHES "^(.*\.instance\.bin|capdl-loader)$")
 
             get_target_property(BINARY_DIR ${target} BINARY_DIR)
             set(TARGET_BIN_FILE "${BINARY_DIR}/${target}")
