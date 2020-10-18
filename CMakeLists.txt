@@ -244,11 +244,7 @@ endfunction()
 #-------------------------------------------------------------------------------
 function(DeclareAndCreateCamkESSystem camkes_system_file)
 
-    DeclareCAmkESRootserver(
-        ${camkes_system_file}
-        CPP_FLAGS
-            -DCAMKES_TOOL_PROCESSING
-    )
+    DeclareCAmkESRootserver(${camkes_system_file})
 
     GenerateCAmkESRootServer()
 
