@@ -361,13 +361,15 @@ macro(os_sdk_build system_project_dir)
 
     endif()
 
-    # Generates a compile_commands.json file containing the exact compiler calls
-    # for all translation units of the project. Used by static analyzers running
-    # independently of the compilation job.
+    # Generate a commands.json file containing the exact compiler invocation
+    # calls for all translation units of the system project. This can be used
+    # by code analyzers running independently of the compilation job. Note that
+    # we enable this here after all the seL4/CAmkES stuff on purpose, because
+    # we only want our system's stuff in the json file.
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
     # linting does not work on seL4/CAmkES code, thus we define details here,
-    # after we've including the seL4/CAmkES build system.
+    # after we've included the seL4/CAmkES stuff.
     if (ENABLE_LINT)
         set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
         set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
