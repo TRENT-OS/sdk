@@ -390,18 +390,16 @@ macro(os_sdk_build system_project_dir)
         message(FATAL_ERROR "project folder not found: ${system_project_dir}")
     endif()
 
-    set(SYSTEM_PROJECT_DIR ${system_project_dir})
-
     if (SDK_USE_CAMKES)
 
         CAmkESAddCPPInclude(
-            ${SYSTEM_PROJECT_DIR}
-            ${SYSTEM_PROJECT_DIR}/plat/${KernelPlatform}
+            ${system_project_dir}
+            ${system_project_dir}/plat/${KernelPlatform}
         )
 
     endif()
 
-    add_subdirectory("${SYSTEM_PROJECT_DIR}" "os_system")
+    add_subdirectory("${system_project_dir}" "os_system")
 
     set(targets "")
     get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
