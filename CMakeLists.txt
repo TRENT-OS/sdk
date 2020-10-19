@@ -324,6 +324,13 @@ macro(os_sdk_build system_project_dir)
         # CapDLLoaderMaxObjects + Systemcaps < 2^KernelRootCNodeSizeBits
         set(CapDLLoaderMaxObjects 25000 CACHE STRING "")
 
+        # we require that the CAmkES files are run through the C pre processor
+        # first, so the includes and macros get resolved
+        set(CAmkESCPP ON CACHE BOOL "" FORCE)
+
+        # use device tree
+        set(CAmkESDTS ON CACHE BOOL "" FORCE)
+
     endif()
 
     # use ZF_LOG_DEBUG (2), useful for capdl-loader-app to to get information
@@ -338,24 +345,17 @@ macro(os_sdk_build system_project_dir)
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
     setup_sel4_build_system()
 
-
-    #---------------------------------------------------------------------------
-    # SDK specific build process
-    #---------------------------------------------------------------------------
-
     if (SDK_USE_CAMKES)
-
-        # we require that the CAmkES files are run through the C pre processor
-        # first, so the includes and macros get resolved
-        set(CAmkESCPP ON CACHE BOOL "" FORCE)
-
-        # use device tree
-        set(CAmkESDTS ON CACHE BOOL "" FORCE)
 
         setup_sel4_camkes_build_system()
         setup_sel4_global_components()
 
     endif()
+
+
+    #---------------------------------------------------------------------------
+    # SDK specific build process
+    #---------------------------------------------------------------------------
 
     # Generate a commands.json file containing the exact compiler invocation
     # calls for all translation units of the system project. This can be used
