@@ -139,3 +139,6 @@
 [submodule "resources"]
 	path = resources
 	url = ../../ssdk/sdk-resources.git
+[submodule "components/SysLogger"]
+	path = components/SysLogger
+	url = ../../sc/syslogger.git
