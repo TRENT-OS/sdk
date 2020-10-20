@@ -91,3 +91,6 @@
 [submodule "components/SdHostController"]
 	path = components/SdHostController
 	url = ../../sc/sdhostcontroller.git
+[submodule "resources/imx6_sd_card"]
+	path = resources/imx6_sd_card
+	url = ../../ssdk/plat_imx6.git
