@@ -27,8 +27,15 @@ function(DeclareCAmkESComponent_ChanMux
     config_file
     system_config_lib
 )
-    CAmkESAddCPPInclude(
-        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/plat/${KernelPlatform}")
+    set(PLATFORM_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/plat/${PLATFORM}")
+    if (EXISTS "${PLATFORM_DIR}" AND IS_DIRECTORY "${PLATFORM_DIR}")
+        CAmkESAddCPPInclude(${PLATFORM_DIR})
+    else()
+        message(
+            FATAL_ERROR
+            "Directory '${PLATFORM_DIR}' "
+            "for the platform specific parameters is missing!")
+    endif()
 
     DeclareCAmkESComponent(
         ${name}

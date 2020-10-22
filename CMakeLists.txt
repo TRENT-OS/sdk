@@ -85,15 +85,20 @@ function(os_set_config_file cfg_file)
 
         get_filename_component(CFG_FILE_DIR ${CFG_FILE_ABS} DIRECTORY)
 
-        # define project that creates an interface library providing the config
+        # Define project that creates an interface library providing the config
         # file include paths. This allows including the config file easily.
+        #
+        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
+        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
+        # top level system platform selector, which enables the portability of
+        # the applications.
         project(${CFG_CONFIG_PROJECT_NAME} C)
         add_library(${PROJECT_NAME} INTERFACE)
         target_include_directories(
             ${PROJECT_NAME}
             INTERFACE
                 ${CFG_FILE_DIR}
-                ${CFG_FILE_DIR}/plat/${KernelPlatform}
+                ${CFG_FILE_DIR}/plat/${PLATFORM}
         )
 
     endif()
@@ -389,9 +394,13 @@ macro(os_sdk_build system_project_dir)
 
     if (SDK_USE_CAMKES)
 
+        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
+        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
+        # top level system platform selector, which enables the portability of
+        # the applications.
         CAmkESAddCPPInclude(
             ${system_project_dir}
-            ${system_project_dir}/plat/${KernelPlatform}
+            ${system_project_dir}/plat/${PLATFORM}
         )
 
     endif()
