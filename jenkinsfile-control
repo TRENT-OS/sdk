@@ -33,10 +33,10 @@ class TestCtx {
 def TEST_CONFIG = [
 
     tests: [
-        new TestCtx('demo_hello_world',              null,                'test_demo_hello_world.py',      ['zynq7000', 'sabre']),
+        new TestCtx('demo_hello_world',              null,                'test_demo_hello_world.py',      null),
         new TestCtx('demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py',          ['zynq7000']),
         new TestCtx('demo_iot_app_rpi3',             'test_in_isolation', 'test_demo_iot_app_rpi3.py',     ['rpi3']),
-        new TestCtx('test_timeserver',               null,                null,                            ['zynq7000', 'sabre']),
+        new TestCtx('test_timeserver',               null,                null,                            null),
         new TestCtx('test_uart',                     null,                null,                            ['zynq7000', 'sabre']),
         new TestCtx('test_chanmux',                  null,                null,                            ['zynq7000']),
         new TestCtx('test_proxy_nvm',                null,                null,                            ['zynq7000']),
