@@ -96,7 +96,9 @@ case "${BUILD_PLATFORM}" in
         CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
         ;;
     #-------------------------------------
-    pc99)
+    pc99 |\
+    x86_64 |\
+    ia32)
         CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
         ;;
     #-------------------------------------
