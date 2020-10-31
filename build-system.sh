@@ -80,7 +80,7 @@ case "${BUILD_PLATFORM}" in
         CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
         ;;
     #-------------------------------------
-    fvp  |\
+    fvp |\
     imx8mq-evk | imx8mm-evk |\
     odroidc2 |\
     rockpro64 |\
