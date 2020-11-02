@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.17)
 #   <name>
 #       component instance name
 #
-function(DeclareCAmkESComponent_NIC_Dummy
+function(NIC_Dummy_DeclareCAmkESComponent
     name
 )
 
