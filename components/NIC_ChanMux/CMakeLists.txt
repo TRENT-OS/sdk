@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.17)
 #     ChanMux data channel ID
 #
 
-function(DeclareCAmkESComponent_NIC_ChanMux
+function(NIC_ChanMux_DeclareCAmkESComponent
     name
     channel_ctrl
     channel_data
