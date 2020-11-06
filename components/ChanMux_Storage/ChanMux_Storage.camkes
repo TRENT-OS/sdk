@@ -17,13 +17,34 @@ import <if_OS_Storage.camkes>;
 /**
  * @hideinitializer
  */
-component ChanMux_Storage
-{
-    // Storage interface
-    provides if_OS_Storage  storage_rpc;  //!< Generic storage access interface.
-    dataport Buf            storage_port; //!< Storage interface data port.
 
-    // ChanMux interface
-    ChanMux_CLIENT_DECLARE_INTERFACE(chanMux)
-    ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(chanMux, chan)
-}
+ //------------------------------------------------------------------------------
+
+#define ChanMux_Storage_COMPONENT_DECLARE( \
+    _name_) \
+    \
+    component _name_ { \
+        provides if_OS_Storage  storage_rpc; \
+        dataport Buf            storage_port; \
+        \
+        ChanMux_CLIENT_DECLARE_INTERFACE(chanMux) \
+        ChanMux_CLIENT_DECLARE_CHANNEL_CONNECTOR(chanMux, chan) \
+    }
+
+//------------------------------------------------------------------------------
+
+#define ChanMux_Storage_INSTANCE_CONNECT_CLIENT( \
+    _inst_, \
+    _rpc_, \
+    _port_) \
+    \
+    connection  seL4RPCCall \
+        configServer_chanMux_storage( \
+            from    _rpc_, \
+            to      _inst_.storage_rpc \
+        ); \
+    connection  seL4SharedData \
+        configServer_chanMux_storage_port( \
+            from    _port_,\
+            to      _inst_.storage_port \
+        );
