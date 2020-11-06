@@ -1,16 +1,16 @@
 /*
+ * Copyright (C) 2020, Hensoldt Cyber GmbH
+ */
+
+/*
  *  NIC-Dummy CAmkES Component
- *
- *  Copyright (C) 2020, Hensoldt Cyber GmbH
- *
  *
  *  to be used as:
  *
  *      #include "NIC_Dummy/NIC_Dummy.camkes"
  *
- *      // The chosen ringbuffer size below is an arbitrary example value
- *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_1, 4096)
- *      DECLARE_COMPONENT_NIC_Dummy(NIC_Dummy_Driver_2, 4096)
+ *      NIC_Dummy_COMPONENT_DECLARE(NIC_Dummy_Driver_1, 4096)
+ *      NIC_Dummy_COMPONENT_DECLARE(NIC_Dummy_Driver_2, 4096)
  *
  */
 
@@ -21,6 +21,13 @@ import <if_OS_Logger.camkes>;
 //------------------------------------------------------------------------------
 
 
+/*
+ * Declare the NIC_Dummy with a given type name:
+ *
+ *      NIC_Dummy_COMPONENT_DECLARE(
+ *          <name>,<bufferSize>
+ *      )
+ */
 #define NIC_Dummy_COMPONENT_DECLARE( \
     _name_, \
     _ringbuffer_size_) \
@@ -40,6 +47,14 @@ import <if_OS_Logger.camkes>;
 //------------------------------------------------------------------------------
 
 
+/*
+ * Assign all the non-client interfaces:
+ *
+ *      NIC_Dummy_INSTANCE_CONNECT(
+ *          <instance>,
+ *          <nic>.<rpc>, <nic>.<port_to>, <nic>.<port_from>, <nic>.<evt>,
+ *      )
+ */
 #define NIC_Dummy_INSTANCE_CONNECT( \
     _inst_, \
     _nic_rpc_, \
@@ -65,6 +80,14 @@ import <if_OS_Logger.camkes>;
             to      _nic_dp_to_);
 
 
+/*
+ * Assign the optional logger:
+ *
+ *      NIC_Dummy_INSTANCE_CONNECT_OPTIONAL_LOGGER(
+ *          <instance>,
+ *          <logger>.<rpc>, <logger>.<port_to>
+ *      )
+ */
 #define NIC_Dummy_INSTANCE_CONNECT_OPTIONAL_LOGGER( \
     _inst_, \
     _log_rpc_, \
