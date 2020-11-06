@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.17)
 #   <system_config_lib>
 #       system config library
 #
-function(DeclareCAmkESComponent_ChanMux
+function(ChanMux_DeclareCAmkESComponent
     name
     config_file
     system_config_lib
@@ -64,7 +64,7 @@ function(DeclareCAmkESComponents_ChanMux_UART
 )
     DeclareCAmkESComponents_for_UARTs()
 
-    DeclareCAmkESComponent_ChanMux(
+    ChanMux_DeclareCAmkESComponent(
         ${name}
         ${config_file}
         ${system_config_lib}
