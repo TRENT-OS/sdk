@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 3.17)
 #   <name>
 #     required, component instance name
 #
-function(DeclareCAmkESComponent_ChanMux_Storage
+function(ChanMux_Storage_DeclareCAmkESComponent
     name
 )
 
