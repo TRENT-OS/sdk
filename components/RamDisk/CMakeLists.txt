@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.17)
 #   <system_config_lib>
 #       system config library with definition for RAMDISK_SIZE_BYTES
 #
-function(DeclareCAmkESComponent_RamDisk
+function(RamDisk_DeclareCAmkESComponent
     name
     system_config_lib
 )
