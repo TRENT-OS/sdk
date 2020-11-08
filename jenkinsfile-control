@@ -578,7 +578,7 @@ pipeline {
     stages {
 
         //----------------------------------------------------------------------
-        stage('Build_stage') {
+        stage('Build SDK') {
 
             agent { label "build" }
 
@@ -655,6 +655,14 @@ pipeline {
                                 'sdk-package/pkg/doc/',
                             ].join(',')
                         )
+
+                        stash(
+                            name: 'stash_build_demos',
+                            includes: [
+                                'scm-src/build-sdk.sh',
+                            ].join(',')
+                        )
+
                     }
                 }
 
@@ -700,12 +708,51 @@ pipeline {
                         }
                     }
                 }
+                //--------------------------------------------------------------
+                stage('cleanup') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        cleanWs()
+                    }
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test SDK') {
+            parallel {
 
                 //--------------------------------------------------------------
-                stage('build-demos') {
+                stage('publish_docs') {
+                    agent { label "publish_doc" }
+                    when {
+                        beforeAgent true
+                        anyOf {
+                            branch 'master';
+                            branch 'integration'
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        cleanWs()
+                        unstash('stash_doc')
+                        run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
+                        cleanWs()
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('Build Demos') {
+                    // We build most of the demos anyway, because they are just
+                    // another test system effectively. However, this executes
+                    // the SDK builder's demo build step, which builds all
+                    // demos in a row. We keep this as a check if the SDK
+                    // package can be used, but it scales badly when running in
+                    // CI, because the builds could all run in parallel on
+                    // different slaves.
                     agent {
                         docker {
-                            reuseNode true
+                            label "build"
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
@@ -715,47 +762,41 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+
+                            // we can't call cleanWs() here, because this may
+                            // run on the same node as the SDK build stage
+                            // above and then our workspace is gone
+                            copyArtifacts(
+                                projectName: JOB_NAME,
+                                selector: specific("${BUILD_NUMBER}"), // need to ensure this is a string
+                                filter: 'sdk-package.bz2'
+                            )
+                            // the subfolder 'pkg' is hard-coded in the SDK
+                            // build script, because building the demos is
+                            // expected to run as part of the package creation
+                            run_app('mkdir', ['-p', 'sdk/pkg'])
+                            run_app('tar', ['-xf sdk-package.bz2', '-C sdk/pkg'])
+                            unstash('stash_build_demos')
                             run_shell_script(
                                 'scm-src/build-sdk.sh',
                                 [
-                                    'build-demos',
-                                    'sdk-package'
+                                    'build-demos', // mode
+                                    'sdk'          // base dir
                                 ]
                             )
                         }
                     }
                 }
 
-            }
-        }
-
-        //-----------------------------------------------------------------------
-        stage('publish_docs') {
-            agent { label "publish_doc" }
-            when {
-                beforeAgent true
-                anyOf {
-                    branch 'master';
-                    branch 'integration'
+                //--------------------------------------------------------------
+                stage('System Tests') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
+                    }
                 }
             }
-            steps {
-                print_step_info env.STAGE_NAME
-                cleanWs()
-                unstash('stash_doc')
-                run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
-                cleanWs()
-            }
         }
-
-        //----------------------------------------------------------------------
-        stage('Tests') {
-            steps {
-                print_step_info env.STAGE_NAME
-                do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
-            }
-        }
-
     }
 
     //--------------------------------------------------------------------------
