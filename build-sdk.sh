@@ -236,31 +236,6 @@ function build_sdk_demos()
         exit 1
     fi
 
-    # build RPi3 flasher using a sample file from the IoT demo
-    print_info "Building SDK tool: rpi3_flasher"
-
-    local FLASHER_SRC=${SDK_SRC_DIR}/tools/rpi3_flasher
-    local FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
-
-    # pick file not from collected sandbox/demo sources, but from the original
-    # repo sources
-    local FLASHER_SRC_DATA=${DEMOS_SRC_DIR}/demo_iot_app_rpi3/flash.c
-    if [ ! -e ${FLASHER_SRC_DATA} ]; then
-        echo "missing ${FLASHER_SRC_DATA}"
-        exit 1
-    fi
-    copy_files_via_tar ${FLASHER_SRC} ${FLASHER_SRC_TEST} --exclude-vcs
-    cp ${FLASHER_SRC_DATA} ${FLASHER_SRC_TEST}/
-
-    local BUILD_PARAMS=(
-        ${FLASHER_SRC_TEST}
-        rpi3
-        ${BUILD_DIR}/rpi3_flasher_test
-        -D CMAKE_BUILD_TYPE=Debug
-    )
-    ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
-
-
     local TARGETS=(
         zynq7000
         rpi3
@@ -418,6 +393,31 @@ function build_sdk_tools()
 
         cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
     )
+
+    # build RPi3 flasher demo/tool using a dummy file
+    print_info "Building SDK demo/tool: rpi3_flasher"
+    local FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
+    copy_files_via_tar ${SDK_SRC_DIR}/tools/rpi3_flasher ${FLASHER_SRC_TEST} --exclude-vcs
+
+    # create a dummy file with a RLE-compressed RAM-Disk containing 0x42
+    cat <<EOF >${FLASHER_SRC_TEST}/flash.c
+// auto generated file
+#include <stdint.h>
+#include <stddef.h>
+uint8_t RAMDISK_IMAGE[] = { 0x52, 0x4c, 0x45, 0x00, 0x00, 0x00, 0x01, 0x01, 0x42 };
+size_t RAMDISK_IMAGE_SIZE = sizeof(RAMDISK_IMAGE);
+
+EOF
+
+    local BUILD_PARAMS=(
+        ${FLASHER_SRC_TEST}
+        rpi3
+        ${BUILD_DIR}/rpi3_flasher_test
+        -D CMAKE_BUILD_TYPE=Debug
+        -D ENABLE_LINT=0
+    )
+    ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
+
 }
 
 
