@@ -245,7 +245,7 @@ function build_sdk_demos()
     # pick file not from collected sandbox/demo sources, but from the original
     # repo sources
     local FLASHER_SRC_DATA=${DEMOS_SRC_DIR}/demo_iot_app_rpi3/flash.c
-    if [ ! -w ${FLASHER_SRC_DATA} ]; then
+    if [ ! -e ${FLASHER_SRC_DATA} ]; then
         echo "missing ${FLASHER_SRC_DATA}"
         exit 1
     fi
