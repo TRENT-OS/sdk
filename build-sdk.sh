@@ -315,6 +315,30 @@ function build_sdk_demos()
 
 
 #-------------------------------------------------------------------------------
+function sdk_unit_test()
+{
+    local SDK_SRC_DIR=$1
+    local BUILD_DIR=$2
+    shift 2
+
+    print_info "running SDK Libs Unit Tests"
+
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
+
+    local BUILD_PARAMS=(
+        ${BUILD_DIR}/test_seos_libs       # build output folder
+        cov                               # ninja target
+        ${SDK_SRC_DIR}/libs/os_libs/test  # folder containing CMakeList file
+    )
+
+    cmake_check_init_and_build ${BUILD_PARAMS[@]}
+}
+
+
+#-------------------------------------------------------------------------------
 function build_sdk_tool()
 {
     local SDK_SRC_DIR=$1
@@ -338,30 +362,6 @@ function build_sdk_tool()
         # build will change the working directory to BUILD_DIR. Thus we must
         # pass an absolute path here
         -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
-    )
-
-    cmake_check_init_and_build ${BUILD_PARAMS[@]}
-}
-
-
-#-------------------------------------------------------------------------------
-function sdk_unit_test()
-{
-    local SDK_SRC_DIR=$1
-    local BUILD_DIR=$2
-    shift 2
-
-    print_info "running SDK Libs Unit Tests"
-
-    if [ ! -d ${SDK_SRC_DIR} ]; then
-        echo "missing SDK source folder, did you run the collect step?"
-        exit 1
-    fi
-
-    local BUILD_PARAMS=(
-        ${BUILD_DIR}/test_seos_libs       # build output folder
-        cov                               # ninja target
-        ${SDK_SRC_DIR}/libs/os_libs/test  # folder containing CMakeList file
     )
 
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
@@ -419,6 +419,7 @@ function build_sdk_tools()
         cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
     )
 }
+
 
 #-------------------------------------------------------------------------------
 function build_sdk_docs()
