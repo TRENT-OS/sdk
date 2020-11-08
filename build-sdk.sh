@@ -522,7 +522,7 @@ function package_sdk()
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-PACKAGE_MODE=$1
+ACTION=$1
 OUT_BASE_DIR=$2
 shift 2
 
@@ -545,32 +545,42 @@ function do_sdk_step()
     local STEP=$1
 
     case "${STEP}" in
-        collect_sdk_sources)
-            ${STEP} ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+        collect-sources)
+            collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
             ;;
 
-        sdk_unit_test)
-            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
+        build-package)
+            package_sdk ${SDK_PACKAGE_SRC}
             ;;
 
-        build_sdk_docs)
-            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
+        unit-tests)
+            sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
             ;;
 
-        build_sdk_tools)
-            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
+        build-docs)
+            build_sdk_docs ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DOC}
             ;;
 
-        package_sdk)
-            ${STEP} ${SDK_PACKAGE_SRC}
+        build-tools)
+            build_sdk_tools ${SDK_PACKAGE_SRC} ${SDK_BUILD} ${SDK_PACKAGE_BIN}
             ;;
 
-        collect_sdk_demos)
-            ${STEP} ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
+        collect-demos)
+            collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
             ;;
 
-        build_sdk_demos)
-            ${STEP} ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DEMOS} ${SDK_BUILD}
+        build-demos)
+            build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DEMOS} ${SDK_BUILD}
+            ;;
+
+        create-package)
+            do_sdk_step collect-sources
+            do_sdk_step build-tools
+            # collect demos after tool build to ensure there is no dependency
+            do_sdk_step collect-demos
+            # documentation build also covers demos
+            do_sdk_step build-docs
+            do_sdk_step build-package
             ;;
 
         *)
@@ -580,71 +590,53 @@ function do_sdk_step()
     esac
 }
 
+
 #-------------------------------------------------------------------------------
-function do_sdk_multi_step()
-{
-    local MULTISTEP=$1
+case "${ACTION}" in
+    all)
+        # create SDK package including docs and demos, run unit test and build
+        # all demos
+        do_sdk_step create-package
+        do_sdk_step unit-tests
+        do_sdk_step build-demos
+        ;;
 
-    case "${MULTISTEP}" in
-        package)
-            # create SDK package including demos
-            do_sdk_step collect_sdk_sources
-            do_sdk_step build_sdk_tools
-            do_sdk_step collect_sdk_demos
-            do_sdk_step build_sdk_docs
-            do_sdk_step package_sdk
-            ;;
+    package)
+        do_sdk_step create-package
+        ;;
 
-        *)
-            echo "invalid MULTISTEP: ${MULTISTEP}"
-            exit 1
-            ;;
-    esac
-}
+    tools)
+        # collect sources and build the SDK binaries
+        do_sdk_step collect-sources
+        do_sdk_step build-tools
+        ;;
 
+    demos)
+        # create SDK snapshot, collect demos and build them
+        do_sdk_step collect-sources
+        do_sdk_step collect-demos
+        do_sdk_step build-demos
+        ;;
 
-if [[ "${PACKAGE_MODE}" == "all" ]]; then
-    do_sdk_multi_step package
-    # unit test are not part of the SDK package
-    do_sdk_step sdk_unit_test
-    # demo builds are not part of the SDK package, this is just a test.
-    do_sdk_step build_sdk_demos
+    doc)
+        # create SDK snapshot and build documentation from it
+        do_sdk_step collect-sources
+        # note that there are no demos collected here
+        do_sdk_step build-docs
+        ;;
 
-elif [[ "${PACKAGE_MODE}" == "build-bin" ]]; then
-    # collect sources and build the SDK binaries
-    do_sdk_step collect_sdk_sources
-    do_sdk_step build_sdk_tools
+    build-bin)
+        echo "parameter 'build-bin' is deprecated, use 'tools' or 'build-tools'"
+        exit 1
+        ;;
 
-elif [[ "${PACKAGE_MODE}" == "build-demos" ]]; then
-    # build demos against a created package, used by CI
-    do_sdk_step build_sdk_demos
+    only-sources)
+        echo "parameter 'only-sources' is deprecated, use 'collect-sources'"
+        exit 1
+        ;;
 
-elif [[ "${PACKAGE_MODE}" == "demos" ]]; then
-    # create SDK snapshot, collect demos and build them
-    do_sdk_step collect_sdk_sources
-    do_sdk_step collect_sdk_demos
-    do_sdk_step build_sdk_demos
+    *)
+        # execute requested step
+        do_sdk_step ${ACTION}
+esac
 
-elif [[ "${PACKAGE_MODE}" == "doc" ]]; then
-    # create SDK snapshot and build documentation from it
-    do_sdk_step collect_sdk_sources
-    # note that there are no demos collected here
-    do_sdk_step build_sdk_docs
-
-elif [[ "${PACKAGE_MODE}" == "only-sources" ]]; then
-    # create SDK snapshot, no docs, tool or demos
-    do_sdk_step collect_sdk_sources
-
-elif [[ "${PACKAGE_MODE}" == "package" ]]; then
-    # create an SDK package, used by CI
-    do_sdk_multi_step package
-
-elif [[ "${PACKAGE_MODE}" == "unit-tests" ]]; then
-    # run units test on a created package, used by CI
-    do_sdk_step sdk_unit_test
-
-else
-    echo "usage: $0 <mode> <OUT_BASE_DIR>"
-    echo "  where mode is: all, build-bin, build-demos, demos, doc, only-sources, package, unit-tests"
-    exit 1
-fi
