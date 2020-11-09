@@ -22,7 +22,13 @@ import <if_OS_Nic.camkes>;
 #include "ChanMux/ChanMuxHelper.camkes"
 
 
-#define DECLARE_COMPONENT_NIC_ChanMux(_name_, _ringbuffer_size_) \
+
+//------------------------------------------------------------------------------
+
+#define NIC_ChanMux_COMPONENT_DECLARE( \
+    _name_, \
+    _ringbuffer_size_) \
+    \
     component _name_ { \
         control; \
         \
@@ -44,3 +50,64 @@ import <if_OS_Nic.camkes>;
         maybe dataport  Buf                 logServer_port; \
         maybe consumes  EventReady          logServer_event_ready; \
     }
+
+
+//------------------------------------------------------------------------------
+
+
+/*
+ * Assign all the non-client interfaces:
+ *
+ *      NIC_ChanMux_INSTANCE_CONNECT(
+ *          <instance>,
+ *          <nic>.<rpc>, <nic>.<port_to>, <nic>.<port_from>, <nic>.<evt>,
+ *      )
+ */
+#define NIC_ChanMux_INSTANCE_CONNECT_CLIENT( \
+    _inst_, \
+    _nic_rpc_, \
+    _nic_dp_to_, \
+    _nic_dp_from_, \
+    _nic_ev_) \
+    \
+    connection seL4NotificationNative  \
+        _inst_ ## _nic_ev( \
+            from    _inst_.nic_event_hasData,\
+            to      _nic_ev_); \
+    connection seL4RPCCall \
+        _inst_ ## _nic_rpc( \
+            from    _nic_rpc_, \
+            to      _inst_.nic_rpc); \
+    connection seL4SharedData \
+        _inst_ ## _nic_dp_from ( \
+            from    _inst_.nic_port_to, \
+            to      _nic_dp_from_); \
+    connection seL4SharedData \
+        _inst_ ## _nic_dp_to( \
+            from    _inst_.nic_port_from, \
+            to      _nic_dp_to_);
+
+
+/*
+ * Assign the optional logger:
+ *
+ *      NIC_ChanMux_INSTANCE_CONNECT_OPTIONAL_LOGGER(
+ *          <instance>,
+ *          <logger>.<rpc>, <logger>.<port_to>
+ *      )
+ */
+#define NIC_ChanMux_INSTANCE_CONNECT_OPTIONAL_LOGGER( \
+    _inst_, \
+    _rpc_, \
+    _port_) \
+    \
+    connection seL4RPCCall \
+        _inst_ ## _logger_rpc( \
+            from    _inst_.logServer_rpc, \
+            to      _rpc_ \
+        ); \
+    connection seL4SharedData \
+        _inst_ ## _logger_port( \
+            from    _inst_.logServer_port, \
+            to      _port_ \
+        );
