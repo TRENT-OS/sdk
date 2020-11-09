@@ -29,14 +29,14 @@ get_instance_ChanMux(void)
 
     if (NULL == self)
     {
-        static const ChanMux_ConfigLowerChan_t cfgChanMux_lower =
+        static const ChanMux_ConfigLowerChan_t cfgChanMux_lowerOut =
         {
-            .port = OS_DATAPORT_ASSIGN(UnderlyingChan_inputDataport),
+            .port = OS_DATAPORT_ASSIGN(UnderlyingChan_outputDataport),
             .writer = UnderlyingChan_Rpc_write,
         };
 
         // create a ChanMUX
-        if (!ChanMux_ctor(&theOne, &cfgChanMux, &cfgChanMux_lower))
+        if (!ChanMux_ctor(&theOne, &cfgChanMux, &cfgChanMux_lowerOut))
         {
             Debug_LOG_ERROR("ChanMux_ctor() failed");
             return NULL;
@@ -230,15 +230,15 @@ int run()
 {
     Debug_LOG_DEBUG("[%s] %s", get_instance_name(), __func__);
 
-    OS_Dataport_t out_dp = OS_DATAPORT_ASSIGN(UnderlyingChan_outputFifoDataport);
+    OS_Dataport_t port_in = OS_DATAPORT_ASSIGN(UnderlyingChan_inputFifoDataport);
 
     // the last byte of the dataport holds an overflow flag
     volatile char* fifoOverflow = (volatile char*)(
-                                      (uintptr_t)OS_Dataport_getBuf(out_dp)
-                                      + OS_Dataport_getSize(out_dp) - 1 );
+                                      (uintptr_t)OS_Dataport_getBuf(port_in)
+                                      + OS_Dataport_getSize(port_in) - 1 );
 
 
-    FifoDataport* underlyingFifo = (FifoDataport*)OS_Dataport_getBuf(out_dp);
+    FifoDataport* underlyingFifo = (FifoDataport*)OS_Dataport_getBuf(port_in);
 
     static char fifo_buffer[2048]; // value found from testing
     CharFifo fifo;

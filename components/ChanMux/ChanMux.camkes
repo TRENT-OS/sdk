@@ -29,8 +29,8 @@ import <if_ChanMux.camkes>;
     /*-------------------------------------------------*/ \
     /* lower interface to underlying layer */ \
     uses          if_OS_BlockingWrite  UnderlyingChan_Rpc; \
-    dataport      Buf                  UnderlyingChan_inputDataport; \
-    dataport      Buf                  UnderlyingChan_outputFifoDataport; \
+    dataport      Buf                  UnderlyingChan_inputFifoDataport; \
+    dataport      Buf                  UnderlyingChan_outputDataport; \
     consumes      EventDataAvailable   UnderlyingChan_EventHasData;
 
 
@@ -72,8 +72,8 @@ import <if_ChanMux.camkes>;
     _name_, \
     _inst_, \
     _UnderlyingChan_rpc_, \
-    _UnderlyingChan_inputDataport_, \
-     _UnderlyingChan_outputFifoDataport_, \
+    _UnderlyingChan_inputFifoDataport_, \
+     _UnderlyingChan_outputDataport_, \
      _UnderlyingChan_data_available_) \
     \
     component   _name_          _inst_; \
@@ -83,12 +83,12 @@ import <if_ChanMux.camkes>;
         to   _UnderlyingChan_rpc_); \
     \
     connection  seL4SharedData  _name_ ## _ ## _inst_ ## _UnderlyingChan_inputDataport( \
-        from _inst_.UnderlyingChan_inputDataport, \
-        to   _UnderlyingChan_inputDataport_); \
+        from _inst_.UnderlyingChan_inputFifoDataport, \
+        to   _UnderlyingChan_inputFifoDataport_); \
     \
     connection  seL4SharedData  _name_ ## _ ## _inst_ ## _UnderlyingChan_outputFifoDataport( \
-        from _UnderlyingChan_outputFifoDataport_, \
-        to   _inst_.UnderlyingChan_outputFifoDataport); \
+        from _UnderlyingChan_outputDataport_, \
+        to   _inst_.UnderlyingChan_outputDataport); \
     \
     connection  seL4Notification _name_ ## _UnderlyingChan ## _inst_ ## _notification( \
         from _UnderlyingChan_data_available_, \
@@ -107,8 +107,8 @@ import <if_ChanMux.camkes>;
         _name_, \
         _inst_, \
         uart_ ## _name_.UartDrv, \
-        uart_ ## _name_.Uart_inputDataport, \
-        uart_ ## _name_.Uart_outputFifoDataport, \
+        uart_ ## _name_.Uart_inputFifoDataport, \
+        uart_ ## _name_.Uart_outputDataport, \
         uart_ ## _name_.Uart_DataAvailable)
 
 
