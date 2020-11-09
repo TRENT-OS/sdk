@@ -1,15 +1,16 @@
 /*
+ * Copyright (C) 2020, Hensoldt Cyber GmbH
+ */
+
+/*
  *  NIC-Chanmux CAmkES Component
- *
- *  Copyright (C) 2020, Hensoldt Cyber GmbH
- *
  *
  *  to be used as:
  *
  *      #include "NIC_ChanMux/NIC_ChanMux.camkes"
  *
- *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_1, 16384)
- *      DECLARE_COMPONENT_NIC_ChanMux(NIC_Chanmux_Driver_2, 16384)
+ *      NIC_ChanMux_COMPONENT_DECLARE(NIC_Chanmux_Driver_1, 16384)
+ *      NIC_ChanMux_COMPONENT_DECLARE(NIC_Chanmux_Driver_2, 16384)
  *
  */
 
@@ -56,9 +57,9 @@ import <if_OS_Nic.camkes>;
 
 
 /*
- * Assign all the non-client interfaces:
+ * Assign client interface:
  *
- *      NIC_ChanMux_INSTANCE_CONNECT(
+ *      NIC_ChanMux_INSTANCE_CONNECT_CLIENT(
  *          <instance>,
  *          <nic>.<rpc>, <nic>.<port_to>, <nic>.<port_from>, <nic>.<evt>,
  *      )
