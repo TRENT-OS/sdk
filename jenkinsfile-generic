@@ -504,7 +504,8 @@ pipeline {
                                                 '-m', 'pytest',
                                                 '-p', 'no:cacheprovider',
                                                 '-v',
-                                                // '--capture=no',  // show printf() from python scripts in console
+                                                // '--capture=no', // show printf() from python scripts in console
+                                                // '--print_logs', // print system logs in console
                                                 '--proxy=../src/sdk/bin/proxy_app,TCP',
                                                 '--target=' + PLATFORM,
                                                 '--system_image=../build/images/os_image.bin',

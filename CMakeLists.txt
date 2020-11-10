@@ -274,6 +274,8 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
 
         if(target STREQUAL "capdl-loader")
 
+            # the CapDL Loader's build produces graph.dot with all the
+            # components, create a SVG image from this.
             add_custom_command(
                 TARGET ${target}
                 POST_BUILD

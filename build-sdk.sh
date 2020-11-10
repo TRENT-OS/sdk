@@ -229,6 +229,8 @@ function build_sdk_demos()
         exit 1
     fi
 
+    # there is always at least the hello world demo, so this folder can't be
+    # missing
     if [ ! -d ${SDK_DEMOS_DIR} ]; then
         echo "missing SDK demo folder, did you run the collect step?"
         exit 1
@@ -240,7 +242,7 @@ function build_sdk_demos()
     local FLASHER_SRC=${SDK_SRC_DIR}/tools/rpi3_flasher
     local FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
 
-    # pick file no from collected sandbox/demo sources, but from the original
+    # pick file not from collected sandbox/demo sources, but from the original
     # repo sources
     local FLASHER_SRC_DATA=${DEMOS_SRC_DIR}/demo_iot_app_rpi3/flash.c
     if [ ! -w ${FLASHER_SRC_DATA} ]; then
@@ -266,6 +268,7 @@ function build_sdk_demos()
         # migv
     )
 
+    # not every demo works on all platforms
     #
     #                      | zynq7000 | rpi3 | sabre | migv | ...
     # ---------------------+----------+------+-------+------+-----
@@ -301,7 +304,7 @@ function build_sdk_demos()
 
             # we just build the demos to check that there is no error, but we
             # don't release prebuilt images. If we are here, we've created the
-            # SDK package alewady anyway, so we can't simply copy the images.
+            # SDK package already anyway, so we can't simply copy the images.
             #
             # mkdir -p ${SDK_DEMO_BASE}/bin
             # cp ${SDK_DEMO_OUT}/images/os_image.bin \
