@@ -274,6 +274,16 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
 
         if(target STREQUAL "capdl-loader")
 
+            # Use debug level INFO (3) for the CapDL Loader, because usually we
+            # are not interested in seeing all details the cap setup during
+            # boot. This also makes the boot quite slow for large systems due
+            # to the amount of data that is printed.
+            target_compile_definitions(
+                ${target}
+                PRIVATE
+                    ZF_LOG_LEVEL=3
+            )
+
             # the CapDL Loader's build produces graph.dot with all the
             # components, create a SVG image from this.
             add_custom_command(
@@ -339,8 +349,7 @@ macro(os_sdk_build system_project_dir)
 
     endif()
 
-    # use ZF_LOG_DEBUG (2), useful for capdl-loader-app to to get information
-    # about the required capability slots
+    # use ZF_LOG_DEBUG (2) by default, apps and components can change this
     set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
 
 
