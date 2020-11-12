@@ -27,35 +27,41 @@ import <if_OS_Storage.camkes>;
 
 
 //------------------------------------------------------------------------------
-// Component
 
-#define DECLARE_COMPONENT_RamDisk(                      \
-    _name_)                                             \
-                                                        \
-    component _name_ {                                  \
-        provides    if_OS_Storage   storage_rpc;        \
-        dataport    Buf             storage_port;       \
+
+#define RamDisk_COMPONENT_DECLARE( \
+    _name_) \
+    \
+    component _name_ { \
+        provides    if_OS_Storage   storage_rpc; \
+        dataport    Buf             storage_port; \
     }
 
 
 //------------------------------------------------------------------------------
-// Instance Connection
 
-#define DECLARE_AND_CONNECT_INSTANCE_RamDisk(           \
-    _name_,                                             \
-    _inst_,                                             \
-    _caller_rpc_,                                       \
-    _caller_dp_)                                        \
-                                                        \
-    component   _name_  _inst_;                         \
-                                                        \
-    connection  seL4RPCCall                             \
-        _name_ ## _ ## _inst_ ## _rpc   (               \
-            from    _caller_rpc_,                       \
-            to      _inst_.storage_rpc                  \
-        );                                              \
-    connection seL4SharedData                           \
-        _name_ ## _ ## _inst_ ## _dp (                  \
-            from    _caller_dp_,                        \
-            to      _inst_.storage_port                 \
+
+/*
+ * Assign client of RamDisk:
+ *
+ *      RamDisk_INSTANCE_CONNECT_CLIENT(
+ *          <instance>,
+ *          <client0>.<rpc>, <client0>.<port>
+ *      )
+ *
+ */
+#define RamDisk_INSTANCE_CONNECT_CLIENT( \
+    _inst_, \
+    _rpc_, \
+    _port_) \
+    \
+    connection seL4RPCCall \
+        _inst_ ## _ramDisk_rpc( \
+            from    _rpc_, \
+            to      _inst_.storage_rpc \
+        ); \
+    connection seL4SharedData \
+        _inst_ ## _ramDisk_port( \
+            from    _port_, \
+            to      _inst_.storage_port \
         );
