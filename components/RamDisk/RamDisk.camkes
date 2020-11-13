@@ -29,7 +29,7 @@ import <if_OS_Storage.camkes>;
 //------------------------------------------------------------------------------
 
 
-#define RamDisk_COMPONENT_DECLARE( \
+#define RamDisk_COMPONENT_DEFINE( \
     _name_) \
     \
     component _name_ { \

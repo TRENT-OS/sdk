@@ -9,8 +9,8 @@
  *
  *      #include "NIC_Dummy/NIC_Dummy.camkes"
  *
- *      NIC_Dummy_COMPONENT_DECLARE(NIC_Dummy_Driver_1, 4096)
- *      NIC_Dummy_COMPONENT_DECLARE(NIC_Dummy_Driver_2, 4096)
+ *      NIC_Dummy_COMPONENT_DEFINE(NIC_Dummy_Driver_1, 4096)
+ *      NIC_Dummy_COMPONENT_DEFINE(NIC_Dummy_Driver_2, 4096)
  *
  */
 
@@ -24,11 +24,11 @@ import <if_OS_Logger.camkes>;
 /*
  * Declare the NIC_Dummy with a given type name:
  *
- *      NIC_Dummy_COMPONENT_DECLARE(
+ *      NIC_Dummy_COMPONENT_DEFINE(
  *          <name>,<bufferSize>
  *      )
  */
-#define NIC_Dummy_COMPONENT_DECLARE( \
+#define NIC_Dummy_COMPONENT_DEFINE( \
     _name_, \
     _ringbuffer_size_) \
     \

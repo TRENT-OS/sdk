@@ -9,8 +9,8 @@
  *
  *      #include "NIC_ChanMux/NIC_ChanMux.camkes"
  *
- *      NIC_ChanMux_COMPONENT_DECLARE(NIC_Chanmux_Driver_1, 16384)
- *      NIC_ChanMux_COMPONENT_DECLARE(NIC_Chanmux_Driver_2, 16384)
+ *      NIC_ChanMux_COMPONENT_DEFINE(NIC_Chanmux_Driver_1, 16384)
+ *      NIC_ChanMux_COMPONENT_DEFINE(NIC_Chanmux_Driver_2, 16384)
  *
  */
 
@@ -26,7 +26,7 @@ import <if_OS_Nic.camkes>;
 
 //------------------------------------------------------------------------------
 
-#define NIC_ChanMux_COMPONENT_DECLARE( \
+#define NIC_ChanMux_COMPONENT_DEFINE( \
     _name_, \
     _ringbuffer_size_) \
     \

@@ -20,7 +20,7 @@ import <if_OS_Storage.camkes>;
 
  //------------------------------------------------------------------------------
 
-#define ChanMux_Storage_COMPONENT_DECLARE( \
+#define ChanMux_Storage_COMPONENT_DEFINE( \
     _name_) \
     \
     component _name_ { \
