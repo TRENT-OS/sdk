@@ -5,6 +5,7 @@
  *
  */
 
+#pragma once
 
 #if !defined(UART_CHANMUX)
 

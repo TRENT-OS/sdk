@@ -21,6 +21,8 @@
  * @see @link https://en.wikipedia.org/wiki/RAM_drive @endlink
  */
 
+#pragma once
+
 /** @cond SKIP_IMPORTS */
 import <if_OS_Storage.camkes>;
 /** @endcond */
