@@ -141,29 +141,27 @@ if [[ ! -e ${BUILD_DIR} ]]; then
     (
         mkdir -p ${BUILD_DIR}
         cd ${BUILD_DIR}
-        (
-            set -x
-            cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${ABS_OS_SDK_PATH}
-        )
+        set -x
+        cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${ABS_OS_SDK_PATH}
+    )
 
-        # cmake must run twice, so the config settings propagate properly. The
-        # first runs populates the cache and the second run will find the
-        # correct settings in the cache to set up the build.
-        echo "##------------------------------------------------------------------------------"
-        echo "re-run cmake ..."
-        echo "##------------------------------------------------------------------------------"
+    # cmake must run twice, so the config settings propagate properly. The
+    # first runs populates the cache and the second run will find the correct
+    # settings in the cache to set up the build.
+    echo "##------------------------------------------------------------------------------"
+    echo "re-run cmake ..."
+    echo "##------------------------------------------------------------------------------"
 
-        cmake .
+    cmake ${BUILD_DIR}
 
-        # create a visualization of the build targets
-        echo "create build target graph"
-        BUILD_TARGETS_GRAPH=build-targets-graph
-        mkdir -p ${BUILD_TARGETS_GRAPH}
-        (
-            cd ${BUILD_TARGETS_GRAPH}
-            cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot .. > /dev/null
-            dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
-        )
+    # create a visualization of the build targets
+    echo "create build target graph"
+    BUILD_TARGETS_GRAPH=build-targets-graph
+    mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
+    (
+        cd ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
+        cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot .. > /dev/null
+        dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
     )
 
     echo "##------------------------------------------------------------------------------"
@@ -171,11 +169,7 @@ if [[ ! -e ${BUILD_DIR} ]]; then
     echo "##------------------------------------------------------------------------------"
 fi
 
-# build in subshell
-(
-    cd ${BUILD_DIR}
-    cmake --build . --target all
-)
+cmake --build ${BUILD_DIR} --target all
 
 echo "##------------------------------------------------------------------------------"
 echo "## build successful, output in ${BUILD_DIR}"
