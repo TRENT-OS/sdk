@@ -54,6 +54,9 @@ BUILD_PLATFORM=$2
 BUILD_DIR=$3
 shift 3
 # all remaining params will be passed to CMake
+BUILD_ARGS="$@"
+BUILD_ARGS_FILE=build.args
+
 
 echo ""
 echo "##=============================================================================="
@@ -126,23 +129,53 @@ CMAKE_PARAMS=(
     -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
 )
 
-# check if cmake init has failed previously
-if [[ -e ${BUILD_DIR} ]] && [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
-    echo "deleting broken build folder and re-initialize it"
-    rm -rf ${BUILD_DIR}
+
+if [[ -d ${BUILD_DIR} ]]; then
+    # If there is already a build configuration folder, chances are high that
+    # a previous configured build already exists and we don't have to start the
+    # CMake build config process from scratch, but just do a rebuild based on
+    # the changes. The easiest way to check this is looking for a ninja rule
+    # file to exist. Usually, if the CMake config step failed already, this
+    # file is not created and it is best to wipe the build folder and start from
+    # scratch. The next check is to determine if the manual build configuration
+    # has changed, i. e. if additional command line parameters have been used
+    # for the last build and these match the command line parameters of this
+    # build. If not, then we have to wipe the build folder and start from
+    # scratch to guarantee the new command line parameters are taken properly
+    # into account everywhere.
+    if [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
+        echo "deleting broken build folder and re-initialize it"
+        rm -rf ${BUILD_DIR}
+    elif [[ ( ! -e ${BUILD_DIR}/${BUILD_ARGS_FILE} && ! -z "${BUILD_ARGS}") \
+            || "$(< ${BUILD_DIR}/${BUILD_ARGS_FILE})" != "${BUILD_ARGS}" ]]; then
+        # ToDo: We could define that a command line with no build arguments
+        #       does take what was stored in the argument file. However, it
+        #       turned out this does not match the common workflow. Usually, a
+        #       command line is rarely typed in, but for re-builds one just
+        #       takes a command line from the shell's history buffer. Thus,
+        #       specifying no arguments is usually intended to explicitly
+        #       trigger a build with the default configuration.
+        echo "build parameters have changed, rebuild everything"
+        rm -rf ${BUILD_DIR}
+    fi
+
 fi
 
-if [[ ! -e ${BUILD_DIR} ]]; then
+if [[ ! -d ${BUILD_DIR} ]]; then
 
     echo "configure build ..."
     echo "##------------------------------------------------------------------------------"
 
-    # use subshell to configure the build
+    mkdir -p ${BUILD_DIR}
+
+    # save build args
+    echo "${BUILD_ARGS}" > ${BUILD_DIR}/${BUILD_ARGS_FILE}
+
+    # use subshell to make CMake set up the build environment
     (
-        mkdir -p ${BUILD_DIR}
         cd ${BUILD_DIR}
         set -x
-        cmake ${CMAKE_PARAMS[@]} $@ -G Ninja ${ABS_OS_SDK_PATH}
+        cmake ${CMAKE_PARAMS[@]} ${BUILD_ARGS} -G Ninja ${ABS_OS_SDK_PATH}
     )
 
     # cmake must run twice, so the config settings propagate properly. The
