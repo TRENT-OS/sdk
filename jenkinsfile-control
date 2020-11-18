@@ -46,7 +46,6 @@ def TEST_CONFIG = [
         new TestCtx('test_entropysource',            null,                null,                            ['zynq7000']),
         new TestCtx('test_storage_interface',        null,                'test_storage_interface*.py',    ['zynq7000', 'sabre']),
         new TestCtx('test_filesystem',               null,                null,                            ['zynq7000']),
-        new TestCtx('test_config_server_fs_backend', null,                null,                            ['zynq7000']),
         new TestCtx('test_config_server',            null,                null,                            ['zynq7000']),
         new TestCtx('test_keystore',                 null,                null,                            ['zynq7000']),
         new TestCtx('test_logserver',                null,                null,                            ['zynq7000']),
