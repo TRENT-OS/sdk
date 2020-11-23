@@ -16,6 +16,14 @@
 static OS_Dataport_t port = OS_DATAPORT_ASSIGN(nic_port_to);
 
 OS_Error_t
+nic_rpc_rx_data(
+    size_t* pLen,
+    size_t* framesRemaining)
+{
+    return OS_ERROR_NOT_IMPLEMENTED;
+}
+
+OS_Error_t
 nic_rpc_tx_data(
     size_t* pLen)
 {
@@ -24,7 +32,7 @@ nic_rpc_tx_data(
 }
 
 OS_Error_t
-nic_rpc_get_mac(void)
+nic_rpc_get_mac_address(void)
 {
     static const uint8_t mac[6] =
     {

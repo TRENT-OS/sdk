@@ -106,6 +106,14 @@ run(void)
 // interface definition
 //------------------------------------------------------------------------------
 
+OS_Error_t
+nic_rpc_rx_data(
+    size_t* pLen,
+    size_t* framesRemaining)
+{
+    return OS_ERROR_NOT_IMPLEMENTED;
+}
+
 //------------------------------------------------------------------------------
 OS_Error_t
 nic_rpc_tx_data(
@@ -117,7 +125,7 @@ nic_rpc_tx_data(
 
 //------------------------------------------------------------------------------
 OS_Error_t
-nic_rpc_get_mac(void)
+nic_rpc_get_mac_address(void)
 {
     return chanmux_nic_driver_rpc_get_mac();
 }
