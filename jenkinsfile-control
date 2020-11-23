@@ -11,7 +11,6 @@
 // Test system list
 class TestCtx {
     String      systemName;  // Name of the system to build.
-    String      testMachine; // Test machine label. Defaults to 'test'.
     String      testScript;  // Test script to be executed. Defaults to
                              // <systemName>.py.
     ArrayList   platforms;   // List of supported platforms. `null` if full
@@ -19,12 +18,10 @@ class TestCtx {
 
     public TestCtx(
         String systemName,
-        String testMachine,
         String testScript,
         ArrayList platforms)
     {
         this.systemName  = systemName;
-        this.testMachine = testMachine;
         this.testScript  = testScript;
         this.platforms   = platforms;
     }
@@ -33,25 +30,25 @@ class TestCtx {
 def TEST_CONFIG = [
 
     tests: [
-        new TestCtx('demo_hello_world',              null,                'test_demo_hello_world.py',      null),
-        new TestCtx('demo_iot_app',                  'test_in_isolation', 'test_demo_iot_app.py',          ['zynq7000']),
-        new TestCtx('demo_iot_app_rpi3',             'test_in_isolation', 'test_demo_iot_app_rpi3.py',     ['rpi3']),
-        new TestCtx('test_timeserver',               null,                null,                            null),
-        new TestCtx('test_uart',                     null,                null,                            ['zynq7000', 'sabre']),
-        new TestCtx('test_chanmux',                  null,                null,                            ['zynq7000']),
-        new TestCtx('test_proxy_nvm',                null,                null,                            ['zynq7000']),
-        new TestCtx('test_certparser',               null,                null,                            ['zynq7000']),
-        new TestCtx('test_crypto_api',               null,                null,                            ['zynq7000']),
-        new TestCtx('test_cryptoserver',             null,                null,                            ['zynq7000']),
-        new TestCtx('test_entropysource',            null,                null,                            ['zynq7000']),
-        new TestCtx('test_storage_interface',        null,                'test_storage_interface*.py',    ['zynq7000', 'sabre']),
-        new TestCtx('test_filesystem',               null,                null,                            ['zynq7000']),
-        new TestCtx('test_config_server',            null,                null,                            ['zynq7000']),
-        new TestCtx('test_keystore',                 null,                null,                            ['zynq7000']),
-        new TestCtx('test_logserver',                null,                null,                            ['zynq7000']),
-        new TestCtx('test_network_api',              'test_network',      null,                            ['zynq7000']),
-        new TestCtx('test_tls_api',                  'test_tls',          null,                            ['zynq7000']),
-        new TestCtx('test_tlsserver',                'test_tls',          null,                            ['zynq7000'])
+        new TestCtx('demo_hello_world',              'test_demo_hello_world.py',      null),
+        new TestCtx('demo_iot_app',                  'test_demo_iot_app.py',          ['zynq7000']),
+        new TestCtx('demo_iot_app_rpi3',             'test_demo_iot_app_rpi3.py',     ['rpi3']),
+        new TestCtx('test_timeserver',               null,                            null),
+        new TestCtx('test_uart',                     null,                            ['zynq7000', 'sabre']),
+        new TestCtx('test_chanmux',                  null,                            ['zynq7000']),
+        new TestCtx('test_proxy_nvm',                null,                            ['zynq7000']),
+        new TestCtx('test_certparser',               null,                            ['zynq7000']),
+        new TestCtx('test_crypto_api',               null,                            ['zynq7000']),
+        new TestCtx('test_cryptoserver',             null,                            ['zynq7000']),
+        new TestCtx('test_entropysource',            null,                            ['zynq7000']),
+        new TestCtx('test_storage_interface',        'test_storage_interface*.py',    ['zynq7000', 'sabre']),
+        new TestCtx('test_filesystem',               null,                            ['zynq7000']),
+        new TestCtx('test_config_server',            null,                            ['zynq7000']),
+        new TestCtx('test_keystore',                 null,                            ['zynq7000']),
+        new TestCtx('test_logserver',                null,                            ['zynq7000']),
+        new TestCtx('test_network_api',              null,                            ['zynq7000']),
+        new TestCtx('test_tls_api',                  null,                            ['zynq7000']),
+        new TestCtx('test_tlsserver',                null,                            ['zynq7000'])
     ],
 
     platforms: [
@@ -330,7 +327,6 @@ def execute_build(ctx, stage_ctx)
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
             string(name: 'TEST_SYSTEM',        value: 'ss/'+stage_ctx.test_ctx.systemName),
-            string(name: 'TEST_MACHINE_LABEL', value: stage_ctx.test_ctx.testMachine ?: ''),
             string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: stage_ctx.test_ctx.systemName + '.py'),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),

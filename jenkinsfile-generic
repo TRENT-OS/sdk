@@ -11,14 +11,11 @@
 //    PLATFORM
 //    BRANCH_OR_COMMIT
 //    TEST_SYSTEM
-//    TEST_MACHINE_LABEL
 //    TEST_SCRIPT
 //    UPSTREAM_JOB_NAME
 //    UPSTREAM_JOB_ID
 
 params.each { println it.key + " = " + it.value }
-
-def test_machine_label = TEST_MACHINE_LABEL ?: 'test'
 
 def SYSTEM_PACKAGE = 'package.bz2'
 
@@ -401,7 +398,7 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Test_stage') {
 
-            agent { label test_machine_label }
+            agent { label "test" }
 
             stages {
 
