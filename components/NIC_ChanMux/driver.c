@@ -32,7 +32,7 @@ post_init(void)
                 .port       = CHANMUX_DATAPORT_ASSIGN(
                     chanMux_ctrl_portRead,
                     chanMux_ctrl_portWrite),
-                .wait       = chanMux_ctrl_EventHasData_wait
+                .wait       = chanMux_ctrl_eventHasData_wait
             },
             .data =
             {
@@ -44,7 +44,7 @@ post_init(void)
                 .port       = CHANMUX_DATAPORT_ASSIGN(
                     chanMux_data_portRead,
                     chanMux_data_portWrite),
-                .wait       = chanMux_data_EventHasData_wait
+                .wait       = chanMux_data_eventHasData_wait
             },
         },
 

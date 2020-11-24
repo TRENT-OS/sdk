@@ -57,7 +57,7 @@ endfunction()
 
 #-------------------------------------------------------------------------------
 # declare components for ChanMux and UARTs
-function(DeclareCAmkESComponents_ChanMux_UART
+function(ChanMux_UART_DeclareCAmkESComponents
     name
     config_file
     system_config_lib

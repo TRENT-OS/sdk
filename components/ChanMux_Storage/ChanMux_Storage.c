@@ -23,7 +23,7 @@ static struct
     .chanMuxClientConfig = {
         .port  = CHANMUX_DATAPORT_ASSIGN(chanMux_chan_portRead,
                                          chanMux_chan_portWrite),
-        .wait  = chanMux_chan_EventHasData_wait,
+        .wait  = chanMux_chan_eventHasData_wait,
         .write = chanMux_Rpc_write,
         .read  = chanMux_Rpc_read
     },
