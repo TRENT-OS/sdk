@@ -56,11 +56,11 @@ shift 3
 # all remaining params will be passed to CMake
 
 echo ""
-echo "##======================================================================="
+echo "##=============================================================================="
 echo "## Project:   ${OS_PROJECT_DIR}"
 echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Output:    ${BUILD_DIR}"
-echo "##-----------------------------------------------------------------------"
+echo "##------------------------------------------------------------------------------"
 
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
@@ -133,6 +133,10 @@ if [[ -e ${BUILD_DIR} ]] && [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
 fi
 
 if [[ ! -e ${BUILD_DIR} ]]; then
+
+    echo "configure build ..."
+    echo "##------------------------------------------------------------------------------"
+
     # use subshell to configure the build
     (
         mkdir -p ${BUILD_DIR}
@@ -145,7 +149,10 @@ if [[ ! -e ${BUILD_DIR} ]]; then
         # cmake must run twice, so the config settings propagate properly. The
         # first runs populates the cache and the second run will find the
         # correct settings in the cache to set up the build.
-        echo "re-run cmake"
+        echo "##------------------------------------------------------------------------------"
+        echo "re-run cmake ..."
+        echo "##------------------------------------------------------------------------------"
+
         cmake .
 
         # create a visualization of the build targets
@@ -158,6 +165,10 @@ if [[ ! -e ${BUILD_DIR} ]]; then
             dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
         )
     )
+
+    echo "##------------------------------------------------------------------------------"
+    echo "start actual build ..."
+    echo "##------------------------------------------------------------------------------"
 fi
 
 # build in subshell
@@ -166,6 +177,6 @@ fi
     cmake --build . --target all
 )
 
-echo "##-----------------------------------------------------------------------"
+echo "##------------------------------------------------------------------------------"
 echo "## build successful, output in ${BUILD_DIR}"
-echo "##======================================================================="
+echo "##=============================================================================="
