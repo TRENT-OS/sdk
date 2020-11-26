@@ -295,14 +295,15 @@ function build_sdk_demos()
 
     # not every demo works on all platforms
     #
-    #                      | zynq7000 | rpi3 | sabre | migv | ...
-    # ---------------------+----------+------+-------+------+-----
-    #  demo_hello_world    | yes      | yes  | yes   | yes  |
-    #  demo_iot_app        | yes      | no   | no    | no   |
-    #  demo_iot_app_rpi3   | no       | yes  | no    | no   |
-    #  demo_raspi_ethernet | no       | yes  | no    | no   |
-    #  demo_tls_api        | yes      | no   | no    | no   |
-    #  demo_i2c            | no       | no   | yes   | no   |
+    #                      | zynq7000 | rpi3 | sabre | migv | nitrogen6sx | ...
+    # ---------------------+----------+------+-------+------+-------------+-----
+    #  demo_hello_world    | yes      | yes  | yes   | yes  | yes         |
+    #  demo_iot_app        | yes      | no   | no    | no   | no          |
+    #  demo_iot_app_rpi3   | no       | yes  | no    | no   | no          |
+    #  demo_raspi_ethernet | no       | yes  | no    | no   | no          |
+    #  demo_raspi_ethernet | no       | yes  | no    | no   | no          |
+    #  demo_tls_api        | yes      | no   | no    | no   | no          |
+    #  demo_i2c            | no       | no   | yes   | no   | no          |
     #
     declare -A TARGET_RESTRICTIONS=(
         [demo_iot_app]=zynq7000
