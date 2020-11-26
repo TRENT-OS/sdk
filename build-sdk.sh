@@ -147,7 +147,7 @@ function collect_sdk_sources()
         ./components/CryptoServer/README.md
         ./components/EntropySource/README.md
         ./components/NIC_RPi/README.md
-        ./components/RPI_SPI_Flash/README.md
+        ./components/RPi_SPI_Flash/README.md
         ./components/StorageServer/README.md
         ./components/TimeServer/README.md
         ./components/TlsServer/README.md

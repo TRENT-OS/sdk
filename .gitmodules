@@ -106,3 +106,6 @@
 [submodule "components/NIC_Dummy"]
 	path = components/NIC_Dummy
 	url = ../../sc/nic_dummy.git
+[submodule "components/RPi_SPI_Flash"]
+	path = components/RPi_SPI_Flash
+	url = ../../sc/rpi_spi_flash.git
