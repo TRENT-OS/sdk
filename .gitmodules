@@ -94,3 +94,18 @@
 [submodule "resources/imx6_sd_card"]
 	path = resources/imx6_sd_card
 	url = ../../ssdk/plat_imx6.git
+[submodule "components/RamDisk"]
+	path = components/RamDisk
+	url = ../../sc/ramdisk.git
+[submodule "components/ChanMux"]
+	path = components/ChanMux
+	url = ../../sc/chanmux.git
+[submodule "components/NIC_ChanMux"]
+	path = components/NIC_ChanMux
+	url = ../../sc/nic_chanmux.git
+[submodule "components/Storage_ChanMux"]
+	path = components/Storage_ChanMux
+	url = ../../sc/storage_chanmux.git
+[submodule "components/NIC_Dummy"]
+	path = components/NIC_Dummy
+	url = ../../sc/nic_dummy.git
