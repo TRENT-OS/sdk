@@ -76,9 +76,6 @@
 [submodule "components/NIC_RPi"]
 	path = components/NIC_RPi
 	url = ../../sc/nic_rpi.git
-[submodule "components/RPI_SPI_Flash"]
-	path = components/RPI_SPI_Flash
-	url = ../../sc/rpi_spi_flash.git
 [submodule "tools/rpi3_flasher"]
 	path = tools/rpi3_flasher
 	url = ../../ss/rpi3_flasher.git
