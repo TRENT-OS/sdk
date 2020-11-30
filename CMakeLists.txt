@@ -442,7 +442,7 @@ macro(os_sdk_build system_project_dir)
                 DEPENDS "${IMAGE_NAME}"
                 COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG}"
                 VERBATIM
-                COMMENT "create disassembly for ${target}"
+                COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG}"
             )
 
             create_disassembly("${OS_SYS_IMG}" ${target})
