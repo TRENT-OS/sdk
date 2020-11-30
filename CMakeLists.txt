@@ -434,9 +434,8 @@ macro(os_sdk_build system_project_dir)
             get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
             get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
 
-            set(OS_SYS_IMG "${IMAGE_DIR}/os_image.bin")
-
-            # copy system image to the generic file images/os_image.bin
+            # copy system image to generic file images/os_image.[bin|elf...]
+            set(OS_SYS_IMG "${IMAGE_DIR}/os_image.${ElfloaderImage}")
             add_custom_command(
                 OUTPUT "${OS_SYS_IMG}"
                 DEPENDS "${IMAGE_NAME}"
@@ -444,9 +443,31 @@ macro(os_sdk_build system_project_dir)
                 VERBATIM
                 COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG}"
             )
+            add_custom_target(
+                ${target}_copy ALL
+                DEPENDS "${OS_SYS_IMG}"
+            )
 
-            create_disassembly("${OS_SYS_IMG}" ${target})
+            if("${ElfloaderImage}" STREQUAL "elf")
 
+                create_disassembly("${OS_SYS_IMG}" ${target})
+
+                # for legacy compatibility, we also create a *.bin, even if we
+                # actually build an ELF file.
+                set(OS_SYS_IMG_LEGACY "${IMAGE_DIR}/os_image.bin")
+                add_custom_command(
+                    OUTPUT "${OS_SYS_IMG_LEGACY}"
+                    DEPENDS "${IMAGE_NAME}"
+                    COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG_LEGACY}"
+                    VERBATIM
+                    COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG_LEGACY}"
+                )
+                add_custom_target(
+                    ${target}_copy_legacy ALL
+                    DEPENDS "${OS_SYS_IMG_LEGACY}"
+                )
+
+            endif()
 
         endif()
 
