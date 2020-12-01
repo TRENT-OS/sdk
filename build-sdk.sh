@@ -68,8 +68,8 @@ function cmake_check_init_and_build()
 #-------------------------------------------------------------------------------
 function copy_files_via_tar()
 {
-    SRC_DIR=$1
-    DST_DIR=$2
+    local SRC_DIR=$1
+    local DST_DIR=$2
     shift 2
 
     # rsync would do the job nicely, but unfortunately it is not available in
