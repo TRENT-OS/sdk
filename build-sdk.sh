@@ -90,6 +90,37 @@ function copy_files_via_tar()
     tar -c -C ${SRC_DIR} $@ ./ | tar -x -C ${DST_DIR}/
 }
 
+# i.MX6 platforms' resources require special handling as some files are common
+# in the source repository, but we don't want to expose this in the final
+# packages.
+function copy_imx6_resources
+{
+    local SRC_DIR=$1
+    local DST_DIR=$2
+    shift 2
+
+    print_info \
+      "Copying Nitrogen SoloX resources from ${SRC_DIR} to ${DST_DIR}"
+
+    copy_files_via_tar \
+        ${SRC_DIR}/nitrogen6sx \
+        ${DST_DIR}/nitrogen6sx_sd_card
+
+    copy_files_via_tar \
+        ${SRC_DIR}/common \
+        ${DST_DIR}/nitrogen6sx_sd_card
+
+    print_info \
+      "Copying Sabre Lite resources from ${SRC_DIR} to ${DST_DIR}"
+
+    copy_files_via_tar \
+        ${SRC_DIR}/sabre \
+        ${DST_DIR}/sabre_sd_card
+
+    copy_files_via_tar \
+        ${SRC_DIR}/common \
+        ${DST_DIR}/sabre_sd_card
+}
 
 #-------------------------------------------------------------------------------
 function collect_sdk_sources()
@@ -171,6 +202,7 @@ function collect_sdk_sources()
         ./tools/proxy/README.md
         ./tools/rdgen/README.md
         ./tools/rpi3_flasher/README.md
+        ./resources/imx6_sd_card # Requires special handling
     )
 
     # copy files using tar and filtering. Seems there is a bug in tar, for
@@ -181,6 +213,10 @@ function collect_sdk_sources()
         ${OUT_PKG_DIR} \
         --exclude-vcs \
         ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
+
+    copy_imx6_resources \
+        ${SDK_SRC_DIR}/resources/imx6_sd_card \
+        ${OUT_PKG_DIR}/resources
 
     # put a version.info into the SDK package for the seL4/CAmkES repos
     #sed "/ sdk-sel4-camkes\//!d" ${VERSION_INFO_FILE} > ${OUT_PKG_DIR}/sdk-sel4-camkes/version.info
