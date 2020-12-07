@@ -112,3 +112,6 @@
 [submodule "components/RPi_SPI_Flash"]
 	path = components/RPi_SPI_Flash
 	url = ../../sc/rpi_spi_flash.git
+[submodule "components/CertServer"]
+	path = components/CertServer
+	url = ../../sc/certserver.git
