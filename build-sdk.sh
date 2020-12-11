@@ -504,9 +504,10 @@ function build_sdk_docs()
     echo "Collecting PDF documentation in ${OUT_DIR_PDF}/..."
 
     PDF_FILES=(
-        TRENTOS-M_GettingStarted_SDK_V1.0.pdf
-        TRENTOS-M_Handbook_SDK_V1.0.pdf
-        TRENTOS-M_ReleaseNotes_SDK_V1.0.pdf
+        TRENTOS-M_GettingStarted_SDK_V1.1.pdf
+        TRENTOS-M_Handbook_SDK_V1.1.pdf
+        TRENTOS-M_MigrationNotes_SDK_V1.0_to_V1.1.pdf
+        TRENTOS-M_ReleaseNotes_SDK_V1.1.pdf
     )
 
     for PDF_FILE in ${PDF_FILES[@]}; do
