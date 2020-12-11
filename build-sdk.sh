@@ -166,6 +166,7 @@ function collect_sdk_sources()
         # remove files in the sandbox root folder
         ./astyle_check_sdk.sh
         ./build-sdk.sh
+        ./check_static_analyzer.sh
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
@@ -175,25 +176,31 @@ function collect_sdk_sources()
         # is used in the doxygen process. We remove it later when creating the
         # SDK package
         ./README.md
+        ./components/ChanMux/README.md
         ./components/CryptoServer/README.md
         ./components/EntropySource/README.md
+        ./components/NIC_ChanMux/README.md
+        ./components/NIC_Dummy/README.md
+        ./components/NIC_iMX6/README.md
         ./components/NIC_RPi/README.md
+        ./components/RamDisk/README.md
         ./components/RPi_SPI_Flash/README.md
+        ./components/SdHostController/README.md
+        ./components/Storage_ChanMux/README.md
         ./components/StorageServer/README.md
         ./components/TimeServer/README.md
         ./components/TlsServer/README.md
+        ./components/UART/README.md
         ./libs/chanmux/README.md
         ./libs/chanmux_nic_driver/README.md
         ./libs/os_cert/README.md
         ./libs/os_configuration/README.md
+        ./libs/os_os_core_api/README.md
         ./libs/os_crypto/README.md
         ./libs/os_filesystem/README.md
         ./libs/os_keystore/README.md
         ./libs/os_libs/README.md
         ./libs/os_logger/Readme.md
-        ./libs/os_network_stack/3rdParty/picotcp/README.md
-        ./libs/os_network_stack/3rdParty/picotcp/docs/user_manual/README.md
-        ./libs/os_network_stack/3rdParty/picotcp/test/README.md
         ./libs/os_network_stack/README.md
         ./libs/os_tls/README.md
         ./scripts/README.md
