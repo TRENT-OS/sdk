@@ -23,6 +23,7 @@ SORT_GROUP_NAMES       = YES
 SORT_BRIEF_DOCS        = YES
 
 WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = YES
 
 RECURSIVE              = YES
 
