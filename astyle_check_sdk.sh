@@ -1,5 +1,13 @@
 #!/bin/bash -ue
 
+#-------------------------------------------------------------------------------
+#
+# AStyle automatic code formatting script
+#
+# Copyright (C) 2020, Hensoldt Cyber GmbH
+#
+#-------------------------------------------------------------------------------
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 ASTYLE_SETTINGS_LINUX_USER_SPACE=(

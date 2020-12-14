@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#-------------------------------------------------------------------------------
+#
+# Copyright (C) 2020, Hensoldt Cyber GmbH
+#
+#-------------------------------------------------------------------------------
+
 WORDDIR=`pwd`
 
 cppcheck --project=build/compile_commands.json --output-file=cppcheck_output.txt \
