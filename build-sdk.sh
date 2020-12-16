@@ -177,6 +177,7 @@ function collect_sdk_sources()
         # SDK package
         ./README.md
         ./components/ChanMux/README.md
+        ./components/CertServer/README.md
         ./components/CryptoServer/README.md
         ./components/EntropySource/README.md
         ./components/NIC_ChanMux/README.md
