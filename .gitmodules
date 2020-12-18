@@ -1,6 +1,9 @@
 [submodule "sdk-sel4-camkes"]
 	path = sdk-sel4-camkes
 	url = ../../ssdk/sdk-sel4-camkes.git
+[submodule "os_core_api"]
+	path = os_core_api
+	url = ../../seos/core-api.git
 [submodule "tools/proxy"]
 	path = tools/proxy
 	url = ../../ssdk/proxy.git
@@ -37,9 +40,6 @@
 [submodule "libs/os_configuration"]
 	path = libs/os_configuration
 	url = ../../seos/configuration_lib.git
-[submodule "libs/os_core_api"]
-	path = libs/os_core_api
-	url = ../../seos/core-api.git
 [submodule "libs/os_crypto"]
 	path = libs/os_crypto
 	url = ../../seos/crypto.git

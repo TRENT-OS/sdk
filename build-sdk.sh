@@ -172,7 +172,7 @@ function collect_sdk_sources()
         ./publish_doc.sh
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
         # remove all readme files our code because they are in a bad shape,
-        # the only exception is libs/os_core_api/README.md, it looks nice and
+        # the only exception is os_core_api/README.md, it looks nice and
         # is used in the doxygen process. We remove it later when creating the
         # SDK package
         ./README.md
@@ -196,7 +196,7 @@ function collect_sdk_sources()
         ./libs/chanmux_nic_driver/README.md
         ./libs/os_cert/README.md
         ./libs/os_configuration/README.md
-        ./libs/os_os_core_api/README.md
+        ./os_core_api/README.md
         ./libs/os_crypto/README.md
         ./libs/os_filesystem/README.md
         ./libs/os_keystore/README.md
@@ -495,7 +495,7 @@ function build_sdk_docs()
     (
         export DOXYGEN_OUTPUT_DIR=$(realpath ${OUT_DIR})
         cd ${SDK_SRC_DIR}
-        export DOXYGEN_INPUT_DIR=libs/os_core_api
+        export DOXYGEN_INPUT_DIR=os_core_api
         doxygen Doxyfile
     )
 
@@ -538,15 +538,13 @@ function package_sdk()
     local SDK_PACKAGE_EXCLUDES=(
         # remove prepare_test.sh from demos
         prepare_test.sh
-        # remove readme that we needed for doxygen
-        ./libs/os_core_api/README.md
         # remove all doxygen files from our modules
         ./Doxyfile
         ./libs/chanmux/Doxyfile
         ./libs/chanmux_nic_driver/Doxyfile
         ./libs/os_cert/Doxyfile
         ./libs/os_configuration/Doxyfile
-        ./libs/os_core_api/Doxyfile
+        ./os_core_api/Doxyfile
         ./libs/os_crypto/Doxyfile
         ./libs/os_filesystem/Doxyfile
         ./libs/os_keystore/Doxyfile

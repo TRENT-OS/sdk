@@ -388,6 +388,7 @@ macro(os_sdk_build system_project_dir)
         set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
     endif()
 
+    add_subdirectory("${OS_SDK_DIR}/os_core_api" "os_core_api")
     add_os_libs_subdirectories()
 
     # we include the components even if CAmkES is not enabled, because they may
