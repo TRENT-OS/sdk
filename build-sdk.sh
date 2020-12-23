@@ -198,7 +198,6 @@ function collect_sdk_sources()
         ./libs/os_crypto/README.md
         ./libs/os_filesystem/README.md
         ./libs/os_keystore/README.md
-        ./libs/os_libs/README.md
         ./libs/os_logger/Readme.md
         ./libs/os_network_stack/README.md
         ./libs/os_tls/README.md
@@ -556,7 +555,6 @@ function package_sdk()
         ./libs/os_crypto/Doxyfile
         ./libs/os_filesystem/Doxyfile
         ./libs/os_keystore/Doxyfile
-        ./libs/os_libs/Doxyfile
         ./libs/os_logger/Doxyfile
         ./libs/os_network_stack/Doxyfile
         ./libs/os_tls/Doxyfile
