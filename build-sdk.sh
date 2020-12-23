@@ -171,10 +171,7 @@ function collect_sdk_sources()
         ./jenkinsfile-generic
         ./publish_doc.sh
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
-        # remove all readme files our code because they are in a bad shape,
-        # the only exception is os_core_api/README.md, it looks nice and
-        # is used in the doxygen process. We remove it later when creating the
-        # SDK package
+        # remove all readme files our code because they are in a bad shape
         ./README.md
         ./components/ChanMux/README.md
         ./components/CertServer/README.md
