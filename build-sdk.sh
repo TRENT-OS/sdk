@@ -171,7 +171,8 @@ function collect_sdk_sources()
         ./jenkinsfile-generic
         ./publish_doc.sh
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
-        # remove all readme files our code because they are in a bad shape
+        # remove all readme files except from os_core_api which shall be
+        # included in the doxygen documentation
         ./README.md
         ./components/ChanMux/README.md
         ./components/CertServer/README.md
@@ -193,7 +194,6 @@ function collect_sdk_sources()
         ./libs/chanmux_nic_driver/README.md
         ./libs/os_cert/README.md
         ./libs/os_configuration/README.md
-        ./os_core_api/README.md
         ./libs/os_crypto/README.md
         ./libs/os_filesystem/README.md
         ./libs/os_keystore/README.md
@@ -201,6 +201,7 @@ function collect_sdk_sources()
         ./libs/os_logger/Readme.md
         ./libs/os_network_stack/README.md
         ./libs/os_tls/README.md
+        #./os_core_api/README.md
         ./scripts/README.md
         ./sdk-sel4-camkes/README.md
         ./tools/cpt/README.md
@@ -535,6 +536,8 @@ function package_sdk()
     local SDK_PACKAGE_EXCLUDES=(
         # remove prepare_test.sh from demos
         prepare_test.sh
+        # remove readme file from os_core_api
+        ./os_core_api/README.md
         # remove all doxygen files from our modules
         ./Doxyfile
         ./libs/chanmux/Doxyfile
