@@ -170,6 +170,7 @@ function collect_sdk_sources()
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
+        # remove unwanted repos
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
         # remove all readme files except from os_core_api which shall be
         # included in the doxygen documentation
@@ -208,7 +209,8 @@ function collect_sdk_sources()
         ./tools/proxy/README.md
         ./tools/rdgen/README.md
         ./tools/rpi3_flasher/README.md
-        ./resources/imx6_sd_card # Requires special handling
+        # remove imx6_sd_card resources, requires special handling
+        ./resources/imx6_sd_card
     )
 
     # copy files using tar and filtering. Seems there is a bug in tar, for
