@@ -301,12 +301,14 @@ function build_sdk_demos()
     #  demo_iot_app_rpi3   | no       | yes  | no    | no   |
     #  demo_raspi_ethernet | no       | yes  | no    | no   |
     #  demo_tls_api        | yes      | no   | no    | no   |
+    #  demo_i2c            | no       | no   | yes   | no   |
     #
     declare -A TARGET_RESTRICTIONS=(
         [demo_iot_app]=zynq7000
         [demo_iot_app_rpi3]=rpi3
         [demo_raspi_ethernet]=rpi3
         [demo_tls_api]=zynq7000
+        [demo_i2c]=sabre
     )
 
     for SDK_DEMO_NAME in $(ls ${SDK_DEMOS_DIR}) ; do

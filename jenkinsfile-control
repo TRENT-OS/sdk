@@ -71,6 +71,7 @@ def DEMO_LIST = [
     'demo_iot_app',
     'demo_iot_app_rpi3',
     'demo_tls_api',
+    'demo_i2c',
 ]
 
 
