@@ -345,24 +345,33 @@ function build_sdk_demos()
 #-------------------------------------------------------------------------------
 function sdk_unit_test()
 {
-    # local SDK_SRC_DIR=$1
-    # local BUILD_DIR=$2
-    # shift 2
+    local SDK_SRC_DIR=$1
+    local BUILD_DIR=$2
+    shift 2
 
     print_info "running SDK Libs Unit Tests"
 
-    # if [ ! -d ${SDK_SRC_DIR} ]; then
-    #     echo "missing SDK source folder, did you run the collect step?"
-    #     exit 1
-    # fi
+    if [ ! -d ${SDK_SRC_DIR} ]; then
+        echo "missing SDK source folder, did you run the collect step?"
+        exit 1
+    fi
 
-    # local BUILD_PARAMS=(
-    #     ${BUILD_DIR}/test_seos_libs       # build output folder
-    #     cov                               # ninja target
-    #     ${SDK_SRC_DIR}/libs/os_libs/test  # folder containing CMakeList file
-    # )
+    local BUILD_PARAMS=(
+        ${BUILD_DIR}/test_libs # build output folder
+        all                    # build all tests
+        ${SDK_SRC_DIR}/libs    # folder containing CMakeList file
+        -DBUILD_TESTING=ON
+    )
 
-    # cmake_check_init_and_build ${BUILD_PARAMS[@]}
+    # Build tests.
+    cmake_check_init_and_build ${BUILD_PARAMS[@]}
+
+    # Run tests and ignore errors so that the test coverage can be calculated in
+    # the next step as otherwise a failing test would stop the script.
+    cmake --build ${BUILD_DIR}/test_libs --target test || true
+
+    # Calculate tests coverage.
+    cmake --build ${BUILD_DIR}/test_libs --target covr
 }
 
 
