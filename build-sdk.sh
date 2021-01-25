@@ -562,7 +562,7 @@ function package_sdk()
         ./libs/os_tls/Doxyfile
     )
 
-    # prefix everything in SDK_EXCLUDE_ELEMENTS with "--exclude "
+    # prefix everything in SDK_PACKAGE_EXCLUDES with "--exclude "
     tar \
         -cjf ${SDK_PACKAGE_BZ2} \
         -C ${SDK_SRC_DIR} \
