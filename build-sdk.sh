@@ -560,6 +560,10 @@ function package_sdk()
         ./libs/os_logger/Doxyfile
         ./libs/os_network_stack/Doxyfile
         ./libs/os_tls/Doxyfile
+        # remove demos
+        ./demos/demo_raspi_ethernet
+        ./demos/demo_tls_api
+        ./demos/demo_i2c
     )
 
     # prefix everything in SDK_PACKAGE_EXCLUDES with "--exclude "
