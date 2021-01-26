@@ -142,6 +142,17 @@ def do_notify_bitbucket()
 
 
 //------------------------------------------------------------------------------
+def do_stash(name, file_list)
+{
+    println('stashing to ' + name)
+    stash([
+        name: name,
+        includes: file_list.join(',')
+    ])
+}
+
+
+//------------------------------------------------------------------------------
 def save_current_job_log(
     name
 ) {
@@ -379,9 +390,11 @@ def execute_build(ctx, stage_ctx)
                 selector: specific("${jobBuild.getNumber()}")
             )
 
-            stash(
-                name: stage_ctx.stash_name,
-                includes: stage_ctx.system_pkg
+            do_stash(
+                stage_ctx.stash_name,
+                [
+                    stage_ctx.system_pkg
+                ]
             )
         }
 
@@ -646,19 +659,19 @@ pipeline {
                             fingerprint: true
                         )
 
-                        stash(
-                            name: 'stash_doc',
-                            includes: [
+                        do_stash(
+                            'stash_doc',
+                            [
                                 'scm-src/publish_doc.sh',
                                 'sdk-package/pkg/doc/',
-                            ].join(',')
+                            ]
                         )
 
-                        stash(
-                            name: 'stash_build_demos',
-                            includes: [
+                        do_stash(
+                            'stash_build_demos',
+                            [
                                 'scm-src/build-sdk.sh',
-                            ].join(',')
+                            ]
                         )
 
                     }
