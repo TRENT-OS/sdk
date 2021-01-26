@@ -671,6 +671,7 @@ pipeline {
                             'stash_build_demos',
                             [
                                 'scm-src/build-sdk.sh',
+                                'src/demos/',
                             ]
                         )
 
@@ -787,7 +788,28 @@ pipeline {
                             // expected to run as part of the package creation
                             run_app('mkdir', ['-p', 'sdk/pkg'])
                             run_app('tar', ['-xf sdk-package.bz2', '-C sdk/pkg'])
+
+                            // SDK package only contains a few demos, get script
+                            // scm-src/build-sdk.sh and all demos, then try
+                            // building them
                             unstash('stash_build_demos')
+
+                            // SDK has demos at sdk/pkg/demos/<demo>/src, fail
+                            // build if the root demo folder is missing, as the
+                            // package seems broken or the layout has changed
+                            sh '''
+                                SRC=src/demos
+                                DST=sdk/pkg/demos
+                                if [ ! -d ${DST} ]; then
+                                    exit 1
+                                fi
+                                for d in $(ls ${SRC}); do
+                                  if [ ! -e ${DST}/${d} ]; then
+                                    mkdir -p ${DST}/${d}
+                                    mv ${SRC}/${d}/ ${DST}/${d}/src/
+                                  fi
+                                done
+                            '''
                             run_shell_script(
                                 'scm-src/build-sdk.sh',
                                 [
