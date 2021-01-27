@@ -675,6 +675,11 @@ case "${ACTION}" in
         do_sdk_step build-demos
         ;;
 
+    unit-tests)
+        do_sdk_step collect-sources
+        do_sdk_step unit-tests
+        ;;
+
     doc)
         # create SDK snapshot and build documentation from it
         do_sdk_step collect-sources
