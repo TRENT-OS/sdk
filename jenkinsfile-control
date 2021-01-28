@@ -33,6 +33,7 @@ def TEST_CONFIG = [
         new TestCtx('demo_hello_world',              'test_demo_hello_world.py',      null),
         new TestCtx('demo_iot_app',                  'test_demo_iot_app.py',          ['zynq7000']),
         new TestCtx('demo_iot_app_rpi3',             'test_demo_iot_app.py',          ['rpi3']),
+        new TestCtx('demo_tls_api',                  'test_demo_tls_api.py',          ['zynq7000']),
         new TestCtx('test_timeserver',               null,                            null),
         new TestCtx('test_uart',                     null,                            ['zynq7000', 'sabre']),
         new TestCtx('test_chanmux',                  null,                            ['zynq7000']),
@@ -71,7 +72,7 @@ def DEMO_LIST = [
     'demo_iot_app',
     'demo_iot_app_rpi3',
     'demo_raspi_ethernet',  // ToDo: add TestCtx()
-    'demo_tls_api',         // ToDo: SEOS-2211 fix TestCtx(test_demo_tls_api.py)
+    'demo_tls_api',
     'demo_i2c',             // ToDo: add TestCtx(), currently for sabre only
 ]
 
