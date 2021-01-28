@@ -385,7 +385,17 @@ macro(os_sdk_build system_project_dir)
     # after we've included the seL4/CAmkES stuff.
     if (ENABLE_LINT)
         set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
-        set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*;-export-fixes=tidy.txt")
+
+        # We cannot use
+        #     set(CMAKE_C_CLANG_TIDY "clang-tidy;...")
+        # cmake passes to clang-tidy the compile target architecture in a wrong
+        # way when crosscompiling. As a workaround, we make the build create
+        # the file ${CMAKE_BINARY_DIR}/compile_commands.json and then use -p
+        # to tell clang-tidy in which folder to find it.
+        find_program(CLANGTIDY clang-tidy)
+        # ToDo: check that clang-tidy was found, CMake sets CLANGTIDY_NOT_FOUND
+        # otherwise
+        set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
     add_subdirectory("${OS_SDK_DIR}/os_core_api" "os_core_api")
