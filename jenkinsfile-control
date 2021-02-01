@@ -413,7 +413,7 @@ def execute_build(ctx, stage_ctx)
 //------------------------------------------------------------------------------
 def do_jobs_for_test_systems(branch, testConfig)
 {
-    // downstram job create this package and finally wealso pack all the
+    // downstream job create this package and finally we also pack all the
     // collected results into a package with this name
     def SYSTEM_PACKAGE = 'package.bz2'
 
