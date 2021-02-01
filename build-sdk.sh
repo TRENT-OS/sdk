@@ -571,7 +571,6 @@ function package_sdk()
         ./libs/os_tls/Doxyfile
         # remove demos
         ./demos/demo_raspi_ethernet
-        ./demos/demo_tls_api
         ./demos/demo_i2c
     )
 
