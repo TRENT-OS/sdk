@@ -556,7 +556,7 @@ function package_sdk()
         exit 1
     fi
 
-    local SDK_PACKAGE_BZ2=sdk-package.bz2
+    local SDK_PACKAGE_BZ2=sdk-package.tar.bz2
     print_info "Packaging SDK to ${SDK_PACKAGE_BZ2}"
 
     du -sh ${SDK_SRC_DIR}

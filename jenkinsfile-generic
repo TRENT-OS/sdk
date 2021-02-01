@@ -233,14 +233,16 @@ def get_sdk(
 
     // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
 
+    def SDK_PACKAGE = 'sdk-package.tar.bz2'
+
     copyArtifacts(
         projectName: UPSTREAM_JOB_NAME,
         selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
-        filter: 'sdk-package.bz2',
+        filter: SDK_PACKAGE,
     )
 
     run_app('mkdir', ['-p', dir])
-    run_app('tar', ['-xf sdk-package.bz2', '-C ' + dir])
+    run_app('tar', ['-xf ' + SDK_PACKAGE, '-C ' + dir])
 }
 
 

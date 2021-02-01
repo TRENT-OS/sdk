@@ -7,6 +7,8 @@
 //------------------------------------------------------------------------------
 
 
+def SDK_PACKAGE = 'sdk-package.tar.bz2'
+
 //------------------------------------------------------------------------------
 // Test system list
 class TestCtx {
@@ -656,7 +658,7 @@ pipeline {
                         print_step_info env.STAGE_NAME
 
                         archiveArtifacts(
-                            artifacts: 'sdk-package.bz2',
+                            artifacts: SDK_PACKAGE,
                             fingerprint: true
                         )
 
@@ -782,13 +784,13 @@ pipeline {
                             copyArtifacts(
                                 projectName: JOB_NAME,
                                 selector: specific("${BUILD_NUMBER}"), // need to ensure this is a string
-                                filter: 'sdk-package.bz2'
+                                filter: SDK_PACKAGE
                             )
                             // the subfolder 'pkg' is hard-coded in the SDK
                             // build script, because building the demos is
                             // expected to run as part of the package creation
                             run_app('mkdir', ['-p', 'sdk/pkg'])
-                            run_app('tar', ['-xf sdk-package.bz2', '-C sdk/pkg'])
+                            run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sdk/pkg'])
 
                             // SDK package only contains a few demos, get script
                             // scm-src/build-sdk.sh and all demos, then try
