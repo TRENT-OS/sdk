@@ -461,21 +461,6 @@ macro(os_sdk_build system_project_dir)
 
                 create_disassembly("${OS_SYS_IMG}" ${target})
 
-                # for legacy compatibility, we also create a *.bin, even if we
-                # actually build an ELF file.
-                set(OS_SYS_IMG_LEGACY "${IMAGE_DIR}/os_image.bin")
-                add_custom_command(
-                    OUTPUT "${OS_SYS_IMG_LEGACY}"
-                    DEPENDS "${IMAGE_NAME}"
-                    COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG_LEGACY}"
-                    VERBATIM
-                    COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG_LEGACY}"
-                )
-                add_custom_target(
-                    ${target}_copy_legacy ALL
-                    DEPENDS "${OS_SYS_IMG_LEGACY}"
-                )
-
             endif()
 
         endif()

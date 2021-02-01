@@ -340,7 +340,7 @@ function build_sdk_demos()
             # SDK package already anyway, so we can't simply copy the images.
             #
             # mkdir -p ${SDK_DEMO_BASE}/bin
-            # cp ${SDK_DEMO_OUT}/images/os_image.bin \
+            # cp ${SDK_DEMO_OUT}/images/os_image.elf \
             #    ${SDK_DEMO_BASE}/bin/os_image-${TARGET}.bin
         done
     done
