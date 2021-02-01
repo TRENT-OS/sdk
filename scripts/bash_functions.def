@@ -15,31 +15,16 @@ TRENTOS_TEST_CONTAINER_NAME="trentos_test"
 TRENTOS_TEST_CONTAINER_TAG=${TRENTOS_TEST_CONTAINER_TAG:-20210114}
 TRENTOS_TEST_CONTAINER=${TRENTOS_TEST_CONTAINER_NAME}:${TRENTOS_TEST_CONTAINER_TAG}
 
-DOCKER_COMMON_ARGS=(
-        # --interactive Keep STDIN open even if not attached
-        -i
-        # discard changes to container on exit
-        --rm
-        # set the uid and gid of the user running in the container to that of
-        # the user on the host
-        -u $(id -u):$(id -g)
-        # mount the current working directory on the host in the container
-        # in the /host folder
-        -v $(pwd):/host
-        # mount /etc/localtime to the container as read only, so that the
-        # container has a valid clock source
-        -v /etc/localtime:/etc/localtime:ro
-        # set the current directory in the container to /host
-        -w /host
-    )
 
-
-TTY=-t
 DOCKER_ARGS=()
 ARGS=()
 
+# default to allocating a pseudo-TTY when starting a docker container
+TTY=-t
+
+
 #-------------------------------------------------------------------------------
-# Parse the flags passed as command line arguments to the open_trentos scripts
+# Parse parameters to set DOCKER_ARGS and ARGS
 parse_command_line_arguments()
 {
     while getopts ":d:hn" opt; do
@@ -59,11 +44,11 @@ parse_command_line_arguments()
           DOCKER_ARGS+=( ${OPTARG} )
           ;;
         \? )
-          echo "Invalid option: ${OPTARG} " 1>&2
+          echo "Invalid option: ${OPTARG}" 1>&2
           exit 1
           ;;
         : )
-          echo "Invalid option: ${OPTARG}  requires an argument" 1>&2
+          echo "Invalid option: ${OPTARG} requires an argument" 1>&2
           exit 1
           ;;
       esac
@@ -80,61 +65,79 @@ parse_command_line_arguments()
 
 }
 
+
 #-------------------------------------------------------------------------------
-# avoid having unsupported chars in hostname
-make_container_hostname()
+# params: <container> [<docker param1> [<docker param2> ...]]
+do_run_docker()
 {
-    local tmp=${1}
-    tmp=${tmp//_/-}  # replace "_" by "-"
-    tmp=${tmp//:/-}  # replace ":" by "-"
-    tmp=${tmp//./-}  # replace "." by "-"
-    echo "${tmp}"
+    local CONTAINER=$1
+    shift
+
+    # hostname in container is the container name with tag
+    local DOCKER_HOSTNAME=${CONTAINER}
+    # avoid having unsupported chars in hostname
+    DOCKER_HOSTNAME=${DOCKER_HOSTNAME//_/-}  # replace "_" by "-"
+    DOCKER_HOSTNAME=${DOCKER_HOSTNAME//:/-}  # replace ":" by "-"
+    DOCKER_HOSTNAME=${DOCKER_HOSTNAME//./-}  # replace "." by "-"
+
+    local DOCKER_PARAMS=(
+        # --interactive: keep STDIN open even if not attached
+        -i
+        # tty setting
+        ${TTY}
+        # discard any changes on container exit
+        --rm
+        # set host name is container
+        --hostname ${DOCKER_HOSTNAME}
+        # set UID/GID of user in container to user on the host
+        -u $(id -u):$(id -g)
+        # mount /etc/localtime in container as read only, so clock is valid
+        -v /etc/localtime:/etc/localtime:ro
+        # mount current working directory on host in container as /host
+        -v $(pwd):/host
+        # set the current directory in the container to /host
+        -w /host
+        # caller's docker params
+        $@
+        # docker parameters passed on the command line
+        ${DOCKER_ARGS[@]}
+    )
+
+    docker run "${DOCKER_PARAMS[@]}" ${CONTAINER} "${ARGS[@]}"
 }
 
 
 #-------------------------------------------------------------------------------
 open_trentos_build_env()
 {
+    # set DOCKER_ARGS and ARGS
     parse_command_line_arguments "$@"
 
-    DOCKER_PARAMS=(
-        ${DOCKER_COMMON_ARGS[@]}
-        # --tty Allocate a pseudo-TTY
-        ${TTY}
+    local DOCKER_PARAMS_BUILD=(
         # add the runtime GID used for the haskell tools
         --group-add=stack
-        # host name is container name with tag
-        --hostname $(make_container_hostname ${TRENTOS_BUILD_CONTAINER})
-        # parameters passed on the command line
-        ${DOCKER_ARGS[@]}
     )
-    docker run "${DOCKER_PARAMS[@]}" ${TRENTOS_BUILD_CONTAINER} "${ARGS[@]}"
+
+    do_run_docker ${TRENTOS_BUILD_CONTAINER} "${DOCKER_PARAMS_BUILD[@]}"
 }
 
 
 #-------------------------------------------------------------------------------
 open_trentos_test_env()
 {
+    # set DOCKER_ARGS and ARGS
     parse_command_line_arguments "$@"
 
-    local DOCKER_PARAMS=(
-        ${DOCKER_COMMON_ARGS[@]}
-        # --tty Allocate a pseudo-TTY
-        ${TTY}
-        # host name is container name with tag
-        --hostname $(make_container_hostname ${TRENTOS_TEST_CONTAINER})
+    local DOCKER_PARAMS_TEST=(
         # make the container run in a separate network namespace
         --network=bridge
-        # allow the container to manage its interfaces
-        # needed to create TAP devices
+        # allow the container to manage its interfaces, needed for TAP creation
         --cap-add=NET_ADMIN
-        # allow the container to send/receive RAW packets
-        # needed by tcpdump
+        # allow the container to send/receive RAW packets, needed by tcpdump
         --cap-add=NET_RAW
-        # filedevice needed to create TAP devices
+        # needed to create TAP devices
         --device=/dev/net/tun
-        # parameters passed on the command line
-        ${DOCKER_ARGS[@]}
     )
-    docker run "${DOCKER_PARAMS[@]}" ${TRENTOS_TEST_CONTAINER} "${ARGS[@]}"
+
+    do_run_docker ${TRENTOS_TEST_CONTAINER} "${DOCKER_PARAMS_TEST[@]}"
 }
