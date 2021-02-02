@@ -193,6 +193,16 @@ function collect_sdk_sources()
         ./components/UART/README.md
         ./libs/chanmux/README.md
         ./libs/chanmux_nic_driver/README.md
+        ./libs/lib_compiler/README.md
+        ./libs/lib_debug/README.md
+        ./libs/lib_host/README.md
+        ./libs/lib_io/README.md
+        ./libs/lib_logs/README.md
+        ./libs/lib_macros/README.md
+        ./libs/lib_mem/README.md
+        ./libs/lib_osal/README.md
+        ./libs/lib_server/README.md
+        ./libs/lib_utils/README.md
         ./libs/os_cert/README.md
         ./libs/os_configuration/README.md
         ./libs/os_crypto/README.md
