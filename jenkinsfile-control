@@ -55,11 +55,11 @@ def TEST_CONFIG = [
     ],
 
     platforms: [
-        'zynq7000',
-        'sabre',
+        //'zynq7000',
+        //'sabre',
         // 'migv',
         // 'spike',
-        // 'rpi3',
+        'rpi3',
     ]
 ]
 

@@ -142,3 +142,9 @@
 [submodule "libs/lib_utils"]
 	path = libs/lib_utils
 	url = ../../seos/lib_utils.git
+[submodule "components/RPi_SPI_SD"]
+	path = components/RPi_SPI_SD
+	url = ../../sc/rpi_spi_sd.git
+[submodule "components/RPI_SD"]
+	path = components/RPI_SD
+	url = ../../sc/rpi_sd.git
