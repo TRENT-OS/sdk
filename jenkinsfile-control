@@ -405,9 +405,11 @@ def execute_build(ctx, stage_ctx)
     }
 
     // we've set propagate=false above, so we have to fail the stage here.
-    if (result in ['FAILURE','ABORTED']) {
-        error('stage failed: ' + stage_ctx.platform + ', '
-        + stage_ctx.test_ctx.systemName)
+    if ('SUCCESS' != result)
+    {
+        // 'UNSTABLE', 'FAILURE', 'ABORTED' ...
+        error('test ' + result + ' for ' + stage_ctx.platform + ', '
+              + stage_ctx.test_ctx.systemName)
     }
 }
 
