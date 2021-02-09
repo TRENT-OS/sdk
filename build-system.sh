@@ -66,9 +66,8 @@ export HOME=/home/user
 #-------------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
-# This script assumes it is located in the SDK root folder. We need the absolute
-# SDK path because we change the current working directory in the build process.
-ABS_OS_SDK_PATH="$(realpath ${SCRIPT_DIR})"
+# This script assumes it is located in the SDK root folder.
+OS_SDK_PATH="${SCRIPT_DIR}"
 
 # read parameters
 OS_PROJECT_DIR=$1
@@ -137,7 +136,7 @@ esac
 CMAKE_PARAMS=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
-    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${ABS_OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
+    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
     -D KernelVerificationBuild=OFF
@@ -198,14 +197,19 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     echo "##------------------------------------------------------------------------------"
     echo "## configure build ..."
     echo "##------------------------------------------------------------------------------"
+
+    # Create ${BUILD_DIR} and save the build parameters. Do this before even
+    # invoking CMake, so we have the parameters archived in any case.
     mkdir -p ${BUILD_DIR}
-    # use subshell to have CMake set up the build environment
+    echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
+
+    # Invoke CMake to set up the build environment. It creates the build output
+    # folder if it does not exist - but we've created it above already. The
+    # CMake command runs in a subshell that prints all the executed commands, so
+    # everything is shown in the logs.
     (
-        cd ${BUILD_DIR}
-        # save CMake parameters
-        echo "${CMAKE_PARAMS[@]}" > ${CMAKE_PARAMS_FILE}
         set -x
-        cmake ${CMAKE_PARAMS[@]} ${ABS_OS_SDK_PATH}
+        cmake ${CMAKE_PARAMS[@]} -S ${OS_SDK_PATH} -B ${BUILD_DIR}
     )
 
     # CMake must run twice, so the config settings propagate properly. The
