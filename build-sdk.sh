@@ -357,9 +357,11 @@ function sdk_unit_test()
         exit 1
     fi
 
+    local BUILD_TESTS_DIR=${BUILD_DIR}/test_libs
+
     # Build tests.
     local BUILD_PARAMS=(
-        ${BUILD_DIR}/test_libs # build output folder
+        ${BUILD_TESTS_DIR}     # build output folder
         all                    # build target
         ${SDK_SRC_DIR}/libs    # source folder with CMakeLists.txt
         # custom build params start here
@@ -369,10 +371,10 @@ function sdk_unit_test()
 
     # Run tests and ignore errors so that the test coverage can be calculated in
     # the next step as otherwise a failing test would stop the script.
-    cmake --build ${BUILD_DIR}/test_libs --target test || true
+    cmake --build ${BUILD_TESTS_DIR} --target test || true
 
     # Calculate tests coverage.
-    cmake --build ${BUILD_DIR}/test_libs --target covr
+    cmake --build ${BUILD_TESTS_DIR} --target covr
 }
 
 
