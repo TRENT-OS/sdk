@@ -90,6 +90,8 @@ function copy_files_via_tar()
     tar -c -C ${SRC_DIR} $@ ./ | tar -x -C ${DST_DIR}/
 }
 
+
+#-------------------------------------------------------------------------------
 # i.MX6 platforms' resources require special handling as some files are common
 # in the source repository, but we don't want to expose this in the final
 # packages.
