@@ -368,14 +368,14 @@ function sdk_unit_test()
         exit 1
     fi
 
+    # Build tests.
     local BUILD_PARAMS=(
         ${BUILD_DIR}/test_libs # build output folder
-        all                    # build all tests
-        ${SDK_SRC_DIR}/libs    # folder containing CMakeList file
+        all                    # build target
+        ${SDK_SRC_DIR}/libs    # source folder with CMakeLists.txt
+        # custom build params start here
         -DBUILD_TESTING=ON
     )
-
-    # Build tests.
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
 
     # Run tests and ignore errors so that the test coverage can be calculated in
@@ -403,8 +403,8 @@ function build_sdk_tool()
 
     local BUILD_PARAMS=(
         ${BUILD_DIR}                # build output folder
-        all                         # ninja target
-        ${SDK_SRC_DIR}/${SDK_TOOL}  # folder containing CMakeList file
+        all                         # build target
+        ${SDK_SRC_DIR}/${SDK_TOOL}  # source folder with CMakeLists.txt
         # custom build params start here
 
         # SDK_SRC_DIR may be a relative path to the current directory, but the
@@ -412,7 +412,6 @@ function build_sdk_tool()
         # pass an absolute path here
         -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
     )
-
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
 }
 
