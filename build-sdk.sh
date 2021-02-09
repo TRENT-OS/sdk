@@ -31,37 +31,26 @@ function print_info()
 function cmake_check_init_and_build()
 {
     local BUILD_DIR=$1
-    local NINJA_TARGET=$2
-    local CMAKE_FILE=$3
-    # all other params are passed on
+    local BUILD_TARGET=$2
+    local SRC_DIR=$3
+    # all other params are use to initialize the CMake build
     shift 3
 
-    # check if CMake init has failed previously
-    if [[ -e ${BUILD_DIR} ]] && [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
-        echo "deleting broken build folder and re-initialize it"
+    # wipe the build folder if it does not contain a valid setup
+    if [[ -d ${BUILD_DIR} &&
+          ( ! -e ${BUILD_DIR}/CMakeCache.txt ||
+            ! -e ${BUILD_DIR}/rules.ninja ) ]]; then
+        echo "deleting broken build folder ${BUILD_DIR}"
         rm -rf ${BUILD_DIR}
     fi
 
-    # initilaize CMake if no build folder exists
+    # initialize CMake if no build folder exists
     if [[ ! -e ${BUILD_DIR} ]]; then
-
-        # the build runs from within the build folder, which is created in the
-        # test workspace. We have to ensure that the source path is accessible
-        # from there, the most simple way to achieve this is having it as
-        # absolute path
-        local ABS_CMAKE_FILE=$(realpath ${CMAKE_FILE})
-        mkdir -p ${BUILD_DIR}
-        (
-            cd ${BUILD_DIR}
-            cmake $@ -G Ninja ${ABS_CMAKE_FILE}
-        )
+        echo "configure build in ${BUILD_DIR}"
+        cmake $@ -G Ninja -S ${SRC_DIR} -B ${BUILD_DIR}
     fi
 
-    # build in subshell
-    (
-        cd ${BUILD_DIR}
-        ninja ${NINJA_TARGET}
-    )
+    cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
 }
 
 
@@ -406,10 +395,8 @@ function build_sdk_tool()
         all                         # build target
         ${SDK_SRC_DIR}/${SDK_TOOL}  # source folder with CMakeLists.txt
         # custom build params start here
-
-        # SDK_SRC_DIR may be a relative path to the current directory, but the
-        # build will change the working directory to BUILD_DIR. Thus we must
-        # pass an absolute path here
+        # ensure SDK_SRC_DIR is an absolute path, so it can be found even if we
+        # change folders during the build process
         -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
     )
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
