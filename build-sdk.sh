@@ -371,10 +371,16 @@ function sdk_unit_test()
 
     # Run tests and ignore errors so that the test coverage can be calculated in
     # the next step as otherwise a failing test would stop the script.
-    cmake --build ${BUILD_TESTS_DIR} --target test || true
+    local TEST_RET=0
+    cmake --build ${BUILD_DIR}/test_libs --target test || TEST_RET=$?
 
     # Calculate tests coverage.
-    cmake --build ${BUILD_TESTS_DIR} --target covr
+    cmake --build ${BUILD_DIR}/test_libs --target covr
+
+    if [ ${TEST_RET} -ne 0 ]; then
+        echo "SDK unit tests failed, code ${TEST_RET}"
+        exit 1
+    fi
 }
 
 
