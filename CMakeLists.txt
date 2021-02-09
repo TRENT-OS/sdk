@@ -393,8 +393,9 @@ macro(os_sdk_build system_project_dir)
         # the file ${CMAKE_BINARY_DIR}/compile_commands.json and then use -p
         # to tell clang-tidy in which folder to find it.
         find_program(CLANGTIDY clang-tidy)
-        # ToDo: check that clang-tidy was found, CMake sets CLANGTIDY_NOT_FOUND
-        # otherwise
+        if(NOT CLANGTIDY)
+            message(FATAL_ERROR "Didn't find clang-tidy executable!")
+        endif()
         set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
