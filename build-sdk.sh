@@ -276,14 +276,14 @@ function build_sdk_demos()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     # there is always at least the hello world demo, so this folder can't be
     # missing
     if [ ! -d ${SDK_DEMOS_DIR} ]; then
         echo "missing SDK demo folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     local TARGETS=(
@@ -354,7 +354,7 @@ function sdk_unit_test()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     local BUILD_TESTS_DIR=${BUILD_DIR}/test_libs
@@ -379,7 +379,7 @@ function sdk_unit_test()
 
     if [ ${TEST_RET} -ne 0 ]; then
         echo "SDK unit tests failed, code ${TEST_RET}"
-        exit 1
+        return 1
     fi
 }
 
@@ -395,7 +395,7 @@ function build_sdk_tool()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     local BUILD_PARAMS=(
@@ -423,7 +423,7 @@ function build_sdk_tools()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     # remove any existing output directory
@@ -499,7 +499,7 @@ function build_sdk_docs()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     # clear folder where we collect docs
@@ -549,7 +549,7 @@ function package_sdk()
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
-        exit 1
+        return 1
     fi
 
     local SDK_PACKAGE_BZ2=sdk-package.tar.bz2
@@ -656,7 +656,7 @@ function do_sdk_step()
 
         *)
             echo "invalid STEP: ${STEP}"
-            exit 1
+            return 1
             ;;
     esac
 }
