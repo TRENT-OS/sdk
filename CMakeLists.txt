@@ -154,7 +154,7 @@ function(include_os_components)
         # list can also contain files, e.g. ctag index files,  but we only
         # care about the folders
         if (IS_DIRECTORY "${SUBDIR}")
-            # components aren't CMake projects, their CMakeLists.text file
+            # components aren't CMake projects, their CMakeLists.txt file
             # contains functions that must be called to create the actual
             # component's CMake project. Thus we don't use add_subdirectory()
             # here but include(). Note that an included files can't modify any
