@@ -575,6 +575,20 @@ function package_sdk()
         ./libs/os_logger/Doxyfile
         ./libs/os_network_stack/Doxyfile
         ./libs/os_tls/Doxyfile
+        # remove unit-tests
+        ./libs/CMakeLists.txt
+        ./libs/test
+        ./libs/lib_compiler/mocks
+        ./libs/lib_debug/mocks
+        ./libs/lib_host/test
+        ./libs/lib_logs/mocks
+        ./libs/lib_macros/mocks
+        ./libs/lib_mem/mocks
+        ./libs/lib_mem/test
+        ./libs/lib_osal/mocks
+        ./libs/lib_server/test
+        ./libs/lib_utils/mocks
+        ./libs/lib_utils/test
         # remove demos
         ./demos/demo_raspi_ethernet
         ./demos/demo_i2c
