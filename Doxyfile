@@ -27,6 +27,7 @@ WARN_AS_ERROR          = YES
 
 RECURSIVE              = YES
 
+EXCLUDE_PATTERNS       += LICENSE.md
 EXCLUDE_PATTERNS       += sdk-sel4-camkes
 EXCLUDE_PATTERNS       += **/3rdParty
 
