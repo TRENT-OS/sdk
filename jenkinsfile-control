@@ -778,7 +778,7 @@ pipeline {
                     }
                     steps {
                         print_step_info env.STAGE_NAME
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 
                             // we can't call cleanWs() here, because this may
                             // run on the same node as the SDK build stage
