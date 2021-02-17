@@ -404,12 +404,23 @@ def execute_build(ctx, stage_ctx)
         cleanWs()
     }
 
-    // we've set propagate=false above, so we have to fail the stage here.
+    // We have set propagate=false above, so we have to deal with the failures
+    // here. Since all this runs in block wrapped by catchError(), we can't
+    // really fail the build here, but we can ensure a message is logged and
+    // the state is set properly.
     if ('SUCCESS' != result)
     {
-        // 'UNSTABLE', 'FAILURE', 'ABORTED' ...
-        error('test ' + result + ' for ' + stage_ctx.platform + ', '
-              + stage_ctx.test_ctx.systemName)
+        def msg = 'test ' + result + ' for ' + stage_ctx.platform + ', ' +
+                  stage_ctx.test_ctx.systemName
+
+        if ('UNSTABLE' == result) {
+            // propagate unstable
+            unstable(msg)
+        }
+        else {
+            // 'FAILURE', 'ABORTED' is fatal
+            error(msg)
+        }
     }
 }
 
