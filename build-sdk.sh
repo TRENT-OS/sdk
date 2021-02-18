@@ -559,7 +559,7 @@ function package_sdk()
     # All files in the SDK package will be set to the same timestamp, which is
     # the time when this script runs. Change this to enforce a specific
     # timestamp (e.g. "UTC 2021-02-19 18:00:00") for official releases.
-    local SDK_PACKET_TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
+    local SDK_PACKET_TIMESTAMP="UTC 2021-02-19 14:00:00"
 
     print_info "Packaging SDK with timestamp '${SDK_PACKET_TIMESTAMP}' to ${SDK_PACKAGE_BZ2}"
 
