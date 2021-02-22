@@ -318,15 +318,20 @@ def do_checkout(
     branch,
     dir = '.'
 ) {
-    manager.createSummary("text.gif").appendText('<hr>' + repo)
+    def summary = manager.createSummary("document.png")
+    summary.appendText('<hr>Repo: <code><strong>' + repo + '</strong></code>')
 
     def scmVars = do_git_checkout(repo, branch, dir)
 
     // if this is a custom branch, then fall back to integration
     if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
     {
-        manager.createSummary("text.gif").appendText('no dedicated branch: ' + branch)
-        scmVars = do_git_checkout(repo, 'integration', dir)
+        def fallback_branch = 'integration'
+        summary.appendText(
+            ' (using <code><strong>' + fallback_branch + '</strong></code>, '+
+            'no branch <code><strong>' + branch + '</strong></code>)'
+        )
+        scmVars = do_git_checkout(repo, fallback_branch, dir)
     }
 
     if (!scmVars)
@@ -451,6 +456,7 @@ def do_jobs_for_test_systems(branch, testConfig)
     def SYSTEM_PACKAGE = 'package.bz2'
 
     def summary = manager.createSummary("orange-square.png")
+    summary.appendText('<hr>')
 
     def sub_jobs_ctx = [
         summary:   summary,
