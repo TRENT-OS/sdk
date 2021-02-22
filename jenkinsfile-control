@@ -131,7 +131,7 @@ def do_notify_bitbucket()
 {
     // the StashNotifier requires to run in a node block, which should not be
     // necessary technically. See also the open issue issue at
-    // https://github.com/jenkinsci/stashnotifier-plugin/issues/234 which
+    // https://github.com/jenkinsci/stashnotifier-plugin/issues/234
 
     if (env.NODE_NAME)
     {
@@ -139,7 +139,12 @@ def do_notify_bitbucket()
     }
     else
     {
-        node { notifyBitbucket() }
+        // If we don't specify any node here explicitly, it will not run on the
+        // master node even if it is free, because the master is reserved
+        // exclusively for bound jobs. If all other executors are busy, the
+        // whole job will stuck just for sending a notification. Thus we use the
+        // master node for the notification.
+        node('pipeline-control') { notifyBitbucket() }
     }
 }
 
