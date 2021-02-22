@@ -156,6 +156,24 @@ def do_stash(name, file_list)
 
 
 //------------------------------------------------------------------------------
+def do_archiveArtifacts(
+    artifacts,
+    fingerprint = true
+) {
+    archiveArtifacts([
+        artifacts: artifacts,
+        fingerprint: fingerprint
+    ])
+
+    manager.createSummary("package.png").appendText(
+        '<hr>'+
+        'adding Artifact(s): <code><strong>' + artifacts + '</strong></code> '+
+        '(see <a href="artifact">artifact/</a>)'
+    )
+}
+
+
+//------------------------------------------------------------------------------
 def save_current_job_log(
     name
 ) {
@@ -566,10 +584,7 @@ def do_jobs_for_test_systems(branch, testConfig)
                 ]
             )
 
-            archiveArtifacts(
-                artifacts: SYSTEM_PACKAGE,
-                fingerprint: true
-            )
+            do_archiveArtifacts(SYSTEM_PACKAGE)
 
             cleanWs()
 
@@ -670,10 +685,7 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
-                        archiveArtifacts(
-                            artifacts: SDK_PACKAGE,
-                            fingerprint: true
-                        )
+                        do_archiveArtifacts(SDK_PACKAGE)
 
                         do_stash(
                             'stash_doc',
