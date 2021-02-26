@@ -2,9 +2,9 @@
 
 #-------------------------------------------------------------------------------
 #
-# SDK OS Build script
+# SDK Build Script
 #
-# Copyright (C) 2020, Hensoldt Cyber GmbH
+# Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 #
 #-------------------------------------------------------------------------------
 #
@@ -43,9 +43,8 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
-# This script assumes it is located in the SDK root folder. We need the
-# absolute SDK path, because we change the current working directory in the
-# build  process
+# This script assumes it is located in the SDK root folder. We need the absolute
+# SDK path because we change the current working directory in the build process.
 ABS_OS_SDK_PATH="$(realpath ${SCRIPT_DIR})"
 
 # read parameters
@@ -53,10 +52,9 @@ OS_PROJECT_DIR=$1
 BUILD_PLATFORM=$2
 BUILD_DIR=$3
 shift 3
-# all remaining params will be passed to CMake
+# all remaining parameters will be passed to CMake
 BUILD_ARGS="$@"
 BUILD_ARGS_FILE=build.args
-
 
 echo ""
 echo "##=============================================================================="
@@ -111,8 +109,6 @@ case "${BUILD_PLATFORM}" in
         ;;
 esac
 
-
-
 CMAKE_PARAMS=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
@@ -124,8 +120,8 @@ CMAKE_PARAMS=(
     # musllibc and capDL-tool) that are project agnostic, so we don't have
     # to rebuild them every time. This reduces the build time a lot.
     -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
-    # location of the OS project to be build. Since we will change the current
-    # working directory, we have to ensure this is an absolute path
+    # Location of the OS project to be built. Since we will change the current
+    # working directory, we have to ensure this is an absolute path.
     -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
 )
 
