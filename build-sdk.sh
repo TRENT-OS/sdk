@@ -725,16 +725,6 @@ case "${ACTION}" in
         do_sdk_step build-docs
         ;;
 
-    build-bin)
-        echo "parameter 'build-bin' is deprecated, use 'tools' or 'build-tools'"
-        exit 1
-        ;;
-
-    only-sources)
-        echo "parameter 'only-sources' is deprecated, use 'collect-sources'"
-        exit 1
-        ;;
-
     *)
         # execute requested step
         do_sdk_step ${ACTION}
