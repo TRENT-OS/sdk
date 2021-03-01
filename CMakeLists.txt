@@ -1,7 +1,7 @@
 #
 # SDK Build System
 #
-# Copyright (C) 2019-2020, Hensoldt Cyber GmbH
+# Copyright (C) 2019-2021, HENSOLDT Cyber GmbH
 #
 
 cmake_minimum_required(VERSION 3.17)
@@ -374,24 +374,22 @@ macro(os_sdk_build system_project_dir)
     # SDK specific build process
     #---------------------------------------------------------------------------
 
-    # Generate a commands.json file containing the exact compiler invocation
-    # calls for all translation units of the system project. This can be used
-    # by code analyzers running independently of the compilation job. Note that
-    # we enable this here after all the seL4/CAmkES stuff on purpose, because
-    # we only want our system's stuff in the json file.
+    # Enable generation of CMAKE_BINARY_DIR/compile_commands.json that will
+    # contain the exact compiler calls for all translation units of the project
+    # to be used for static analysis later.
+    # NOTE: We enable this here after all the seL4/CAmkES stuff because we only
+    # want our system's stuff in the file.
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-    # linting does not work on seL4/CAmkES code, thus we define details here,
-    # after we've included the seL4/CAmkES stuff.
+    # NOTE: Linting does not work on seL4/CAmkES code, thus we define details
+    # here after we've included the seL4/CAmkES stuff.
     if (ENABLE_LINT)
         set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
 
-        # We cannot use
-        #     set(CMAKE_C_CLANG_TIDY "clang-tidy;...")
-        # cmake passes to clang-tidy the compile target architecture in a wrong
-        # way when crosscompiling. As a workaround, we make the build create
-        # the file ${CMAKE_BINARY_DIR}/compile_commands.json and then use -p
-        # to tell clang-tidy in which folder to find it.
+        # NOTE: We cannot use set(CMAKE_C_CLANG_TIDY "clang-tidy;...") because
+        # CMake passes the compile target architecture to clang-tidy in a wrong
+        # way when crosscompiling. As a workaround we use -p to pass the
+        # location of compile_commands.json to clang-tidy.
         find_program(CLANGTIDY clang-tidy)
         if(NOT CLANGTIDY)
             message(FATAL_ERROR "Didn't find clang-tidy executable!")
