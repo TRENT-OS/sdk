@@ -506,6 +506,8 @@ pipeline {
                                                 '--target=' + PLATFORM,
                                                 '--system_image=../build/images/os_image.bin',
                                                 '--junitxml=../test_results.xml',
+                                                '--tc-file=../src/test/tests/platform_config/default.ini',
+                                                '--tc-file=../src/test/tests/platform_config/' + PLATFORM + '.ini',
                                                 '../'+testScript
                                             ]
                                         )
