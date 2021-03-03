@@ -76,9 +76,6 @@
 [submodule "tools/rpi3_flasher"]
 	path = tools/rpi3_flasher
 	url = ../../ss/rpi3_flasher.git
-[submodule "resources/rpi3_sd_card"]
-	path = resources/rpi3_sd_card
-	url = ../../ssdk/plat_raspi.git
 [submodule "components/UART"]
 	path = components/UART
 	url = ../../sc/uart.git
@@ -88,9 +85,6 @@
 [submodule "components/NIC_iMX6"]
 	path = components/NIC_iMX6
 	url = ../../sc/nic_imx6.git
-[submodule "resources/imx6_sd_card"]
-	path = resources/imx6_sd_card
-	url = ../../ssdk/plat_imx6.git
 [submodule "components/RamDisk"]
 	path = components/RamDisk
 	url = ../../sc/ramdisk.git
