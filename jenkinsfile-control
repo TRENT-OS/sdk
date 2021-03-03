@@ -41,6 +41,7 @@ def TEST_CONFIG = [
         new TestCtx('test_chanmux',                  null,                            ['zynq7000']),
         new TestCtx('test_proxy_nvm',                null,                            ['zynq7000']),
         new TestCtx('test_certparser',               null,                            ['zynq7000']),
+        new TestCtx('test_certserver',               null,                            null),
         new TestCtx('test_crypto_api',               null,                            ['zynq7000']),
         new TestCtx('test_cryptoserver',             null,                            ['zynq7000']),
         new TestCtx('test_entropysource',            null,                            ['zynq7000']),
