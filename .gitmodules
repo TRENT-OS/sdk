@@ -136,3 +136,6 @@
 [submodule "libs/lib_utils"]
 	path = libs/lib_utils
 	url = ../../seos/lib_utils.git
+[submodule "resources"]
+	path = resources
+	url = ../../ssdk/sdk-resources.git
