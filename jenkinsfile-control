@@ -23,6 +23,11 @@ class TestCtx {
         String testScript,
         ArrayList platforms)
     {
+        if (null == testScript)
+        {
+            testScript = systemName + '.py'
+        }
+
         this.systemName  = systemName;
         this.testScript  = testScript;
         this.platforms   = platforms;
@@ -372,7 +377,7 @@ def execute_build(ctx, stage_ctx)
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
             string(name: 'TEST_SYSTEM',        value: 'ss/'+stage_ctx.test_ctx.systemName),
-            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: stage_ctx.test_ctx.systemName + '.py'),
+            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
         ]
