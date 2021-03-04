@@ -62,7 +62,7 @@ if [ -z "${FILES}" ]; then
     # dives into the submodule and list the actualy files with changes.
     FILES=$(git ls-files --modified --others | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$' || true)
 
-    # check all file that have been create or modified since branch creation
+    # check all file that have been created or modified since branch creation
     FILES+=" "$(git diff-index --diff-filter=ACMR --name-only -r --cached origin/master | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$' || true)
 
 fi
