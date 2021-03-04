@@ -154,12 +154,11 @@ function(include_os_components)
         # list can also contain files, e.g. ctag index files,  but we only
         # care about the folders
         if (IS_DIRECTORY "${SUBDIR}")
-            # components aren't CMake projects, their CMakeLists.txt file
-            # contains functions that must be called to create the actual
-            # component's CMake project. Thus we don't use add_subdirectory()
-            # here but include(). Note that an included files can't modify any
-            # variables in our scope, it can just add and modify the global
-            # (cached) variables.
+            # Components aren't CMake projects, their CMakeLists.txt files
+            # contain functions that must be called to create the actual
+            # component's CMake project. Thus we can't use add_subdirectory()
+            # here but must use include(). The included CMake files are executed
+            # in the same scope and thus can modify variables and add functions.
             include("${SUBDIR}/CMakeLists.txt")
         endif()
 
