@@ -368,17 +368,10 @@ macro(os_sdk_build system_project_dir)
     # use the seL4/CAmkES build system
     #---------------------------------------------------------------------------
 
+    # Even if SDK_USE_CAMKES is set, this will not enable the global components
+    # by default. Any project that needs them must either cherry-pick things or
+    # call global_components_import_project().
     include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
-    setup_sel4_build_system()
-
-    if (SDK_USE_CAMKES)
-
-        setup_sel4_camkes_build_system()
-
-        # we do not enable the global-components by default, any project that
-        # needs them must call global_components_import_project() then.
-
-    endif()
 
 
     #---------------------------------------------------------------------------
@@ -411,7 +404,7 @@ macro(os_sdk_build system_project_dir)
     add_subdirectory("${OS_SDK_DIR}/os_core_api" "os_core_api")
     add_os_libs_subdirectories()
 
-    # we include the components even if CAmkES is not enabled, because they may
+    # We include the components even if CAmkES is not enabled, because they may
     # provide library code that native systems can use.
     include_os_components()
 
