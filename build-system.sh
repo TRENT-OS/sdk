@@ -41,6 +41,22 @@
 #
 #-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+# In order to debug a sporadic issue in CI we print this debug information as
+# first commands executed in the freshly started container
+echo ""
+echo "*************************************************************************"
+echo "In order to debug a sporadic CI issue we collect debug info here"
+echo "Timestamp: `date`"
+echo "Lock file: `ls -la /run/fixuid.ran`"
+echo "Lock file: `ls -la /var/run/fixuid.ran`"
+echo "UID: `id`"
+echo "groups: `groups`"
+echo "HOME: *${HOME}*"
+echo "*************************************************************************"
+echo ""
+
+#-------------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # This script assumes it is located in the SDK root folder. We need the absolute
