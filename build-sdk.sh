@@ -696,7 +696,7 @@ case "${ACTION}" in
         # create SDK package including docs and demos, run unit test and build
         # all demos
         do_sdk_step create-package
-        do_sdk_step unit-tests
+        do_sdk_step run-unit-tests
         do_sdk_step build-demos
         ;;
 
