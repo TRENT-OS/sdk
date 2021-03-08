@@ -2,7 +2,7 @@
 //
 // SDK Jenkins Pipeline Control Script
 //
-// Copyright (C) 2020, Hensoldt Cyber GmbH
+// Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 //
 //------------------------------------------------------------------------------
 
@@ -18,6 +18,7 @@ class TestCtx {
                              // <systemName>.py.
     ArrayList   platforms;   // List of supported platforms. `null` if full
                              // support.
+    String      buildParams  // Additional build parameters.
 
     //--------------------------------------------------------------------------
     // Format of systemName is "name[@path/to/repo]". If no repo is given we
@@ -26,7 +27,8 @@ class TestCtx {
     public TestCtx(
         String systemName,
         String testScript = null,
-        ArrayList platforms = null)
+        ArrayList platforms = null,
+        String buildParams = null)
     {
         def repo = 'ss/' + systemName
         def arr = systemName.split('@',2);
@@ -44,6 +46,7 @@ class TestCtx {
         this.repo        = repo;
         this.testScript  = testScript;
         this.platforms   = platforms;
+        this.buildParams = buildParams;
     }
 }
 
@@ -390,6 +393,7 @@ def execute_build(ctx, stage_ctx)
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
             string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.repo),
+            string(name: 'BUILD_PARAMS',       value: stage_ctx.test_ctx.buildParams ?: ''),
             string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),

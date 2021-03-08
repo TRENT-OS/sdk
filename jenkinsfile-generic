@@ -2,15 +2,17 @@
 //
 // Generic Jenkins Pipeline Script
 //
-// Copyright (C) 2020, Hensoldt Cyber GmbH
+// Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 //
 //------------------------------------------------------------------------------
 //
-// job parameters
+// job parameters (must be configured in the Jenkins job, otherwise we do not
+// see them here as global variables)
 //
 //    PLATFORM
 //    BRANCH_OR_COMMIT
 //    TEST_SYSTEM
+//    BUILD_PARAMS
 //    TEST_SCRIPT
 //    UPSTREAM_JOB_NAME
 //    UPSTREAM_JOB_ID
@@ -338,7 +340,8 @@ pipeline {
                                 'src/system', // PROJECT_DIR
                                 PLATFORM,
                                 'build', // BUILD_DIR
-                                '-D CMAKE_BUILD_TYPE=Debug'
+                                '-D CMAKE_BUILD_TYPE=Debug',
+                                BUILD_PARAMS
                             ]
                         )
                     }
