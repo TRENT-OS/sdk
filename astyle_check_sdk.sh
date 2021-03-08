@@ -1,5 +1,19 @@
 #!/bin/bash
 
+#
+# This script will search for astyle_check.sh scripts in all sub-folders of the
+# current working directory and execute them.
+#
+# Those astyle_check.sh scripts should be added to all relevant submodules. They
+# should generate *.astyle files if there are any astyle issues.
+#
+# By checking if *.astyle files exist this script determines if there is at
+# least one astyle issue and returns an error code that can be used by CI.
+#
+# NOTE: Generated *.astlye files are only removed prior to the execution (to
+# produce a reliable result) but not afterwards (to support fixing the issues).
+#
+
 echo "---"
 echo "Execute astyle check in:"
 echo `pwd`
