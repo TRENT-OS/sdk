@@ -21,8 +21,6 @@ def SYSTEM_PACKAGE = 'package.bz2'
 
 def testScript = 'src/test/tests/' + TEST_SCRIPT
 
-compile_commands_file = 'build/compile_commands.json'
-
 //------------------------------------------------------------------------------
 // Docker
 //------------------------------------------------------------------------------
@@ -383,7 +381,7 @@ pipeline {
                                         'build/kernel/gen_headers/**',
                                         'build/kernel/generated/**',
                                         'build/os_system/**',
-                                         compile_commands_file,
+                                        'build/compile_commands.json',
                                         'src/system/**' // PROJECT_DIR
                                       ].join(',')
                         )
