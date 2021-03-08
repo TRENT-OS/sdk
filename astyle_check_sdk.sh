@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ue
 
 #
 # This script will search for astyle_check.sh scripts in all sub-folders of the
@@ -16,7 +16,7 @@
 
 echo "---"
 echo "Execute astyle check in:"
-echo `pwd`
+echo $(pwd)
 echo "-"
 
 # remove previously existing astyle files
