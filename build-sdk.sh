@@ -211,6 +211,10 @@ function collect_sdk_sources()
         ./tools/rpi3_flasher/README.md
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
+        # remove readme files from resources submodule
+        ./resources/README.md
+        ./resources/rpi3_sd_card/README.md
+        ./resources/rpi4_sd_card/README.md
     )
 
     # copy files using tar and filtering. Seems there is a bug in tar, for
