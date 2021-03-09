@@ -1,6 +1,10 @@
 #!/bin/bash -ue
 
 #
+# Copyright (C) 2021, HENSOLDT Cyber GmbH
+#
+
+#
 # This script will search for astyle_check.sh scripts in all sub-folders of the
 # current working directory and execute them.
 #
