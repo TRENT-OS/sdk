@@ -1,87 +1,139 @@
-#!/bin/bash
+#!/bin/bash -ue
+
+#-------------------------------------------------------------------------------
+# Copyright (C) 2021, HENSOLDT Cyber GmbH
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# This script will run astyle with a set of defined options on a list of files.
+#
+# The list of files can be passed as arguments. If no arguments are passed the
+# script uses git to find all new or modified source files of the submodule it
+# is located in. Since the git commands have to be executed within the submodule
+# the script changes the working directory.
+#
+# The astyle analysis will generate an *.astyle file for each input file. If
+# astyle did some correction this means that an astyle issue was found. In this
+# case the *.astyle file is kept, otherwise the *.astyle file is removed.
+#
+# If there is at least one astyle issue, the script will return an error code.
+#-------------------------------------------------------------------------------
 
 cd "$(dirname "$0")"
 
-ASTYLE_SETTINGS_LINUX_USER_SPACE="--suffix=none \
-                                    --style=allman \
-                                    --indent=spaces=4 \
-                                    --indent-classes \
-                                    --indent-namespaces \
-                                    --pad-oper \
-                                    --pad-header \
-                                    --pad-comma \
-                                    --add-brackets \
-                                    --align-pointer=type \
-                                    --align-reference=name \
-                                    --min-conditional-indent=0 \
-                                    --lineend=linux \
-                                    --max-code-length=80 \
-                                    --max-continuation-indent=60"
+#-------------------------------------------------------------------------------
+# Show usage information
+#-------------------------------------------------------------------------------
+ARGUMENT=${1:-}
 
-ASTYLE_SETTINGS_LINUX_KERNEL_SPACE="--style=1tbs \
-                                    --indent=tab \
-                                    --align-pointer=name \
-                                    --add-brackets \
-                                    --max-code-length=80"
+if [ "${ARGUMENT}" = "--help" ]; then
 
-# Alter this line to change configuration
-ASTYLE_PARAMETERS=${ASTYLE_SETTINGS_LINUX_USER_SPACE}
+    USAGE_INFO="Usage: $(basename $0) [--help | [FILE]...]
+    --help      Show usage information
+    FILEs       List of FILEs to be analyzed. If the script is run without any
+                FILEs the new / modified files compared with the master branch
+                will be analysed."
 
-if [ ! -z "$1" ] && [ $1 = "--help" ]; then
-    echo "If you run the script without arguments then the files which are new or modified since the creation of the branch will be checked."
-    echo "Otherwise you can use the argument list of this script to specify the files you want to check."
-    echo "e.g.: ./astyle_check.sh \`git status -s | cut -c4- | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$'\`"
+    echo "${USAGE_INFO}"
     exit 0
+
 fi
 
-ASTYLE=astyle
+echo "Execute $(basename $0) in:"
+echo $(pwd)
 
-case $(${ASTYLE} --version 2> /dev/null) in
-  Artistic*)
+#-------------------------------------------------------------------------------
+# Define astyle command and options
+#-------------------------------------------------------------------------------
+ASTYLE_CMD=astyle
+
+ASTYLE_OPTIONS="--suffix=none \
+                --style=allman \
+                --indent=spaces=4 \
+                --indent-classes \
+                --indent-namespaces \
+                --pad-oper \
+                --pad-header \
+                --pad-comma \
+                --add-brackets \
+                --align-pointer=type \
+                --align-reference=name \
+                --min-conditional-indent=0 \
+                --lineend=linux \
+                --max-code-length=80 \
+                --max-continuation-indent=60"
+
+#-------------------------------------------------------------------------------
+# Check if astyle is available
+#-------------------------------------------------------------------------------
+case $(${ASTYLE_CMD} --version 2> /dev/null) in
+
+  "Artistic Style Version"*)
       ;;
-  default)
-      echo "Did not find astyle, please install it before continuing."
+
+  *)
+      echo "ERROR: ${ASTYLE_CMD} was not found."
       exit 1
       ;;
+
 esac
 
-RETVAL=0
-files=$@
+#-------------------------------------------------------------------------------
+# Collect files to be analysed
+#-------------------------------------------------------------------------------
+FILES=$@
 
-if [ -z "$files" ]; then
+if [ -z "$FILES" ]; then
 
-    # check any modified or new files. Note that there are many ways to get a
-    # list of changes, but all have subtle differents. We are interested in
-    # files from the current module only and don't care about submodules, so
-    # the current command works good enough. If we need the changed submodules
-    # included also then "git status --porcelain=v1 | cut -c4-" is the
-    # better choice. However, there is no command line option available that
-    # dives into the submodule and list the actualy files with changes.
-    files=$(git ls-files --modified --others | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
+    # Find all modified and new files of the current submodule.
+    # NOTE: This is only relevant for local usage with un-committed changes.
+    FILES=$(git ls-files --modified --others)
 
-    # check all file that have been create or modified since branch creation
-    files+=" "$(git diff-index --diff-filter=ACMR --name-only -r --cached origin/master | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
+    # Insert newline.
+    FILES+=$'\n'
+
+    # Find all added, changed, modified and renamed files compared with the
+    # branch origin/master.
+    FILES+=$(git diff-index --cached --diff-filter=ACMR --ignore-submodules \
+        --name-only origin/master)
+
+    # Filter for source code files.
+    FILES=$(echo ${FILES} | xargs -n1 | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
+
+    # Sort and remove duplicates.
+    FILES=$(echo ${FILES} | xargs -n1 | sort -u)
 
 fi
 
+#-------------------------------------------------------------------------------
+# Analyse files with astyle
+#-------------------------------------------------------------------------------
+RETVAL=0
 
-# sort and remove duplicates
-files=$(echo ${files} | xargs -n1 | sort -u | xargs)
+for IN_FILE in ${FILES}; do
 
-for file in ${files}; do
-    OUT_FILE="${file}.astyle"
+    OUT_FILE="${IN_FILE}.astyle"
 
-    ${ASTYLE} ${ASTYLE_PARAMETERS} <${file} >${OUT_FILE}
-    diff ${file} ${file}.astyle > /dev/null
-    if [ $? -ne 0 ]; then
+    # run astyle on infile and create outfile
+    ${ASTYLE_CMD} ${ASTYLE_OPTIONS} <${IN_FILE} >${OUT_FILE}
+
+    # compare files to detect issues (and avoid exit on command error)
+    ISSUE_FOUND=false
+    diff ${IN_FILE} ${OUT_FILE} > /dev/null || ISSUE_FOUND=true
+
+    if [ ${ISSUE_FOUND} = true ]; then
+
+        # return an error if at least one difference / issue was found
         RETVAL=1
-        echo "astyle error: ${file}"
-        # what does this do ???
-        ${ASTYLE} ${ASTYLE_PARAMETERS} ${OUT_FILE}
+        echo "astyle issue: ${OUT_FILE}"
+
     else
-        # everything ok, delete astyle file
+
+        # delete outfile if no difference / issue was found
         rm ${OUT_FILE}
+
     fi
+
 done
 
 exit $RETVAL
