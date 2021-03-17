@@ -18,23 +18,52 @@
 # produce a reliable result) but not afterwards (to support fixing the issues).
 #-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+# Show usage information
+#-------------------------------------------------------------------------------
+ARGUMENT=${1:-}
+
+if [ "${ARGUMENT}" = "--help" ]; then
+
+    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified]
+    --help      Show usage information.
+    --all       Call astyle scripts with --all.
+    --modified  Call astyle scripts with --modified which is the default if no
+                argument is passed."
+
+    echo "${USAGE_INFO}"
+    exit 0
+
+fi
+
 echo "---"
-echo "Execute astyle check in:"
+echo "Execute $(basename $0) in:"
 echo $(pwd)
 echo "-"
+
+#-------------------------------------------------------------------------------
+# Find and execute astyle scripts
+#-------------------------------------------------------------------------------
+ASTYLE_SCRIPT_ARGUMENT="--modified"
+
+if [ "${ARGUMENT}" = "--all" ]; then
+    ASTYLE_SCRIPT_ARGUMENT="--all"
+fi
 
 # remove previously existing astyle files
 find . -name '*.astyle' -exec rm -v {} \;
 
 # find and execute astyle checks
-find . -name 'astyle_check.sh' -execdir {} \;
+find . -name 'astyle_check.sh' -execdir {} ${ASTYLE_SCRIPT_ARGUMENT} \;
 
 # find all created astyle files
 FILES=$(find . -name '*.astyle')
 
 echo "-"
 
-# check if any astyle files have been created
+#-------------------------------------------------------------------------------
+# Check if any astyle files have been created
+#-------------------------------------------------------------------------------
 if [ ! -z "${FILES}" ]; then
     echo "ERROR: astyle issues found."
     echo "-"
