@@ -7,10 +7,11 @@
 #-------------------------------------------------------------------------------
 # This script will run astyle with a set of defined options on a list of files.
 #
-# The list of files can be passed as arguments. If no arguments are passed the
-# script uses git to find all new or modified source files of the submodule it
-# is located in. Since the git commands have to be executed within the submodule
-# the script changes the working directory.
+# The source files can be passed as arguments. Otherwise the script uses git to
+# find either all new or modified source files (default or --modified) or all
+# source files (--all) of the submodule it is located in. Since the git commands
+# have to be executed within the submodule the script changes the working
+# directory.
 #
 # The astyle analysis will generate an *.astyle file for each input file. If
 # astyle did some correction this means that an astyle issue was found. In this
@@ -28,11 +29,12 @@ ARGUMENT=${1:-}
 
 if [ "${ARGUMENT}" = "--help" ]; then
 
-    USAGE_INFO="Usage: $(basename $0) [--help | [FILE]...]
-    --help      Show usage information
-    FILEs       List of FILEs to be analyzed. If the script is run without any
-                FILEs the new / modified files compared with the master branch
-                will be analysed."
+    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified | [FILE]...]
+    --help      Show usage information.
+    --all       Analyse all source files in current submodule.
+    --modified  Analyse new or modified source files in current submodule which
+                is the default if no argument is passed.
+    FILEs       List of FILEs to be analyzed."
 
     echo "${USAGE_INFO}"
     exit 0
@@ -81,29 +83,45 @@ esac
 #-------------------------------------------------------------------------------
 # Collect files to be analysed
 #-------------------------------------------------------------------------------
-FILES=$@
+case ${ARGUMENT} in
 
-if [ -z "$FILES" ]; then
+    "" | "--modified")
+        # Find all added, changed, modified and renamed files compared with the
+        # branch origin/master.
+        FILES=$(git diff-index --cached --diff-filter=ACMR --ignore-submodules \
+            --name-only origin/master)
 
-    # Find all modified and new files of the current submodule.
-    # NOTE: This is only relevant for local usage with un-committed changes.
-    FILES=$(git ls-files --modified --others)
+        # Insert newline.
+        FILES+=$'\n'
 
-    # Insert newline.
-    FILES+=$'\n'
+        # Find all modified and new files of the current submodule.
+        # NOTE: This is only relevant for local usage with un-committed changes.
+        FILES+=$(git ls-files --modified --others)
+        ;;
 
-    # Find all added, changed, modified and renamed files compared with the
-    # branch origin/master.
-    FILES+=$(git diff-index --cached --diff-filter=ACMR --ignore-submodules \
-        --name-only origin/master)
+    "--all")
+        # Find all files of the current submodule.
+        FILES=$(git ls-files)
 
-    # Filter for source code files.
-    FILES=$(echo ${FILES} | xargs -n1 | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
+        # Insert newline.
+        FILES+=$'\n'
 
-    # Sort and remove duplicates.
-    FILES=$(echo ${FILES} | xargs -n1 | sort -u)
+        # Find all new files of the current submodule.
+        # NOTE: This is only relevant for local usage with un-committed changes.
+        FILES+=$(git ls-files --others)
+        ;;
 
-fi
+    *)
+        FILES=$@
+        ;;
+
+esac
+
+# Filter for source code files.
+FILES=$(echo ${FILES} | xargs -n1 | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
+
+# Sort and remove duplicates.
+FILES=$(echo ${FILES} | xargs -n1 | sort -u)
 
 #-------------------------------------------------------------------------------
 # Analyse files with astyle
