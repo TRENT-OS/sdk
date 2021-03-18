@@ -5,11 +5,11 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# This script will search for astyle_check.sh scripts in all sub-folders of the
-# current working directory and execute them.
+# This script will search for astyle_options_submodule files in all sub-folders
+# of the current working directory and execute the astyle_check_submodule.sh
+# script there.
 #
-# Those astyle_check.sh scripts should be added to all relevant submodules. They
-# should generate *.astyle files if there are any astyle issues.
+# Those astyle option files should be added to all relevant submodules.
 #
 # By checking if *.astyle files exist this script determines if there is at
 # least one astyle issue and returns an error code that can be used by CI.
@@ -53,20 +53,36 @@ fi
 # remove previously existing astyle files
 find . -name '*.astyle' -exec rm -v {} \;
 
-# find and execute astyle checks
-find . -name 'astyle_check.sh' -execdir {} ${ASTYLE_SCRIPT_ARGUMENT} \;
-
-# find all created astyle files
-FILES=$(find . -name '*.astyle')
-
 echo "-"
+
+# find submodules with astyle options
+PROJECT_LIST=$(find . -name 'astyle_options_submodule')
+
+# execute astyle in submodules
+for PROJECT in ${PROJECT_LIST}; do
+
+    SDK_DIR=$(realpath $(dirname $0)) # absolute in case executed elsewhere
+    PROJECT_DIR=$(dirname ${PROJECT})
+
+    # execute astyle in project directory (and avoid exit on error code)
+    (
+        cd ${PROJECT_DIR}
+        ${SDK_DIR}/astyle_check_submodule.sh ${ASTYLE_SCRIPT_ARGUMENT} || true
+    )
+
+    echo "-"
+
+done
 
 #-------------------------------------------------------------------------------
 # Check if any astyle files have been created
 #-------------------------------------------------------------------------------
+# find all created astyle files
+FILES=$(find . -name '*.astyle')
+
 if [ ! -z "${FILES}" ]; then
     echo "ERROR: astyle issues found."
-    echo "-"
+    echo
     echo "Check the following files:"
 
     for FILE in ${FILES}; do

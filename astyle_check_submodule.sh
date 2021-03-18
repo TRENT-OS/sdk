@@ -5,13 +5,13 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# This script will run astyle with a set of defined options on a list of files.
+# This script will run astyle with the options from the astyle_options_submodule
+# file on source files of the current submodule.
 #
-# The source files can be passed as arguments. Otherwise the script uses git to
-# find either all new or modified source files (default or --modified) or all
-# source files (--all) of the submodule it is located in. Since the git commands
-# have to be executed within the submodule the script changes the working
-# directory.
+# The script uses git to find either new or modified source files (default or
+# --modified) or all source files (--all) of the submodule it is located
+# in. Alternatively source files can be passed as arguments. The scripts has to
+# be executed within the same folder the astyle options file is located in.
 #
 # The astyle analysis will generate an *.astyle file for each input file. If
 # astyle did some correction this means that an astyle issue was found. In this
@@ -20,8 +20,6 @@
 # If there is at least one astyle issue, the script will return an error code.
 #-------------------------------------------------------------------------------
 
-cd "$(dirname "$0")"
-
 #-------------------------------------------------------------------------------
 # Show usage information
 #-------------------------------------------------------------------------------
@@ -29,7 +27,7 @@ ARGUMENT=${1:-}
 
 if [ "${ARGUMENT}" = "--help" ]; then
 
-    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified | [FILE]...]
+    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified]
     --help      Show usage information.
     --all       Analyse all source files in current submodule.
     --modified  Analyse new or modified source files in current submodule which
@@ -45,36 +43,15 @@ echo "Execute $(basename $0) in:"
 echo $(pwd)
 
 #-------------------------------------------------------------------------------
-# Define astyle command and options
-#-------------------------------------------------------------------------------
-ASTYLE_CMD=astyle
-
-ASTYLE_OPTIONS="--suffix=none \
-                --style=allman \
-                --indent=spaces=4 \
-                --indent-classes \
-                --indent-namespaces \
-                --pad-oper \
-                --pad-header \
-                --pad-comma \
-                --add-brackets \
-                --align-pointer=type \
-                --align-reference=name \
-                --min-conditional-indent=0 \
-                --lineend=linux \
-                --max-code-length=80 \
-                --max-continuation-indent=60"
-
-#-------------------------------------------------------------------------------
 # Check if astyle is available
 #-------------------------------------------------------------------------------
-case $(${ASTYLE_CMD} --version 2> /dev/null) in
+case $(astyle --version 2> /dev/null) in
 
   "Artistic Style Version"*)
       ;;
 
   *)
-      echo "ERROR: ${ASTYLE_CMD} was not found."
+      echo "ERROR: astyle was not found."
       exit 1
       ;;
 
@@ -132,8 +109,9 @@ for IN_FILE in ${FILES}; do
 
     OUT_FILE="${IN_FILE}.astyle"
 
-    # run astyle on infile and create outfile
-    ${ASTYLE_CMD} ${ASTYLE_OPTIONS} <${IN_FILE} >${OUT_FILE}
+    # run astyle with options file on infile and create outfile
+    astyle --options=astyle_options_submodule --project=none \
+        <${IN_FILE} >${OUT_FILE}
 
     # compare files to detect issues (and avoid exit on command error)
     ISSUE_FOUND=false
