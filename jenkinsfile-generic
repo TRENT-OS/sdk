@@ -360,7 +360,7 @@ pipeline {
                     }
                     steps {
                         print_step_info env.STAGE_NAME
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             sh 'src/sdk/check_static_analyzer.sh '
                         }
                     }
