@@ -506,6 +506,7 @@ pipeline {
                                                 '--proxy=../src/sdk/bin/proxy_app,TCP',
                                                 '--target=' + PLATFORM,
                                                 '--system_image=../build/images/os_image.elf',
+                                                '--resource_dir=../src/sdk/resources',
                                                 '--junitxml=../test_results.xml',
                                                 '--tc-file=../src/test/tests/platform_config/default.ini',
                                                 '--tc-file=../src/test/tests/platform_config/' + PLATFORM + '.ini',
