@@ -321,10 +321,6 @@ macro(os_sdk_build system_project_dir)
 
     set(SEL4_CONFIG_DEFAULT_ADVANCED ON)
 
-    set(RELEASE OFF CACHE BOOL "Performance optimized build")
-    set(SIMULATION ON CACHE BOOL "Try and use simulable features")
-    set(VERIFICATION OFF CACHE BOOL "Only verification friendly kernel features")
-
     # we need one scheduling domain only
     set(KernelNumDomains 1 CACHE STRING "")
 
