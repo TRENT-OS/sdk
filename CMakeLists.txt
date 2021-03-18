@@ -8,6 +8,15 @@ cmake_minimum_required(VERSION 3.17)
 
 project(system)
 
+if (NOT CMAKE_BUILD_TYPE)
+    message(FATAL_ERROR "No build type selected!")
+elseif (
+    NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
+
+    message(
+        FATAL_ERROR "The build type '${CMAKE_BUILD_TYPE}' is not supported.")
+endif()
+
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
