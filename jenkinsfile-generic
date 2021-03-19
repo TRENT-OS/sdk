@@ -291,14 +291,14 @@ pipeline {
     stages {
 
         //----------------------------------------------------------------------
-        stage('init') {
+        stage('Init') {
             steps {
                 set_build_info()
             }
         }
 
         //----------------------------------------------------------------------
-        stage('Build_stage') {
+        stage('Build Stage') {
 
             agent { label "build" }
 
@@ -348,7 +348,7 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('Static analyzer') {
+                stage('static_analyzer') {
                     agent {
                         docker {
                             reuseNode true
@@ -396,7 +396,7 @@ pipeline {
         }
 
         //----------------------------------------------------------------------
-        stage('Test_stage') {
+        stage('Test Stage') {
 
             agent { label "test" }
 
@@ -426,7 +426,7 @@ pipeline {
                 }
 
                 //----------------------------------------------------------------------
-                stage('test-doc') {
+                stage('test_doc') {
                     agent {
                         docker {
                             reuseNode true
