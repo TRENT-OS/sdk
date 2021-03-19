@@ -411,6 +411,11 @@ function build_sdk_tool()
         # ensure SDK_SRC_DIR is an absolute path, so it can be found even if we
         # change folders during the build process
         -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
+
+        # SDK tools' build type is release with debugging info so that binaries
+        # are at the same time optimized and debug-able, what might be useful
+        # when analyzing tools related issues.
+        -D CMAKE_BUILD_TYPE=RelWithDebInfo
     )
     cmake_check_init_and_build ${BUILD_PARAMS[@]}
 }
