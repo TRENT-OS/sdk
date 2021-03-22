@@ -100,6 +100,9 @@ FILES=$(echo ${FILES} | xargs -n1 | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
 # Sort and remove duplicates.
 FILES=$(echo ${FILES} | xargs -n1 | sort -u)
 
+# Exclude alle files below a folder "3rdParty/".
+FILES=$(echo ${FILES} | xargs -n1 | grep -v '3rdParty\/')
+
 #-------------------------------------------------------------------------------
 # Analyse files with astyle
 #-------------------------------------------------------------------------------
