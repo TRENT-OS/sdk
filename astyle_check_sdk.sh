@@ -61,11 +61,11 @@ PROJECT_LIST=$(find . -name 'astyle_options_submodule')
 # execute astyle in submodules
 for PROJECT in ${PROJECT_LIST}; do
 
-    SDK_DIR=$(realpath $(dirname $0)) # absolute in case executed elsewhere
-    PROJECT_DIR=$(dirname ${PROJECT})
-
     # execute astyle in project directory (and avoid exit on error code)
     (
+        SDK_DIR=$(realpath $(dirname $0)) # absolute in case executed elsewhere
+        PROJECT_DIR=$(dirname ${PROJECT})
+
         cd ${PROJECT_DIR}
         ${SDK_DIR}/astyle_check_submodule.sh ${ASTYLE_SCRIPT_ARGUMENT} || true
     )
