@@ -1,10 +1,10 @@
 #!/bin/bash -ue
 
-#
+#-------------------------------------------------------------------------------
 # Copyright (C) 2021, HENSOLDT Cyber GmbH
-#
+#-------------------------------------------------------------------------------
 
-#
+#-------------------------------------------------------------------------------
 # This script will search for astyle_check.sh scripts in all sub-folders of the
 # current working directory and execute them.
 #
@@ -14,9 +14,9 @@
 # By checking if *.astyle files exist this script determines if there is at
 # least one astyle issue and returns an error code that can be used by CI.
 #
-# NOTE: Generated *.astlye files are only removed prior to the execution (to
+# NOTE: Generated *.astyle files are only removed prior to the execution (to
 # produce a reliable result) but not afterwards (to support fixing the issues).
-#
+#-------------------------------------------------------------------------------
 
 echo "---"
 echo "Execute astyle check in:"
