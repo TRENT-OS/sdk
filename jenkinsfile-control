@@ -561,7 +561,7 @@ def do_jobs_for_test_systems(branch, testConfig)
     // workspace, so we have to allocate a node
 
     def cnt = sub_jobs_ctx.jobStages.size()
-    def was_buiĺd_error = false
+    def was_build_error = false
 
     node {
         stage('process_results') {
@@ -586,7 +586,7 @@ def do_jobs_for_test_systems(branch, testConfig)
                 }
 
                 def pkg_build = job_stage_ctx.build
-                was_buiĺd_error |= (!pkg_build) ||
+                was_build_error |= (!pkg_build) ||
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
 
@@ -625,7 +625,7 @@ def do_jobs_for_test_systems(branch, testConfig)
         }
     }
 
-    if (was_buiĺd_error)
+    if (was_build_error)
     {
         error('stage failed: run test systems')
     }
