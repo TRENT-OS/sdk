@@ -27,11 +27,11 @@
 #-------------------------------------------------------------------------------
 # Show usage information
 #-------------------------------------------------------------------------------
-ARGUMENT=${1:-}
+ARGUMENT=${1:---modified}
 
 if [ "${ARGUMENT}" = "--help" ]; then
 
-    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified]
+    USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified | FILEs]
     --help      Show usage information.
     --all       Analyse all source files in current submodule.
     --modified  Analyse new or modified source files in current submodule which
@@ -66,7 +66,7 @@ esac
 #-------------------------------------------------------------------------------
 case ${ARGUMENT} in
 
-    "" | "--modified")
+    "--modified")
         # Find all added, changed, modified and renamed files compared with the
         # branch origin/master.
         FILES=$(git diff-index --cached --diff-filter=ACMR --ignore-submodules \

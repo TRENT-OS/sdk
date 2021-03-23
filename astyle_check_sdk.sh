@@ -22,9 +22,12 @@
 #-------------------------------------------------------------------------------
 # Show usage information
 #-------------------------------------------------------------------------------
-ARGUMENT=${1:-}
+ARGUMENT=${1:---modified}
 
-if [ "${ARGUMENT}" = "--help" ]; then
+
+if [ "${ARGUMENT}" = "--help" ] || \
+    [ "${ARGUMENT}" != "--all" ] && \
+    [ "${ARGUMENT}" != "--modified" ]; then
 
     USAGE_INFO="Usage: $(basename $0) [--help | --all | --modified]
     --help      Show usage information.
@@ -45,11 +48,6 @@ echo "-"
 #-------------------------------------------------------------------------------
 # Find and execute astyle scripts
 #-------------------------------------------------------------------------------
-ASTYLE_SCRIPT_ARGUMENT="--modified"
-
-if [ "${ARGUMENT}" = "--all" ]; then
-    ASTYLE_SCRIPT_ARGUMENT="--all"
-fi
 
 # remove previously existing astyle files
 find . -name '*.astyle' -exec rm -v {} \;
@@ -68,7 +66,7 @@ for PROJECT in ${PROJECT_LIST}; do
         PROJECT_DIR=$(dirname ${PROJECT})
 
         cd ${PROJECT_DIR}
-        ${SDK_DIR}/astyle_check_submodule.sh ${ASTYLE_SCRIPT_ARGUMENT} || true
+        ${SDK_DIR}/astyle_check_submodule.sh ${ARGUMENT} || true
     )
 
     echo "-"
