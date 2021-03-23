@@ -68,7 +68,7 @@ function copy_files_via_tar()
     #       --exclude='.git' \
     #       --exclude='.gitmodules' \
     #       --exclude='.gitignore' \
-    #       --exclude 'astyle_options_submodule' \
+    #       --exclude 'astyle_prepare_submodule.sh' \
     #       ${SDK_SRC_DIR}/ \
     #       ${OUT_DIR}/
     #
@@ -152,11 +152,12 @@ function collect_sdk_sources()
     done
 
     local SDK_EXCLUDES=(
-        # remove all astyle options files
-        astyle_options_submodule
+        # remove all astyle prepare scripts
+        astyle_prepare_submodule.sh
         # remove files in the sandbox root folder
         ./astyle_check_sdk.sh
         ./astyle_check_submodule.sh
+        ./astyle_options_default
         ./build-sdk.sh
         ./jenkinsfile-control
         ./jenkinsfile-generic
@@ -256,7 +257,7 @@ function collect_sdk_demos()
 
         local DEMO_EXCLUDES=(
             --exclude-vcs
-            --exclude 'astyle_options_submodule'
+            --exclude 'astyle_prepare_submodule.sh'
             --exclude './README.md'
         )
 

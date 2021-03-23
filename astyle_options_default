@@ -3,8 +3,10 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# This options file specifies the astyle options used to analyze the current
-# submodule.
+# This default options file specifies the default astyle options used for the
+# astyle checks. The default options might be overwritten with specific options
+# within the submodules.
+#
 # WARNING: Filename astylerc is not used because this can also be found in seL4.
 #-------------------------------------------------------------------------------
 

@@ -5,13 +5,17 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# This script will run astyle with the options from the astyle_options_submodule
-# file on source files of the current submodule.
+# This script will run astyle with the defined astyle options.
 #
-# The script uses git to find either new or modified source files (default or
+# Each submodule to be checked contains a astyle_prepare_submodule.sh script
+# that sets a variable ASTYLE_OPTIONS_SUBMODULE. The variable is usually empty
+# but can overwrite astyle options defined in the default options file of the
+# sandbox (astyle_options_default).
+#
+# This script uses git to find either new or modified source files (default or
 # --modified) or all source files (--all) of the submodule it is located
-# in. Alternatively source files can be passed as arguments. The scripts has to
-# be executed within the same folder the astyle options file is located in.
+# in. Alternatively source files can be passed as arguments. This script has to
+# be executed within the same folder the prepare submodule script is located in.
 #
 # The astyle analysis will generate an *.astyle file for each input file. If
 # astyle did some correction this means that an astyle issue was found. In this
@@ -108,13 +112,20 @@ FILES=$(echo ${FILES} | xargs -n1 | grep -v '3rdParty\/')
 #-------------------------------------------------------------------------------
 RETVAL=0
 
+SDK_DIR=$(realpath $(dirname $0))
+
 for IN_FILE in ${FILES}; do
 
     OUT_FILE="${IN_FILE}.astyle"
 
-    # run astyle with options file on infile and create outfile
-    astyle --options=astyle_options_submodule --project=none \
-        <${IN_FILE} >${OUT_FILE}
+    # source submodule options ASTYLE_OPTIONS_SUBMODULE
+    . ./astyle_prepare_submodule.sh
+
+    # run astyle with project/default options file on infile and create outfile
+    astyle ${ASTYLE_OPTIONS_SUBMODULE} \
+        --options=${SDK_DIR}/astyle_options_default \
+        <${IN_FILE} \
+        >${OUT_FILE}
 
     # compare files to detect issues (and avoid exit on command error)
     ISSUE_FOUND=false

@@ -5,11 +5,12 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# This script will search for astyle_options_submodule files in all sub-folders
-# of the current working directory and execute the astyle_check_submodule.sh
+# This script will search for astyle_prepare_submodule.sh scripts in all sub-
+# folders of the working directory and execute the astyle_check_submodule.sh
 # script there.
 #
-# Those astyle option files should be added to all relevant submodules.
+# To add a submodule to the astyle check the astyle_prepare_submodule.sh script
+# has to be added to the submodule.
 #
 # By checking if *.astyle files exist this script determines if there is at
 # least one astyle issue and returns an error code that can be used by CI.
@@ -55,8 +56,8 @@ find . -name '*.astyle' -exec rm -v {} \;
 
 echo "-"
 
-# find submodules with astyle options
-PROJECT_LIST=$(find . -name 'astyle_options_submodule')
+# find submodules with prepare submodule script
+PROJECT_LIST=$(find . -name 'astyle_prepare_submodule.sh')
 
 # execute astyle in submodules
 for PROJECT in ${PROJECT_LIST}; do
