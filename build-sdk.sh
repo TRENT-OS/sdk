@@ -157,7 +157,6 @@ function collect_sdk_sources()
         # remove files in the sandbox root folder
         ./astyle_check_sdk.sh
         ./build-sdk.sh
-        ./check_static_analyzer.sh
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
