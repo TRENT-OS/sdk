@@ -348,6 +348,31 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
+                stage('static_analyzer') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        do_checkout(
+                            'ta/seos_tests',
+                            BRANCH_OR_COMMIT,
+                            'src/test/tests')
+
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            sh 'src/test/tests/cppcheck/check_static_analyzer.sh build/compile_commands.json src/sdk'
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
                 stage('stash_cleanup') {
                     steps {
                         print_step_info(env.STAGE_NAME)
@@ -433,26 +458,6 @@ pipeline {
                                     )
                                 }
                             }
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
-                stage('static_analyzer') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            sh 'src/test/tests/cppcheck/check_static_analyzer.sh build/compile_commands.json src/sdk'
                         }
                     }
                 }
