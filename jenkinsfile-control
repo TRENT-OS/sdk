@@ -697,6 +697,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -770,6 +771,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -831,6 +833,7 @@ pipeline {
                     agent {
                         docker {
                             label "build"
+                            reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
