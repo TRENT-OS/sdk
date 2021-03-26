@@ -73,7 +73,7 @@ case ${ARGUMENT} in
             --name-only origin/master)
 
         # Insert newline.
-        FILES+='\n'
+        FILES+=$'\n'
 
         # Find all modified and new files of the current submodule.
         # NOTE: This is only relevant for local usage with un-committed changes.
@@ -85,7 +85,7 @@ case ${ARGUMENT} in
         FILES=$(git ls-files)
 
         # Insert newline.
-        FILES+='\n'
+        FILES+=$'\n'
 
         # Find all new files of the current submodule.
         # NOTE: This is only relevant for local usage with un-committed changes.
