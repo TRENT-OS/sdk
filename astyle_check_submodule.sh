@@ -48,48 +48,49 @@ echo "Execute $(basename $0) in: $(pwd)"
 #-------------------------------------------------------------------------------
 # Collect files to be analysed
 #-------------------------------------------------------------------------------
+
+# Will hold a list of files to be checked for style compliance.
+FILES=()
+
 case ${ARGUMENT} in
 
     "--modified")
-        # Find all added, changed, modified and renamed files compared with the
-        # branch origin/master.
-        FILES=$(git diff-index --cached --diff-filter=ACMR --ignore-submodules \
-            --name-only origin/master)
-
-        # Insert newline.
-        FILES+=$'\n'
-
-        # Find all modified and new files of the current submodule.
-        # NOTE: This is only relevant for local usage with un-committed changes.
-        FILES+=$(git ls-files --modified --others)
+        FILES=(
+            # Find all added, changed, modified and renamed files compared with
+            # the branch origin/master.
+            $(git diff-index --cached --diff-filter=ACMR --ignore-submodules \
+                  --name-only origin/master)
+            # Find all modified and new files of the current submodule. This is
+            # only relevant for local usage with un-committed changes.
+            $(git ls-files --modified --others)
+        )
         ;;
 
     "--all")
-        # Find all files of the current submodule.
-        FILES=$(git ls-files)
-
-        # Insert newline.
-        FILES+=$'\n'
-
-        # Find all new files of the current submodule.
-        # NOTE: This is only relevant for local usage with un-committed changes.
-        FILES+=$(git ls-files --others)
+        FILES=(
+            # Find all files of the current submodule.
+            $(git ls-files)
+            # Find all new files of the current submodule. This is only relevant
+            # for local usage with un-committed changes.
+            $(git ls-files --others)
+        )
         ;;
 
     *)
-        FILES=$@
+        FILES=( $@ )
         ;;
 
 esac
 
-# Filter for source code files.
-FILES=$(echo ${FILES} | xargs -n1 | grep -i '\.c$\|\.cpp$\|\.hpp$\|\.h$')
-
-# Sort and remove duplicates.
-FILES=$(echo ${FILES} | xargs -n1 | sort -u)
-
-# Exclude alle files below a folder "3rdParty/".
-FILES=$(echo ${FILES} | xargs -n1 | grep -v '3rdParty\/')
+# Sort the list and remove any duplicates, exclude all files in "3rdParty/"
+# folders and pick only source code files for style analysis.
+FILES=(
+    $( printf -- '%s\n' "${FILES[@]}" \
+       | sort -u \
+       | grep -v '3rdParty\/' \
+       | grep -i '\.c$\|\.h$\|\.cpp$\|\.hpp$' \
+    )
+)
 
 #-------------------------------------------------------------------------------
 # Analyse files with astyle
@@ -116,7 +117,7 @@ else
     fi
 fi
 
-for IN_FILE in ${FILES}; do
+for IN_FILE in ${FILES[@]}; do
 
     OUT_FILE="${IN_FILE}.astyle"
 
