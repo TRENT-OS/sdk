@@ -481,6 +481,16 @@ pipeline {
 
                 //--------------------------------------------------------------
                 stage('test') {
+                    options {
+                        // Limit the time the test can run. This also catches
+                        // the cases where the (buggy) test framework doesn't
+                        // kill all threads and these threads keep it from
+                        // terminating. The longest test execution time seen
+                        // so far was 310 seconds for test_uart, so 420 seconds
+                        // looks like a good value to use for now.
+                        timeout(time: 420, unit: 'SECONDS')
+                   }
+
                     agent {
                         docker {
                             reuseNode true
@@ -509,36 +519,28 @@ pipeline {
                                     }
                                 }
 
-                                // It can happen that the test framework doesn't kill all threads
-                                // it started, and these threads keep this stage from finishing.
-                                // The highest test execution time in the last 10 integration runs
-                                // was 310 seconds for test_uart, so 420 seconds looks like a
-                                // good value to start from.
-                                timeout(time: 420, unit: 'SECONDS')
+                                withEnv(
+                                    ['PYTHONPATH=../'+TEST_COMMON_DIR+':../'+TESTS_DIR])
                                 {
-                                    withEnv(
-                                        ['PYTHONPATH=../'+TEST_COMMON_DIR+':../'+TESTS_DIR])
-                                    {
-                                        run_app(
-                                            'python3',
-                                            [
-                                                '-B',
-                                                '-m', 'pytest',
-                                                '-p', 'no:cacheprovider',
-                                                '-v',
-                                                // '--capture=no', // show printf() from python scripts in console
-                                                // '--print_logs', // print system logs in console
-                                                '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
-                                                '--target=' + PLATFORM,
-                                                '--system_image=../build/images/os_image.elf',
-                                                '--resource_dir=../'+SDK_DIR+'/resources',
-                                                '--junitxml=../test_results.xml',
-                                                '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
-                                                '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
-                                                '../'+TESTS_DIR+'/'+TEST_SCRIPT
-                                            ]
-                                        )
-                                    }
+                                    run_app(
+                                        'python3',
+                                        [
+                                            '-B',
+                                            '-m', 'pytest',
+                                            '-p', 'no:cacheprovider',
+                                            '-v',
+                                            // '--capture=no', // show printf() from python scripts in console
+                                            // '--print_logs', // print system logs in console
+                                            '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
+                                            '--target=' + PLATFORM,
+                                            '--system_image=../build/images/os_image.elf',
+                                            '--resource_dir=../'+SDK_DIR+'/resources',
+                                            '--junitxml=../test_results.xml',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                            '../'+TESTS_DIR+'/'+TEST_SCRIPT
+                                        ]
+                                    )
                                 }
                             }
                         }
