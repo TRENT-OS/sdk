@@ -139,6 +139,40 @@ def run_shell_script(
 
 
 //------------------------------------------------------------------------------
+def run_python_package(
+    python_params,
+    python_paths,
+    python_package, // can't use 'package', it's a reserved groovy keyword
+    package_params = []
+) {
+    def env = []
+    def params = []
+
+    if (python_paths)
+    {
+       env += ['PYTHONPATH=' + python_paths.join(':')]
+    }
+
+    if (python_params)
+    {
+        params += python_params
+    }
+
+    params += ['-m', python_package]
+
+    if (package_params)
+    {
+        params += package_params
+    }
+
+    withEnv(env)
+    {
+        run_app('python3', params)
+    }
+}
+
+
+//------------------------------------------------------------------------------
 def do_git_checkout(
     repo,
     branch,
@@ -462,18 +496,11 @@ pipeline {
                         {
                             dir('test-doc')
                             {
-                                withEnv(
-                                    ['PYTHONPATH=../'+TEST_COMMON_DIR+':../'+TESTS_DIR])
-                                {
-                                    run_app(
-                                        'python3',
-                                        [
-                                            '-B',
-                                            '-m', 'pydoc',
-                                            '-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT
-                                        ]
-                                    )
-                                }
+                                run_python_package(
+                                    ['-B',],
+                                    ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                    'pydoc',
+                                    ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT] )
                             }
                         }
                     }
@@ -519,29 +546,25 @@ pipeline {
                                     }
                                 }
 
-                                withEnv(
-                                    ['PYTHONPATH=../'+TEST_COMMON_DIR+':../'+TESTS_DIR])
-                                {
-                                    run_app(
-                                        'python3',
-                                        [
-                                            '-B',
-                                            '-m', 'pytest',
-                                            '-p', 'no:cacheprovider',
-                                            '-v',
-                                            // '--capture=no', // show printf() from python scripts in console
-                                            // '--print_logs', // print system logs in console
-                                            '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
-                                            '--target=' + PLATFORM,
-                                            '--system_image=../build/images/os_image.elf',
-                                            '--resource_dir=../'+SDK_DIR+'/resources',
-                                            '--junitxml=../test_results.xml',
-                                            '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
-                                            '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
-                                            '../'+TESTS_DIR+'/'+TEST_SCRIPT
-                                        ]
-                                    )
-                                }
+                                run_python_package(
+                                    ['-B',],
+                                    ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                    'pytest',
+                                    [
+                                        '-p', 'no:cacheprovider',
+                                        '-v',
+                                        // '--capture=no', // show printf() from python scripts in console
+                                        // '--print_logs', // print system logs in console
+                                        '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
+                                        '--target=' + PLATFORM,
+                                        '--system_image=../build/images/os_image.elf',
+                                        '--resource_dir=../'+SDK_DIR+'/resources',
+                                        '--junitxml=../test_results.xml',
+                                        '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
+                                        '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                        '../'+TESTS_DIR+'/'+TEST_SCRIPT
+                                    ]
+                                )
                             }
                         }
                     }
