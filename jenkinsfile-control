@@ -776,6 +776,10 @@ pipeline {
                     }
                     steps {
                         print_step_info env.STAGE_NAME
+
+                        // Continue with the SDK package build even on style
+                        // errors, but mark the stage and the build as failed
+                        // already.
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             run_shell_script('scm-src/astyle_check_sdk.sh')
                         }

@@ -366,6 +366,9 @@ pipeline {
                             BRANCH_OR_COMMIT,
                             'src/test/tests')
 
+                        // Continue with the test run even on static analyzer
+                        // errors, but mark the stage and the build as failed
+                        // even if the tests are successful.
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             sh 'src/test/tests/cppcheck/check_static_analyzer.sh build/compile_commands.json src/sdk'
                         }
