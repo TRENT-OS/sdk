@@ -512,7 +512,7 @@ def do_jobs_for_test_systems(branch, testConfig)
             if ( filter == null || filter.any{ it == platform} ){
                 def job_stage_ctx = [
                     // do not try storing "sub_jobs_ctx" in here, this ends in a
-                    // stragen recursion when transforming the maps/lists
+                    // strange recursion when transforming the maps/lists
                     test_ctx:     test_ctx,
                     platform:     platform,
                     system_pkg:   SYSTEM_PACKAGE,
