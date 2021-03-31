@@ -37,14 +37,129 @@ if [ "${ARGUMENT}" = "--help" ] || \
 
     echo "${USAGE_INFO}"
     exit 0
-
 fi
 
-echo "Execute $(basename $0) in: $(pwd)"
+#-------------------------------------------------------------------------------
+# Run style check in a folder.
+#-------------------------------------------------------------------------------
+function run_astyle_check()
+{
+    local FOLDER=$1
+     # Need to make it an absolute path, as we change the current working dir.
+    local ASTYLE_DEFAULTS_FILE=$(realpath $2)
+    # Optional parameter
+    local ARGUMENT=${3:-}
+    # Get rid of the first two parameters. If ARGUMENT does not match one from
+    # the values checks below we assume all additional parameters are file names
+    # given explicitly to be checked.
+    shift 2
+
+    # Run check in a sub shell, since we change the current working directory.
+    (
+        cd ${FOLDER}
+
+        # Source submodule options to get ASTYLE_OPTIONS_SUBMODULE. Ensure that
+        # the variable exist and is empty by default, so we don't have to worry
+        # later if the local config did not set it.
+        local ASTYLE_OPTIONS_SUBMODULE=""
+        local LOCAL_CONFIG_FILE=astyle_prepare_submodule.sh
+        if [ ! -f ${LOCAL_CONFIG_FILE} ]; then
+            echo "checking: ${FOLDER}"
+        else
+            # Ensure we source this with the current working directory set to
+            # the folder this is in, so any code in this file find the proper
+            # environment.
+            source ./${LOCAL_CONFIG_FILE}
+            if [ -z "${ASTYLE_OPTIONS_SUBMODULE}" ]; then
+                # Seems we have many config files that don't set anything and
+                # could be removed.
+                # echo "checking (local config empty): ${FOLDER}"
+                echo "checking: ${FOLDER}" #
+            else
+                echo "checking (with local config): ${FOLDER}"
+            fi
+        fi
+
+        case ${ARGUMENT} in
+
+            "--modified")
+                FILES=(
+                    # Find all added, changed, modified and renamed files
+                    # compared with the branch origin/master.
+                    $(git diff-index --cached --diff-filter=ACMR \
+                          --ignore-submodules --name-only origin/master)
+                    # Find all modified and new files of the current submodule.
+                    # This is only relevant for local usage with un-committed
+                    # changes.
+                    $(git ls-files --modified --others)
+                )
+                ;;
+
+            "--all")
+                FILES=(
+                    # Find all files of the current submodule.
+                    $(git ls-files)
+                    # Find all new files of the current submodule. This is only
+                    # relevant for local usage with un-committed changes.
+                    $(git ls-files --others)
+                )
+                ;;
+
+            *)
+                # Take all remaining parameters as file names. This works
+                # because above we've thrown away the parameters that control
+                # the behavior of this whole function.
+                FILES=( "$@" )
+                ;;
+
+        esac
+
+        # "3rdParty/" folders, pick only source code files for style analysis.
+        # grep will return an error if it found nothing, we have to swallow this
+        # error and just end up with an empty list then.
+        FILES=(
+            $( printf -- '%s\n' "${FILES[@]}" \
+               | sort -u \
+               | grep -v '3rdParty\/' \
+               | grep -i '\.c$\|\.h$\|\.cpp$\|\.hpp$' \
+               || true
+            )
+        )
+
+        # Analyse each file
+        for IN_FILE in "${FILES[@]}"; do
+
+            OUT_FILE="${IN_FILE}.astyle"
+
+            # Run astyle with project/default options file on IN_FILE and create
+            # OUT_FILE.
+            astyle \
+                ${ASTYLE_OPTIONS_SUBMODULE} \
+                --options=${ASTYLE_DEFAULTS_FILE} \
+                <${IN_FILE} \
+                >${OUT_FILE} \
+
+            # Compare files to detect if there are style issues. Delete the
+            # astyle file if there is no difference, otherwise print the file
+            # name. Since this runs in "bash -e" mode (exit on error), this
+            # "swallows" the dif return code and yields the return code from
+            # "rm" or "echo", which is 0 unless there is a serious problem.
+            diff ${IN_FILE} ${OUT_FILE} > /dev/null \
+                && rm ${OUT_FILE} \
+                || echo "  ${IN_FILE}"
+
+        done
+    )
+}
 
 #-------------------------------------------------------------------------------
 # Find and execute astyle scripts
 #-------------------------------------------------------------------------------
+
+echo "Execute $(basename $0) in: $(pwd)"
+
+# We assume this script is located in the SDK root folder
+SDK_DIR=$(dirname $0)
 
 # remove previously existing astyle files
 find . -name '*.astyle' -exec rm -v {} \;
@@ -52,35 +167,19 @@ find . -name '*.astyle' -exec rm -v {} \;
 # find submodules with prepare submodule script
 PROJECT_LIST=$(find . -name 'astyle_prepare_submodule.sh')
 
-# execute astyle in submodules
+# run astyle check in each project directory
 for PROJECT in ${PROJECT_LIST}; do
-
-    # execute astyle in project directory (and avoid exit on error code)
-    (
-        SDK_DIR=$(realpath $(dirname $0)) # absolute in case executed elsewhere
-        PROJECT_DIR=$(dirname ${PROJECT})
-
-        cd ${PROJECT_DIR}
-        ${SDK_DIR}/astyle_check_submodule.sh ${ARGUMENT} || true
-    )
+    run_astyle_check \
+        "$(dirname ${PROJECT})" \
+        "${SDK_DIR}/astyle_options_default" \
+        ${ARGUMENT}
 done
 
-#-------------------------------------------------------------------------------
 # Check if any astyle files have been created
-#-------------------------------------------------------------------------------
-# find all created astyle files
 FILES=$(find . -name '*.astyle')
 
 if [ ! -z "${FILES}" ]; then
-    echo "ERROR: astyle issues found."
-    echo
-    echo "Check the following files:"
-
-    for FILE in ${FILES}; do
-        SRC_FILE=${FILE%.astyle} # get file name without astyle suffix
-        echo "  ${SRC_FILE}"
-    done
-
+    echo "ERROR: astyle issue found, see *.astyle file for proposed fix"
     exit 1 # error
 fi
 
