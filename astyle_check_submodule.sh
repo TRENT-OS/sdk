@@ -43,8 +43,7 @@ if [ "${ARGUMENT}" = "--help" ]; then
 
 fi
 
-echo "Execute $(basename $0) in:"
-echo $(pwd)
+echo "Execute $(basename $0) in: $(pwd)"
 
 #-------------------------------------------------------------------------------
 # Collect files to be analysed

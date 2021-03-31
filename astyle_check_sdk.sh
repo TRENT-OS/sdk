@@ -40,10 +40,7 @@ if [ "${ARGUMENT}" = "--help" ] || \
 
 fi
 
-echo "---"
-echo "Execute $(basename $0) in:"
-echo $(pwd)
-echo "-"
+echo "Execute $(basename $0) in: $(pwd)"
 
 #-------------------------------------------------------------------------------
 # Find and execute astyle scripts
@@ -51,8 +48,6 @@ echo "-"
 
 # remove previously existing astyle files
 find . -name '*.astyle' -exec rm -v {} \;
-
-echo "-"
 
 # find submodules with prepare submodule script
 PROJECT_LIST=$(find . -name 'astyle_prepare_submodule.sh')
@@ -68,9 +63,6 @@ for PROJECT in ${PROJECT_LIST}; do
         cd ${PROJECT_DIR}
         ${SDK_DIR}/astyle_check_submodule.sh ${ARGUMENT} || true
     )
-
-    echo "-"
-
 done
 
 #-------------------------------------------------------------------------------
@@ -89,12 +81,9 @@ if [ ! -z "${FILES}" ]; then
         echo "  ${SRC_FILE}"
     done
 
-    echo "---"
-
     exit 1 # error
 fi
 
 echo "INFO: No astyle issue found."
-echo "---"
 
 exit 0 # success
