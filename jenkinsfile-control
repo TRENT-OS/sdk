@@ -14,10 +14,10 @@ def SDK_PACKAGE = 'sdk-package.tar.bz2'
 class TestCtx {
     String      systemName;  // Name of the system to build.
     String      repo;        // Repo location.
-    String      testScript;  // Test script to be executed. Defaults to
+    String      testScript;  // Test script to be executed. Use test_empty.py if
+                             // no test is available. If null it defaults to
                              // <systemName>.py.
-    ArrayList   platforms;   // List of supported platforms. `null` if full
-                             // support.
+    ArrayList   platforms;   // List of supported platforms for the test.
     String      buildParams  // Additional build parameters.
 
     //--------------------------------------------------------------------------
@@ -26,8 +26,8 @@ class TestCtx {
     // here, this will be added internally.
     public TestCtx(
         String systemName,
-        String testScript = null,
-        ArrayList platforms = null,
+        String testScript,
+        ArrayList platforms,
         String buildParams = null)
     {
         def repo = 'ss/' + systemName
@@ -50,24 +50,27 @@ class TestCtx {
     }
 }
 
-def TEST_CONFIG = [
+def TEST_CONFIGS = [
 
-    tests: [
         // Demo systems
-        new TestCtx('demo_hello_world@ss/demo_hello_world', 'test_demo_hello_world.py'),
+        new TestCtx('demo_hello_world@ss/demo_hello_world', 'test_demo_hello_world.py',     ['zynq7000', 'sabre']),
+        new TestCtx('demo_hello_world',                     'test_empty.py',                ['rpi3']),
         new TestCtx('demo_iot_app',                         'test_demo_iot_app.py',         ['zynq7000']),
-        new TestCtx('demo_iot_app_rpi3',                    'test_demo_iot_app.py',         ['rpi3']),
-        new TestCtx('demo_raspi_ethernet',                  null,                           ['rpi3']),
+        new TestCtx('demo_iot_app_rpi3',                    'test_empty.py',                ['rpi3']),
+        new TestCtx('demo_raspi_ethernet',                  'test_empty.py',                ['rpi3']),
         new TestCtx('demo_tls_api',                         'test_demo_tls_api.py',         ['zynq7000']),
-        new TestCtx('demo_i2c',                             null,                           ['sabre']),
+        new TestCtx('demo_i2c',                             'test_empty.py',                ['sabre']),
 
         // Test systems
-        new TestCtx('test_timeserver'),
+        new TestCtx('test_timeserver',                      'test_timeserver.py',           ['zynq7000', 'sabre']),
+        new TestCtx('test_timeserver',                      'test_empty.py',                ['rpi3']),
+        new TestCtx('test_certserver',                      'test_certserver.py',           ['zynq7000', 'sabre']),
+        new TestCtx('test_certserver',                      'test_empty.py',                ['rpi3']),
+
         new TestCtx('test_uart',                            null,                           ['zynq7000', 'sabre']),
         new TestCtx('test_chanmux',                         null,                           ['zynq7000']),
         new TestCtx('test_proxy_nvm',                       null,                           ['zynq7000']),
         new TestCtx('test_certparser',                      null,                           ['zynq7000']),
-        new TestCtx('test_certserver'),
         new TestCtx('test_crypto_api',                      null,                           ['zynq7000']),
         new TestCtx('test_cryptoserver',                    null,                           ['zynq7000']),
         new TestCtx('test_entropysource',                   null,                           ['zynq7000']),
@@ -79,15 +82,7 @@ def TEST_CONFIG = [
         new TestCtx('test_network_api',                     null,                           ['zynq7000']),
         new TestCtx('test_tls_api',                         null,                           ['zynq7000']),
         new TestCtx('test_tlsserver',                       null,                           ['zynq7000'])
-    ],
 
-    platforms: [
-        'zynq7000',
-        'sabre',
-        // 'migv',
-        // 'spike',
-        // 'rpi3',
-    ]
 ]
 
 
@@ -480,7 +475,7 @@ def execute_build(ctx, stage_ctx)
 
 
 //------------------------------------------------------------------------------
-def do_jobs_for_test_systems(branch, testConfig)
+def do_jobs_for_test_systems(branch, testConfigs)
 {
     // downstream job create this package and finally we also pack all the
     // collected results into a package with this name
@@ -496,40 +491,37 @@ def do_jobs_for_test_systems(branch, testConfig)
         running:   0
     ]
 
-    // if we use a loop "for (test_ctx in testConfig.tests) ..." then only one
+    // if we use a loop "for (test_ctx in testConfigs) ..." then only one
     // instance of the variable test_ctx exists. When the closures are invoked
     // after the loop, they all see the last value that the loop variable. When
-    // a loop "testConfig.tests.each { test_ctx -> ..." is used, a closure with
+    // a loop "testConfigs.each { test_ctx -> ..." is used, a closure with
     // a separate variable is create for each iteration, which can be used in
     // further closures then also independently.
 
-    testConfig.tests.each { test_ctx ->
+    testConfigs.each { test_ctx ->
 
         def test_system = test_ctx.systemName
 
-        testConfig.platforms.each { platform ->
+        test_ctx.platforms.each { platform ->
 
             def pkg_name = platform + '-' + test_system
 
-            def filter = test_ctx.platforms
-            if ( filter == null || filter.any{ it == platform} ){
-                def job_stage_ctx = [
-                    // do not try storing "sub_jobs_ctx" in here, this ends in a
-                    // strange recursion when transforming the maps/lists
-                    test_ctx:     test_ctx,
-                    platform:     platform,
-                    system_pkg:   SYSTEM_PACKAGE,
-                    stash_name:   pkg_name,
-                    closure:      null,   // set below
-                    build:        null    // set in closure
-                ]
+            def job_stage_ctx = [
+                // do not try storing "sub_jobs_ctx" in here, this ends in a
+                // strange recursion when transforming the maps/lists
+                test_ctx:     test_ctx,
+                platform:     platform,
+                system_pkg:   SYSTEM_PACKAGE,
+                stash_name:   pkg_name,
+                closure:      null,   // set below
+                build:        null    // set in closure
+            ]
 
-                sub_jobs_ctx.jobStages[pkg_name] = job_stage_ctx
+            sub_jobs_ctx.jobStages[pkg_name] = job_stage_ctx
 
-                job_stage_ctx.closure = {
-                    stage(pkg_name) {
-                        execute_build(sub_jobs_ctx, job_stage_ctx)
-                    }
+            job_stage_ctx.closure = {
+                stage(pkg_name) {
+                    execute_build(sub_jobs_ctx, job_stage_ctx)
                 }
             }
         }
@@ -889,7 +881,7 @@ pipeline {
                 stage('system_tests') {
                     steps {
                         print_step_info env.STAGE_NAME
-                        do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIG)
+                        do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIGS)
                     }
                 }
             }
