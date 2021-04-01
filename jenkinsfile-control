@@ -53,10 +53,15 @@ class TestCtx {
 def TEST_CONFIG = [
 
     tests: [
+        // Demo systems
         new TestCtx('demo_hello_world@ss/demo_hello_world', 'test_demo_hello_world.py'),
         new TestCtx('demo_iot_app',                         'test_demo_iot_app.py',         ['zynq7000']),
         new TestCtx('demo_iot_app_rpi3',                    'test_demo_iot_app.py',         ['rpi3']),
+        new TestCtx('demo_raspi_ethernet',                  null,                           ['rpi3']),
         new TestCtx('demo_tls_api',                         'test_demo_tls_api.py',         ['zynq7000']),
+        new TestCtx('demo_i2c',                             null,                           ['sabre']),
+
+        // Test systems
         new TestCtx('test_timeserver'),
         new TestCtx('test_uart',                            null,                           ['zynq7000', 'sabre']),
         new TestCtx('test_chanmux',                         null,                           ['zynq7000']),
@@ -95,9 +100,7 @@ def DEMO_LIST = [
     'demo_hello_world',
     'demo_iot_app',
     'demo_iot_app_rpi3',
-    'demo_raspi_ethernet',  // ToDo: add TestCtx()
-    'demo_tls_api',
-    'demo_i2c',             // ToDo: add TestCtx(), currently for sabre only
+    'demo_tls_api'
 ]
 
 
@@ -732,8 +735,7 @@ pipeline {
                         do_stash(
                             'stash_build_demos',
                             [
-                                'scm-src/build-sdk.sh',
-                                'src/demos/',
+                                'scm-src/build-sdk.sh'
                             ]
                         )
 
@@ -867,17 +869,10 @@ pipeline {
                             // build if the root demo folder is missing, as the
                             // package seems broken or the layout has changed
                             sh '''
-                                SRC=src/demos
                                 DST=sdk/pkg/demos
                                 if [ ! -d ${DST} ]; then
                                     exit 1
                                 fi
-                                for d in $(ls ${SRC}); do
-                                  if [ ! -e ${DST}/${d} ]; then
-                                    mkdir -p ${DST}/${d}
-                                    mv ${SRC}/${d}/ ${DST}/${d}/src/
-                                  fi
-                                done
                             '''
                             run_shell_script(
                                 'scm-src/build-sdk.sh',
