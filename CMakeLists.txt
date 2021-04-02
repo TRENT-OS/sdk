@@ -118,6 +118,13 @@ endfunction()
 #-------------------------------------------------------------------------------
 function(add_os_libs_subdirectories)
 
+    if (SDK_USE_CAMKES)
+
+        CAmkESAddCPPInclude(${OS_LIBS_DIR})
+        CAmkESAddImportPath(${OS_LIBS_DIR})
+
+    endif()
+
     # include every sub-folder in OS_LIBS_DIR except "3rdParty", there we
     # include all subfolders.
     file(
