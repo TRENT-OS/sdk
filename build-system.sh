@@ -205,7 +205,7 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
     (
         cd ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
-        cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot .. > /dev/null
+        cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot ..
         dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
     )
 
