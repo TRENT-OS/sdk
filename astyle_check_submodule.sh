@@ -99,12 +99,12 @@ RETVAL=0
 
 SDK_DIR=$(realpath $(dirname $0))
 
+# Source local configuration, expected to set ASTYLE_OPTIONS_SUBMODULE.
+source ./${LOCAL_CONFIG_FILE}
+
 for IN_FILE in ${FILES}; do
 
     OUT_FILE="${IN_FILE}.astyle"
-
-    # source submodule options ASTYLE_OPTIONS_SUBMODULE
-    . ./astyle_prepare_submodule.sh
 
     # run astyle with project/default options file on infile and create outfile
     astyle ${ASTYLE_OPTIONS_SUBMODULE} \
