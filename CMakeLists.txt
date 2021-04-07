@@ -388,7 +388,7 @@ macro(os_sdk_build system_project_dir)
     # NOTE: Linting does not work on seL4/CAmkES code, thus we define details
     # here after we've included the seL4/CAmkES stuff.
     if (ENABLE_LINT)
-        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr;--output-file=cppcheck_output.txt")
+        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr")
 
         # NOTE: We cannot use set(CMAKE_C_CLANG_TIDY "clang-tidy;...") because
         # CMake passes the compile target architecture to clang-tidy in a wrong
