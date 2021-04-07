@@ -492,7 +492,6 @@ EOF
         rpi3
         ${BUILD_DIR}/rpi3_flasher_test
         -D CMAKE_BUILD_TYPE=Debug
-        -D ENABLE_LINT=0
     )
     ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
 
