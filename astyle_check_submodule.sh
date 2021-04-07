@@ -47,21 +47,6 @@ echo "Execute $(basename $0) in:"
 echo $(pwd)
 
 #-------------------------------------------------------------------------------
-# Check if astyle is available
-#-------------------------------------------------------------------------------
-case $(astyle --version 2> /dev/null) in
-
-  "Artistic Style Version"*)
-      ;;
-
-  *)
-      echo "ERROR: astyle was not found."
-      exit 1
-      ;;
-
-esac
-
-#-------------------------------------------------------------------------------
 # Collect files to be analysed
 #-------------------------------------------------------------------------------
 case ${ARGUMENT} in
