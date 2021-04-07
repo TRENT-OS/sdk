@@ -56,4 +56,4 @@ CALLER_GRAPH           = YES
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
 
-PLANTUML_JAR_PATH      = "/usr/share/plantuml/plantuml.jar"
+PLANTUML_JAR_PATH      =
