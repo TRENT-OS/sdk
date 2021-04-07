@@ -99,8 +99,23 @@ RETVAL=0
 
 SDK_DIR=$(realpath $(dirname $0))
 
-# Source local configuration, expected to set ASTYLE_OPTIONS_SUBMODULE.
-source ./${LOCAL_CONFIG_FILE}
+# Source submodule options to get ASTYLE_OPTIONS_SUBMODULE. Ensure that the
+# variable exist and is empty by default, so we don't have to worry later if the
+# local config did not set it.
+ASTYLE_OPTIONS_SUBMODULE=""
+LOCAL_CONFIG_FILE=astyle_prepare_submodule.sh
+if [ ! -f ${LOCAL_CONFIG_FILE} ]; then
+    true # need a dummy command here, uncomment the line below for debug
+    # echo "no local config"
+else
+    source ./${LOCAL_CONFIG_FILE}
+    if [ ! -z "${ASTYLE_OPTIONS_SUBMODULE}" ]; then
+        echo "using local astyle config"
+    else
+        true # need a dummy command here, uncomment the line below for debug
+        # echo "found local config, but ASTYLE_OPTIONS_SUBMODULE not set"
+    fi
+fi
 
 for IN_FILE in ${FILES}; do
 
