@@ -320,8 +320,8 @@ macro(os_sdk_build system_project_dir)
     # enable CAmkES by default
     set(SDK_USE_CAMKES ON CACHE BOOL "enable CAmkES")
 
-    # enable linting by default
-    set(ENABLE_LINT ON CACHE BOOL "enable linting")
+    # disable linting by default
+    set(ENABLE_LINT OFF CACHE BOOL "enable linting")
 
 
     #---------------------------------------------------------------------------
