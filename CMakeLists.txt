@@ -134,7 +134,7 @@ function(add_os_libs_subdirectories)
         # list can also contain files, e.g. ctag index files,  but we only
         # care about the folders
         if (IS_DIRECTORY "${SUBDIR}")
-            add_subdirectory("${SUBDIR}" "os_libs/${ITEM}")
+            add_subdirectory("${SUBDIR}" "libs/${ITEM}")
         endif()
     endforeach()
 
