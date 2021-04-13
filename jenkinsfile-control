@@ -10,33 +10,32 @@
 def SDK_PACKAGE = 'sdk-package.tar.bz2'
 
 //------------------------------------------------------------------------------
-// Test system list
+// Test context
 class TestCtx {
     String      systemName;  // Name of the system to build.
-    String      repo;        // Repo location.
-    String      testScript;  // Test script to be executed. Use test_empty.py if
-                             // no test is available. If null it defaults to
-                             // <systemName>.py.
-    ArrayList   platforms;   // List of supported platforms for the test.
+    String      repo;        // Repo location of the system.
+    String      testScript;  // Test script to be executed.
+    ArrayList   platforms;   // List of supported platforms.
     String      buildParams  // Additional build parameters.
 
-    //--------------------------------------------------------------------------
-    // Format of systemName is "name[@path/to/repo]". If no repo is given we
-    // assume it is taken from "ss/<systemName>". There is no ".git" extension
-    // here, this will be added internally.
     public TestCtx(
         String systemName,
         String testScript,
         ArrayList platforms,
         String buildParams = null)
     {
+        // Use ss/<systemName> as default repo.
         def repo = 'ss/' + systemName
+
+        // Split <systemName> to detect non-default repo.
         def arr = systemName.split('@',2);
-        if (2 == arr.length) {
+        if (2 == arr.length)
+        {
             systemName = arr[0]
             repo = arr[1]
         }
 
+        // Use <systemName>.py as default test script.
         if (null == testScript)
         {
             testScript = systemName + '.py'
@@ -50,6 +49,17 @@ class TestCtx {
     }
 }
 
+//------------------------------------------------------------------------------
+// Test configurations to be executed in the generic pipeline.
+//
+// A test system will be built for one or more platforms and tested with the
+// given test script.
+//
+// - Format of systemName is "name[@path/to/repo]". If no repo is given the repo
+//   "ss/<systemName>"" is used. There is no ".git" extension needed because this
+//   will be added internally.
+// - If testScript is null it defaults to "<systemName>.py". Use test script
+//   "test_empty.py" if no test is available (yet).
 def TEST_CONFIGS = [
 
         // Demo systems
@@ -87,10 +97,10 @@ def TEST_CONFIGS = [
 
 
 //------------------------------------------------------------------------------
-// Demos that the SDK builder will see and build. These are used independently
-// from the test systems above, which will be used in separate CI downstream
-// jobs.
-
+// Demos to be included in the SDK package.
+//
+// The SDK builder will build them in the control pipeline as an additional
+// verification step independently from the test configurations above.
 def DEMO_LIST = [
     'demo_hello_world',
     'demo_iot_app',
