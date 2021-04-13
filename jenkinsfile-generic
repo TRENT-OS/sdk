@@ -293,7 +293,7 @@ def save_current_job_log(
         [
             '-q',
             '--no-check-certificate',
-            '-O ' + name,
+            '-O ' + name, // make wget overwrite file if it already exists
             BUILD_URL + 'consoleText'
         ]
     )
