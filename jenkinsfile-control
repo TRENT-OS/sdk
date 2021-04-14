@@ -12,10 +12,10 @@ def SDK_PACKAGE = 'sdk-package.tar.bz2'
 //------------------------------------------------------------------------------
 // Test context
 class TestCtx {
-    String      systemName;  // Name of the system to build.
-    String      repo;        // Repo location of the system.
-    String      testScript;  // Test script to be executed.
-    ArrayList   platforms;   // List of supported platforms.
+    String      systemName   // Name of the system to build.
+    String      repo         // Repo location of the system.
+    String      testScript   // Test script to be executed.
+    ArrayList   platforms    // List of supported platforms.
     String      buildParams  // Additional build parameters.
 
     public TestCtx(
@@ -28,7 +28,7 @@ class TestCtx {
         def repo = 'ss/' + systemName
 
         // Split <systemName> to detect non-default repo.
-        def arr = systemName.split('@',2);
+        def arr = systemName.split('@',2)
         if (2 == arr.length)
         {
             systemName = arr[0]
@@ -41,11 +41,11 @@ class TestCtx {
             testScript = systemName + '.py'
         }
 
-        this.systemName  = systemName;
-        this.repo        = repo;
-        this.testScript  = testScript;
-        this.platforms   = platforms;
-        this.buildParams = buildParams;
+        this.systemName  = systemName
+        this.repo        = repo
+        this.testScript  = testScript
+        this.platforms   = platforms
+        this.buildParams = buildParams
     }
 }
 
@@ -165,7 +165,7 @@ def do_notify_bitbucket()
 
     if (env.NODE_NAME)
     {
-        notifyBitbucket();
+        notifyBitbucket()
     }
     else
     {
@@ -270,7 +270,7 @@ def run_app(
         cmdLine += ' ' + param_array.join(' ')
     }
 
-    sh(cmdLine);
+    sh(cmdLine)
 }
 
 
@@ -341,7 +341,7 @@ def do_git_checkout(
     }
     catch (Exception e)
     {
-        println 'Exception: ' + e;
+        println 'Exception: ' + e
         return null
     }
 }
@@ -416,7 +416,7 @@ def execute_build(ctx, stage_ctx)
 
     lock('job-post-processing')
     {
-        def num = cnt - (--ctx.running);
+        def num = cnt - (--ctx.running)
 
         println(num + '/' + cnt + ': ' +
                 stage_ctx.test_ctx.systemName + ' system build/test stage took '
@@ -812,7 +812,7 @@ pipeline {
                     when {
                         beforeAgent true
                         anyOf {
-                            branch 'master';
+                            branch 'master'
                             branch 'integration'
                         }
                     }
