@@ -96,20 +96,6 @@ def TEST_CONFIGS = [
 
 ]
 
-
-//------------------------------------------------------------------------------
-// Demos to be included in the SDK package.
-//
-// The SDK builder will build them in the control pipeline as an additional
-// verification step independently from the test configurations above.
-def DEMO_LIST = [
-    'demo_hello_world',
-    'demo_iot_app',
-    'demo_iot_app_rpi3',
-    'demo_tls_api'
-]
-
-
 //------------------------------------------------------------------------------
 // Docker
 //
@@ -374,19 +360,6 @@ def do_checkout(
     {
         echo 'checkout error'
         return
-    }
-}
-
-
-//------------------------------------------------------------------------------
-def do_checkout_demos(demo_list, folder)
-{
-    for (demo in demo_list)
-    {
-        do_checkout(
-            'ss/' + demo,
-            env.BRANCH_NAME,
-            folder + '/' + demo)
     }
 }
 
@@ -691,8 +664,6 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        do_checkout_demos(DEMO_LIST, 'src/demos')
-
                         do_notify_bitbucket()
                     }
                 }
@@ -714,7 +685,7 @@ pipeline {
                             'scm-src/build-sdk.sh',
                             [
                                 'package',    // mode
-                                'sdk-package' // base dir
+                                'sdk-package' // SDK package output base dir
                             ]
                         )
                     }
@@ -734,14 +705,6 @@ pipeline {
                                 'sdk-package/pkg/doc/',
                             ]
                         )
-
-                        do_stash(
-                            'stash_build_demos',
-                            [
-                                'scm-src/build-sdk.sh'
-                            ]
-                        )
-
                     }
                 }
 
@@ -794,6 +757,42 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
+                stage('build_hello_world') {
+                    // Do a quick sanity test for the SDK package by building
+                    // the "hello world" demo. If it works, we can start
+                    // building and testing all the system. If if fails, we can
+                    // stop here.
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        // Put the "hello world" demo it into the folder layout
+                        // used by the SDK release package.
+                        do_checkout(
+                            'ss/demo_hello_world',
+                            env.BRANCH_NAME,
+                            'sdk-package/pkg/demos/demo_hello_world/src'
+                        )
+
+                        run_shell_script(
+                            'scm-src/build-sdk.sh',
+                            [
+                                'build-demos', // mode
+                                'sdk-package'  // base dir
+                            ]
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
                 stage('cleanup') {
                     steps {
                         print_step_info env.STAGE_NAME
@@ -823,68 +822,6 @@ pipeline {
                         unstash('stash_doc')
                         run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
                         cleanWs()
-                    }
-                }
-
-                //--------------------------------------------------------------
-                stage('build_demos') {
-                    // We build most of the demos anyway, because they are just
-                    // another test system effectively. However, this executes
-                    // the SDK builder's demo build step, which builds all
-                    // demos in a row. We keep this as a check if the SDK
-                    // package can be used, but it scales badly when running in
-                    // CI, because the builds could all run in parallel on
-                    // different slaves.
-                    agent {
-                        docker {
-                            label "build"
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-
-                            // we can't call cleanWs() here, because this may
-                            // run on the same node as the SDK build stage
-                            // above and then our workspace is gone
-                            copyArtifacts(
-                                projectName: JOB_NAME,
-                                selector: specific("${BUILD_NUMBER}"), // need to ensure this is a string
-                                filter: SDK_PACKAGE
-                            )
-                            // the subfolder 'pkg' is hard-coded in the SDK
-                            // build script, because building the demos is
-                            // expected to run as part of the package creation
-                            run_app('mkdir', ['-p', 'sdk/pkg'])
-                            run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sdk/pkg'])
-
-                            // SDK package only contains a few demos, get script
-                            // scm-src/build-sdk.sh and all demos, then try
-                            // building them
-                            unstash('stash_build_demos')
-
-                            // SDK has demos at sdk/pkg/demos/<demo>/src, fail
-                            // build if the root demo folder is missing, as the
-                            // package seems broken or the layout has changed
-                            sh '''
-                                DST=sdk/pkg/demos
-                                if [ ! -d ${DST} ]; then
-                                    exit 1
-                                fi
-                            '''
-                            run_shell_script(
-                                'scm-src/build-sdk.sh',
-                                [
-                                    'build-demos', // mode
-                                    'sdk'          // base dir
-                                ]
-                            )
-                        }
                     }
                 }
 
