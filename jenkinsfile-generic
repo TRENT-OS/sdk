@@ -584,7 +584,7 @@ pipeline {
                                 '--ignore-failed-read',
                                 '-cjf ' + SYSTEM_PACKAGE,
                                 'build.log',
-                                'test-doc',
+                                'test-doc/',
                                 'test_results.xml',
                                 'build/capdl/capdl-loader-app/gen_config/',
                                 'build/elfloader/elfloader',
