@@ -70,8 +70,10 @@ def DOCKER_TEST_ENV  = [
 //------------------------------------------------------------------------------
 def set_build_info()
 {
-    def build_name_str = BRANCH_OR_COMMIT + ', ' + TEST_SYSTEM + ', '+PLATFORM
-    currentBuild.displayName = build_name_str
+    currentBuild.displayName = BRANCH_OR_COMMIT + ', ' +
+                               TEST_SYSTEM + ', ' +
+                               PLATFORM +
+                               ' [build' + (TEST_SCRIPT ? '+test' : '') + ']'
 
     manager.createSummary("text.gif").appendText(
         '<table style="border: 1px solid black; border-collapse: collapse;">'+
@@ -422,31 +424,73 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('stash_cleanup') {
+                stage('package_build_result') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        save_current_job_log('build.log')
+
+                        run_app('tar', [
+                            '--ignore-failed-read',
+                            '-cjf ' + SYSTEM_PACKAGE,
+                            'build/camkes-tool/*.cpp',
+                            'build/camkes-tool/libsel4camkes/gen_config/',
+                            'build/capdl/capdl-loader-app/gen_config/',
+                            'build/capdl/object_sizes/object_sizes.yaml',
+                            'build/elfloader/elfloader',
+                            'build/elfloader/gen_config/',
+                            'build/elfloader/gen_headers/',
+                            'build/images/os_image.elf',
+                            'build/kernel/gen_config/',
+                            'build/kernel/gen_headers/',
+                            'build/kernel/generated/',
+                            'build/kernel/kernel_all.c',
+                            'build/kernel/kernel_all.i',
+                            'build/kernel/kernel.elf',
+                            'build/kernel/kernel.dts',
+                            'build/os_system/',
+                            'build/compile_commands.json',
+                            'build.log'
+                        ])
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('archive_build') {
+                    // If we are building only, but not testing, we are done in
+                    // the pipeline here. Publish the build package.
+                    when { expression { TEST_SCRIPT == '' } }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        archiveArtifacts(
+                            artifacts: SYSTEM_PACKAGE,
+                            fingerprint: true
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('stash') {
+                    // If we are testing the build artifacts now, stash it
+                    // together with the system sources, so the test node can
+                    // retrieve it.
+                    when { expression { TEST_SCRIPT != '' } }
                     steps {
                         print_step_info(env.STAGE_NAME)
                         stash(
                             name: 'test_package',
-                            includes: [ 'build/camkes-tool/*.cpp',
-                                        'build/camkes-tool/libsel4camkes/gen_config/**',
-                                        'build/capdl/capdl-loader-app/gen_config/**',
-                                        'build/capdl/object_sizes/object_sizes.yaml',
-                                        'build/elfloader/elfloader',
-                                        'build/elfloader/gen_config/**',
-                                        'build/elfloader/gen_headers/**',
-                                        'build/images/os_image.elf',
-                                        'build/kernel/gen_config/**',
-                                        'build/kernel/gen_headers/**',
-                                        'build/kernel/generated/**',
-                                        'build/kernel/kernel_all.c',
-                                        'build/kernel/kernel_all.i',
-                                        'build/kernel/kernel.elf',
-                                        'build/kernel/kernel.dts',
-                                        'build/os_system/**',
-                                        'build/compile_commands.json',
-                                        SYSTEM_DIR+'/**'
-                                      ].join(',')
+                            includes: [
+                                SYSTEM_PACKAGE,
+                                SYSTEM_DIR+'/'
+                            ].join(',')
                         )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('cleanup') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
                         cleanWs()
                     }
                 }
@@ -456,6 +500,11 @@ pipeline {
 
         //----------------------------------------------------------------------
         stage('Test Stage') {
+
+            when {
+                beforeAgent true
+                expression { TEST_SCRIPT != '' }
+            }
 
             agent { label "test" }
 
@@ -469,6 +518,7 @@ pipeline {
                         cleanWs()
 
                         unstash('test_package')
+                        run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
 
                         get_sdk(SDK_DIR)
 
@@ -575,7 +625,7 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('package') {
+                stage('archive_build_and_tests') {
 
                     steps {
                         print_step_info(env.STAGE_NAME)

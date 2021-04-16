@@ -10,19 +10,29 @@
 def SDK_PACKAGE = 'sdk-package.tar.bz2'
 
 //------------------------------------------------------------------------------
-// Test context
-class TestCtx {
+// System context
+class SystemCtx {
+
+    static FLAG_BUILD      = 1 << 0
+    static FLAG_TEST       = 1 << 1
+
     String      systemName   // Name of the system to build.
+    Integer     flags        // Flags
     String      repo         // Repo location of the system.
-    String      testScript   // Test script to be executed.
     ArrayList   platforms    // List of supported platforms.
+    String      testScript   // Test script to be executed.
     String      buildParams  // Additional build parameters.
 
-    public TestCtx(
+    //--------------------------------------------------------------------------
+    // Format of 'systemName' is "name[@path/to/repo]". If no repo is given, we
+    // use "ss/<systemName>". There is no ".git" extension given here here, this
+    // will be added internally.
+    public SystemCtx(
         String systemName,
-        String testScript,
+        Integer flags,
         ArrayList platforms,
-        String buildParams = null)
+        String testScript,
+        String buildParams)
     {
         // Use ss/<systemName> as default repo.
         def repo = 'ss/' + systemName
@@ -35,66 +45,87 @@ class TestCtx {
             repo = arr[1]
         }
 
-        // Use <systemName>.py as default test script.
-        if (null == testScript)
-        {
-            testScript = systemName + '.py'
-        }
-
         this.systemName  = systemName
+        this.flags       = flags
         this.repo        = repo
-        this.testScript  = testScript
         this.platforms   = platforms
+        this.testScript  = testScript
         this.buildParams = buildParams
     }
 }
 
 //------------------------------------------------------------------------------
-// Test configurations to be executed in the generic pipeline.
+def BuildCtx(
+    String systemName,
+    ArrayList platforms = null,
+    String buildParams = null)
+{
+    return new SystemCtx(
+                    systemName,
+                    SystemCtx.FLAG_BUILD,
+                    platforms,
+                    null, // obviously, there is no testScript
+                    buildParams)
+}
+
+//------------------------------------------------------------------------------
+def TestCtx(
+        String systemName,
+        ArrayList platforms = null,
+        String testScript = null,  // use <systemName>.py if null
+        String buildParams = null)
+{
+    return new SystemCtx(
+                    systemName,
+                    SystemCtx.FLAG_BUILD | SystemCtx.FLAG_TEST,
+                    platforms,
+                    testScript ?: systemName + '.py',
+                    buildParams)
+}
+
+
+//------------------------------------------------------------------------------
+// Build/Test configurations to be executed in the generic pipeline.
 //
-// A test system will be built for one or more platforms and tested with the
-// given test script.
-//
-// - Format of systemName is "name[@path/to/repo]". If no repo is given the repo
-//   "ss/<systemName>"" is used. There is no ".git" extension needed because this
-//   will be added internally.
-// - If testScript is null it defaults to "<systemName>.py". Use test script
-//   "test_empty.py" if no test is available (yet).
-def TEST_CONFIGS = [
+def SYSTEM_CONFIGS = [
 
-        // Demo systems
-        new TestCtx('demo_hello_world@ss/demo_hello_world', 'test_demo_hello_world.py',     ['zynq7000', 'sabre']),
-        new TestCtx('demo_hello_world',                     'test_empty.py',                ['rpi3']),
-        new TestCtx('demo_iot_app',                         'test_demo_iot_app.py',         ['zynq7000']),
-        new TestCtx('demo_iot_app_rpi3',                    'test_empty.py',                ['rpi3']),
-        new TestCtx('demo_network_filter',                  'test_empty.py',                ['zynq7000']),
-        new TestCtx('demo_raspi_ethernet',                  'test_empty.py',                ['rpi3']),
-        new TestCtx('demo_tls_api',                         'test_demo_tls_api.py',         ['zynq7000']),
-        new TestCtx('demo_i2c',                             'test_empty.py',                ['sabre']),
+    // The "Hello World" demo also acts as a test for the CI feature to use a
+    // verbose repo location of the form 'name@path/to/repo'.
+    TestCtx('demo_hello_world@ss/demo_hello_world', ['zynq7000'], 'test_demo_hello_world.py'),
+    TestCtx('demo_hello_world',       ['sabre'], 'test_demo_hello_world.py'),
+    BuildCtx('demo_hello_world',      ['rpi3']),
 
-        // Test systems
-        new TestCtx('test_timeserver',                      'test_timeserver.py',           ['zynq7000', 'sabre']),
-        new TestCtx('test_timeserver',                      'test_empty.py',                ['rpi3']),
-        new TestCtx('test_certserver',                      'test_certserver.py',           ['zynq7000', 'sabre']),
-        new TestCtx('test_certserver',                      'test_empty.py',                ['rpi3']),
+    // Demo systems
+    TestCtx('demo_iot_app',           ['zynq7000'], 'test_demo_iot_app.py'),
+    BuildCtx('demo_iot_app_rpi3',     ['rpi3']),
+    TestCtx('demo_tls_api',           ['zynq7000'], 'test_demo_tls_api.py'),
+    BuildCtx('demo_network_filter',   ['zynq7000']),
+    BuildCtx('demo_raspi_ethernet',   ['rpi3']),
+    BuildCtx('demo_i2c',              ['sabre']),
 
-        new TestCtx('test_uart',                            null,                           ['zynq7000', 'sabre']),
-        new TestCtx('test_chanmux',                         null,                           ['zynq7000']),
-        new TestCtx('test_proxy_nvm',                       null,                           ['zynq7000']),
-        new TestCtx('test_certparser',                      null,                           ['zynq7000']),
-        new TestCtx('test_crypto_api',                      null,                           ['zynq7000']),
-        new TestCtx('test_cryptoserver',                    null,                           ['zynq7000']),
-        new TestCtx('test_entropysource',                   null,                           ['zynq7000']),
-        new TestCtx('test_storage_interface',               'test_storage_interface*.py',   ['zynq7000', 'sabre']),
-        new TestCtx('test_filesystem',                      null,                           ['zynq7000']),
-        new TestCtx('test_config_server',                   null,                           ['zynq7000']),
-        new TestCtx('test_keystore',                        null,                           ['zynq7000']),
-        new TestCtx('test_logserver',                       null,                           ['zynq7000']),
-        new TestCtx('test_network_api',                     null,                           ['zynq7000']),
-        new TestCtx('test_tls_api',                         null,                           ['zynq7000']),
-        new TestCtx('test_tlsserver',                       null,                           ['zynq7000'])
+    // Test systems
+    TestCtx('test_timeserver',        ['zynq7000', 'sabre']),
+    BuildCtx('test_timeserver',       ['rpi3']),
+    TestCtx('test_certserver',        ['zynq7000', 'sabre']),
+    BuildCtx('test_certserver',       ['rpi3']),
+    TestCtx('test_uart',              ['zynq7000', 'sabre']),
+    TestCtx('test_chanmux',           ['zynq7000']),
+    TestCtx('test_proxy_nvm',         ['zynq7000']),
+    TestCtx('test_certparser',        ['zynq7000']),
+    TestCtx('test_crypto_api',        ['zynq7000']),
+    TestCtx('test_cryptoserver',      ['zynq7000']),
+    TestCtx('test_entropysource',     ['zynq7000']),
+    TestCtx('test_storage_interface', ['zynq7000', 'sabre'], 'test_storage_interface*.py'),
+    TestCtx('test_filesystem',        ['zynq7000']),
+    TestCtx('test_config_server',     ['zynq7000']),
+    TestCtx('test_keystore',          ['zynq7000']),
+    TestCtx('test_logserver',         ['zynq7000']),
+    TestCtx('test_network_api',       ['zynq7000']),
+    TestCtx('test_tls_api',           ['zynq7000']),
+    TestCtx('test_tlsserver',         ['zynq7000'])
 
 ]
+
 
 //------------------------------------------------------------------------------
 // Docker
@@ -376,7 +407,7 @@ def execute_build(ctx, stage_ctx)
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
             string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.repo),
             string(name: 'BUILD_PARAMS',       value: stage_ctx.test_ctx.buildParams ?: ''),
-            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript),
+            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: ''),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
         ]
@@ -396,12 +427,18 @@ def execute_build(ctx, stage_ctx)
                 stage_ctx.test_ctx.systemName + ' system build/test stage took '
                 + duration + ', result: ' + result)
 
+        def flags = stage_ctx.test_ctx.flags
+        def operations = []
+        if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
+        if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
+
         ctx.summary.appendText(
             stage_ctx.platform + ', ' + stage_ctx.test_ctx.systemName + ':' +
             ' <a href="' + get_build_relative_url(jobBuild) + '">' +
                 '#' + jobBuild.getNumber() +
             '</a>' +
             ' <img src="' + get_result_ball_img_url(result) + '">' +
+            (operations ? (' ' + operations.join(', ')) : '') +
             ' (' + duration + ')' +
             '<br>',
             false)
@@ -829,7 +866,9 @@ pipeline {
                 stage('system_tests') {
                     steps {
                         print_step_info env.STAGE_NAME
-                        do_jobs_for_test_systems(env.BRANCH_NAME, TEST_CONFIGS)
+                        do_jobs_for_test_systems(
+                            env.BRANCH_NAME,
+                            SYSTEM_CONFIGS)
                     }
                 }
             }
