@@ -67,6 +67,7 @@ def TEST_CONFIGS = [
         new TestCtx('demo_hello_world',                     'test_empty.py',                ['rpi3']),
         new TestCtx('demo_iot_app',                         'test_demo_iot_app.py',         ['zynq7000']),
         new TestCtx('demo_iot_app_rpi3',                    'test_empty.py',                ['rpi3']),
+        new TestCtx('demo_network_filter',                  'test_empty.py',                ['zynq7000']),
         new TestCtx('demo_raspi_ethernet',                  'test_empty.py',                ['rpi3']),
         new TestCtx('demo_tls_api',                         'test_demo_tls_api.py',         ['zynq7000']),
         new TestCtx('demo_i2c',                             'test_empty.py',                ['sabre']),
