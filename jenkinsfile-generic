@@ -616,6 +616,7 @@ pipeline {
                                         '--junitxml=../test_results.xml',
                                         '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
                                         '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                        TEST_PARAMS,
                                         '../'+TESTS_DIR+'/'+TEST_SCRIPT
                                     ]
                                 )

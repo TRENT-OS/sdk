@@ -22,6 +22,7 @@ class SystemCtx {
     ArrayList   platforms    // List of supported platforms.
     String      testScript   // Test script to be executed.
     String      buildParams  // Additional build parameters.
+    String      testParams   // Additional test parameters.
 
     //--------------------------------------------------------------------------
     // Format of 'systemName' is "name[@path/to/repo]". If no repo is given, we
@@ -32,7 +33,8 @@ class SystemCtx {
         Integer flags,
         ArrayList platforms,
         String testScript,
-        String buildParams)
+        String buildParams,
+        String testParams)
     {
         // Use ss/<systemName> as default repo.
         def repo = 'ss/' + systemName
@@ -51,6 +53,7 @@ class SystemCtx {
         this.platforms   = platforms
         this.testScript  = testScript
         this.buildParams = buildParams
+        this.testParams  = testParams
     }
 }
 
@@ -65,7 +68,9 @@ def BuildCtx(
                     SystemCtx.FLAG_BUILD,
                     platforms,
                     null, // obviously, there is no testScript
-                    buildParams)
+                    buildParams,
+                    null  // since there is no testScript, there are no testParams
+                    )
 }
 
 //------------------------------------------------------------------------------
@@ -73,16 +78,34 @@ def TestCtx(
         String systemName,
         ArrayList platforms = null,
         String testScript = null,  // use <systemName>.py if null
-        String buildParams = null)
+        String buildParams = null,
+        String testParams = null
+        )
 {
     return new SystemCtx(
                     systemName,
                     SystemCtx.FLAG_BUILD | SystemCtx.FLAG_TEST,
                     platforms,
                     testScript ?: systemName + '.py',
-                    buildParams)
+                    buildParams,
+                    testParams)
 }
 
+//------------------------------------------------------------------------------
+def buildTarget(
+    String target
+)
+{
+    return '-DTEST_CONFIGURATION=' + target
+}
+
+//------------------------------------------------------------------------------
+def testTarget(
+    String target
+)
+{
+    return '--tc=platform.test_configuration:' + target
+}
 
 //------------------------------------------------------------------------------
 // Build/Test configurations to be executed in the generic pipeline.
@@ -120,10 +143,20 @@ def SYSTEM_CONFIGS = [
     TestCtx('test_config_server',     ['zynq7000']),
     TestCtx('test_keystore',          ['zynq7000']),
     TestCtx('test_logserver',         ['zynq7000']),
-    TestCtx('test_network_api',       ['zynq7000']),
     TestCtx('test_tls_api',           ['zynq7000']),
-    TestCtx('test_tlsserver',         ['zynq7000'])
+    TestCtx('test_tlsserver',         ['zynq7000']),
 
+
+    // Parametrized Test systems
+    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3'], buildTarget('tcp_server')),
+    //BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['sabre'], buildTarget('tcp_server')),
+    //BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['nitrogen6sx'], buildTarget('tcp_server')),
+
+    TestCtx('test_network_api_tcp_client@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_single_socket'),    testTarget('tcp_client_single_socket')),
+    TestCtx('test_network_api_tcp_client_multiple_sockets@ss/test_network_api', ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_multiple_sockets'), testTarget('tcp_client_multiple_sockets')),
+    TestCtx('test_network_api_tcp_client_multiple_clients@ss/test_network_api', ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_multiple_clients'), testTarget('tcp_client_multiple_clients')),
+    TestCtx('test_network_api_tcp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_server'),                  testTarget('tcp_server')),
+    TestCtx('test_network_api_udp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('udp_server'),                  testTarget('udp_server'))
 ]
 
 
@@ -408,6 +441,7 @@ def execute_build(ctx, stage_ctx)
             string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.repo),
             string(name: 'BUILD_PARAMS',       value: stage_ctx.test_ctx.buildParams ?: ''),
             string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: ''),
+            string(name: 'TEST_PARAMS',        value: stage_ctx.test_ctx.testParams ?: ''),
             string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
             string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
         ]
