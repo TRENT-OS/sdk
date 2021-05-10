@@ -56,6 +56,19 @@ echo "HOME: *${HOME}*"
 echo "*************************************************************************"
 echo ""
 
+# In case the execution of fixuid failed (and $HOME is empty), we enter here an
+# infinite loop so that jenkins doesn't dispose of the container allowing us to
+# connect via ssh to debug.
+
+if [ -z "${HOME}" ]
+then
+    while true
+    do
+        echo "Infinite loop to connect to the failing container with SSH"
+        sleep 15
+    done
+fi
+
 #-------------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
