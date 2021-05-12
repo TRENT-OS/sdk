@@ -56,11 +56,11 @@ echo "HOME: *${HOME}*"
 echo "*************************************************************************"
 echo ""
 
-# In case the execution of fixuid failed (and $HOME is empty), we enter here an
+# In case the execution of fixuid failed (and $HOME is /), we enter here an
 # infinite loop so that jenkins doesn't dispose of the container allowing us to
 # connect via ssh to debug.
 
-if [ -z "${HOME}" ]
+if [ ${HOME} == "/" ]
 then
     while true
     do
