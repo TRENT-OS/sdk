@@ -164,6 +164,9 @@ function collect_sdk_sources()
         ./jenkinsfile-generic
         ./publish_doc.sh
 
+        # remove internal script
+        ./scripts/open_trentos_analysis_env.sh
+
         # remove unwanted repos
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
 
