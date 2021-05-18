@@ -154,7 +154,8 @@ function collect_sdk_sources()
     local SDK_EXCLUDES=(
         # remove all astyle prepare scripts
         astyle_prepare_submodule.sh
-        # remove files in the sandbox root folder
+
+        # remove internal files in the sandbox root folder
         ./astyle_check_sdk.sh
         ./astyle_check_submodule.sh
         ./astyle_options_default
@@ -162,8 +163,10 @@ function collect_sdk_sources()
         ./jenkinsfile-control
         ./jenkinsfile-generic
         ./publish_doc.sh
+
         # remove unwanted repos
         ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
+
         # remove all readme files except from os_core_api which shall be
         # included in the doxygen documentation
         ./README.md
@@ -204,18 +207,18 @@ function collect_sdk_sources()
         ./libs/os_network_stack/README.md
         ./libs/os_tls/README.md
         #./os_core_api/README.md
+        ./resources/README.md
+        ./resources/rpi3_sd_card/README.md
+        ./resources/rpi4_sd_card/README.md
         ./scripts/README.md
         ./sdk-sel4-camkes/README.md
         ./tools/cpt/README.md
         ./tools/proxy/README.md
         ./tools/rdgen/README.md
         ./tools/rpi3_flasher/README.md
+
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
-        # remove readme files from resources submodule
-        ./resources/README.md
-        ./resources/rpi3_sd_card/README.md
-        ./resources/rpi4_sd_card/README.md
     )
 
     # copy files using tar and filtering. Seems there is a bug in tar, for
