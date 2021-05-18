@@ -213,6 +213,7 @@ function collect_sdk_sources()
         ./resources/README.md
         ./resources/rpi3_sd_card/README.md
         ./resources/rpi4_sd_card/README.md
+        ./resources/zcu102_sd_card/README.md
         ./scripts/README.md
         ./sdk-sel4-camkes/README.md
         ./tools/cpt/README.md
