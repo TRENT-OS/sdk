@@ -42,32 +42,26 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# In order to debug a sporadic issue in CI we print this debug information as
-# first commands executed in the freshly started container
-echo ""
-echo "*************************************************************************"
-echo "In order to debug a sporadic CI issue we collect debug info here"
-echo "Timestamp: `date`"
-echo "Lock file: `ls -la /run/fixuid.ran`"
-echo "Lock file: `ls -la /var/run/fixuid.ran`"
-echo "UID: `id`"
-echo "groups: `groups`"
-echo "HOME: *${HOME}*"
-echo "*************************************************************************"
-echo ""
+# There is a race condition in the Jenkins docker agent plugin that in some
+# circumstances leads to the build script being executed before fixuid 
+# finishes updating the runtime environment.
+# https://issues.jenkins.io/browse/JENKINS-54389
 
-# In case the execution of fixuid failed (and $HOME is /), we enter here an
-# infinite loop so that jenkins doesn't dispose of the container allowing us to
-# connect via ssh to debug.
+# As a hard requirement for this script, it needs to be executed in a 
+# container whose entrypoint script calls fixuid.
 
-if [ ${HOME} == "/" ]
-then
-    while true
-    do
-        echo "Infinite loop to connect to the failing container with SSH"
-        sleep 15
-    done
-fi
+# Wait until fixuid finished setting up the environment 
+until [ -f /run/fixuid.ran ]
+do
+    echo "Waiting for fixuid to finish."
+    sleep 1
+done
+
+# In case the race condition happened, the shell this script runs in spawned 
+# before fixuid could set up the environment variable(s). They have to be set 
+# manually here.
+export HOME=/home/user
+
 
 #-------------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
