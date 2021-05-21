@@ -27,7 +27,7 @@ source ${SCRIPT_DIR}/bash_functions.def
 # set DOCKER_ARGS and ARGS
 parse_command_line_arguments "$@"
 
-local DOCKER_PARAMS_ANALYSIS=(
+DOCKER_PARAMS_ANALYSIS=(
     # add the runtime GID used for the haskell tools
     --group-add=stack
 
