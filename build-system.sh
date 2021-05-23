@@ -77,7 +77,7 @@ BUILD_DIR=$3
 shift 3
 # all remaining parameters will be passed to CMake
 BUILD_ARGS="$@"
-BUILD_ARGS_FILE=build.args
+CMAKE_PARAMS_FILE=cmake_params.txt
 
 echo ""
 echo "##=============================================================================="
@@ -146,6 +146,8 @@ CMAKE_PARAMS=(
     # Location of the OS project to be built. Since we will change the current
     # working directory, we have to ensure this is an absolute path.
     -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
+    -G Ninja
+    ${BUILD_ARGS}
 )
 
 
@@ -165,8 +167,9 @@ if [[ -d ${BUILD_DIR} ]]; then
         # re-builds one just takes a command line from the shell's history
         # buffer. Thus, specifying no arguments is usually intended to
         # explicitly trigger a build with the default configuration.
-        if [[ ( ! -e ${BUILD_ARGS_FILE} && ! -z "${BUILD_ARGS}") \
-            || "$(< ${BUILD_ARGS_FILE})" != "${BUILD_ARGS}" ]]; then
+        if [[ ! -e ${CMAKE_PARAMS_FILE} \
+              || "$(< ${CMAKE_PARAMS_FILE})" != "${CMAKE_PARAMS[@]}" \
+           ]]; then
             echo "build parameters have changed, rebuild everything"
             exit 1
         fi
@@ -187,17 +190,14 @@ if [[ ! -d ${BUILD_DIR} ]]; then
 
     echo "configure build ..."
     echo "##------------------------------------------------------------------------------"
-
     mkdir -p ${BUILD_DIR}
-
-    # save build args
-    echo "${BUILD_ARGS}" > ${BUILD_DIR}/${BUILD_ARGS_FILE}
-
-    # use subshell to make CMake set up the build environment
+    # use subshell to have CMake set up the build environment
     (
         cd ${BUILD_DIR}
+        # save CMake parameters
+        echo "${CMAKE_PARAMS[@]}" > ${CMAKE_PARAMS_FILE}
         set -x
-        cmake ${CMAKE_PARAMS[@]} ${BUILD_ARGS} -G Ninja ${ABS_OS_SDK_PATH}
+        cmake ${CMAKE_PARAMS[@]} ${ABS_OS_SDK_PATH}
     )
 
     # cmake must run twice, so the config settings propagate properly. The
