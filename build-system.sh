@@ -149,35 +149,38 @@ CMAKE_PARAMS=(
 )
 
 
+# If a build directory exists, check if we can just do a quicker rebuild based
+# on the changes
 if [[ -d ${BUILD_DIR} ]]; then
-    # If there is already a build configuration folder, chances are high that
-    # a previous configured build already exists and we don't have to start the
-    # CMake build config process from scratch, but just do a rebuild based on
-    # the changes. The easiest way to check this is looking for a ninja rule
-    # file to exist. Usually, if the CMake config step failed already, this
-    # file is not created and it is best to wipe the build folder and start from
-    # scratch. The next check is to determine if the manual build configuration
-    # has changed, i. e. if additional command line parameters have been used
-    # for the last build and these match the command line parameters of this
-    # build. If not, then we have to wipe the build folder and start from
-    # scratch to guarantee the new command line parameters are taken properly
-    # into account everywhere.
-    if [[ ! -e ${BUILD_DIR}/rules.ninja ]]; then
-        echo "deleting broken build folder and re-initialize it"
-        rm -rf ${BUILD_DIR}
-    elif [[ ( ! -e ${BUILD_DIR}/${BUILD_ARGS_FILE} && ! -z "${BUILD_ARGS}") \
-            || "$(< ${BUILD_DIR}/${BUILD_ARGS_FILE})" != "${BUILD_ARGS}" ]]; then
-        # ToDo: We could define that a command line with no build arguments
-        #       does take what was stored in the argument file. However, it
-        #       turned out this does not match the common workflow. Usually, a
-        #       command line is rarely typed in, but for re-builds one just
-        #       takes a command line from the shell's history buffer. Thus,
-        #       specifying no arguments is usually intended to explicitly
-        #       trigger a build with the default configuration.
-        echo "build parameters have changed, rebuild everything"
-        rm -rf ${BUILD_DIR}
-    fi
+    # Run the tests in the subshell, wipe the build folder if the shell returns
+    # an error.
+    (
+        cd ${BUILD_DIR}
 
+        # If the build is invoked with different parameters as last time, then
+        # we have to do a full rebuild. Note that we do not implement the
+        # feature that a command line with no build arguments takes what was
+        # stored in the argument file. It turned out this does not match the
+        # common workflow. Usually, a command line is rarely typed in, but for
+        # re-builds one just takes a command line from the shell's history
+        # buffer. Thus, specifying no arguments is usually intended to
+        # explicitly trigger a build with the default configuration.
+        if [[ ( ! -e ${BUILD_ARGS_FILE} && ! -z "${BUILD_ARGS}") \
+            || "$(< ${BUILD_ARGS_FILE})" != "${BUILD_ARGS}" ]]; then
+            echo "build parameters have changed, rebuild everything"
+            exit 1
+        fi
+
+        # If there are no build rules, then usually the build config failed
+        # somewhere. Try again creating a build configuration.
+        if [[ ! -e rules.ninja ]]; then
+            echo "deleting broken build folder and re-initialize it"
+            exit 1
+        fi
+
+        echo "rebuilding ..."
+        exit 0
+    ) || rm -rf ${BUILD_DIR}
 fi
 
 if [[ ! -d ${BUILD_DIR} ]]; then
