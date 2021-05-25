@@ -175,8 +175,10 @@ if [[ -d ${BUILD_DIR} ]]; then
         fi
 
         # If there are no build rules, then usually the build config failed
-        # somewhere. Try again creating a build configuration.
-        if [[ ! -e rules.ninja ]]; then
+        # somewhere. Try again creating a build configuration. Starting with
+        # CMake 3.18, "rules.ninja" is no longer in the root folder, but in the
+        # subfolder "CMakeFiles". Hence, both locations are checked.
+        if [[ ! -e rules.ninja && ! -e CMakeFiles/rules.ninja ]]; then
             echo "deleting broken build folder and re-initialize it"
             exit 1
         fi
