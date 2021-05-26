@@ -872,19 +872,23 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
-                        // Put the "hello world" demo into the folder layout
-                        // used by the SDK release package.
-                        do_checkout(
-                            'ss/demo_hello_world',
-                            env.BRANCH_NAME,
-                            'sdk-package/pkg/demos/demo_hello_world/src'
-                        )
+                        // Create folder structure for sanity check and extract
+                        // the SDK package. The subfolder 'pkg' is hard-coded in
+                        // and required by the SDK build script.
+                        run_app('mkdir', ['-p', 'sanity-check-sdk/pkg'])
+                        run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sanity-check-sdk/pkg'])
 
+                        // Remove all demos except demo "hello world".
+                        run_app('mv', ['sanity-check-sdk/pkg/demos/demo_hello_world', 'sanity-check-sdk/pkg/demos/temp_hello_world'])
+                        run_app('rm', ['-rf', 'sanity-check-sdk/pkg/demos/demo_*'])
+                        run_app('mv', ['sanity-check-sdk/pkg/demos/temp_hello_world', 'sanity-check-sdk/pkg/demos/demo_hello_world'])
+
+                        // Build all demos within demos folder.
                         run_shell_script(
                             'scm-src/build-sdk.sh',
                             [
                                 'build-demos', // mode
-                                'sdk-package'  // base dir
+                                'sanity-check-sdk' // base dir
                             ]
                         )
                     }
