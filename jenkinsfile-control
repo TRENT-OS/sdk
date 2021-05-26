@@ -796,9 +796,9 @@ pipeline {
                 //--------------------------------------------------------------
                 stage('build_hello_world') {
                     // Do a quick sanity test for the SDK package by building
-                    // the "hello world" demo. If it works, we can start
-                    // building and testing all the system. If if fails, we can
-                    // stop here.
+                    // the "hello world" demo. If it works, it makes sense to
+                    // start the time consuming builds and tests of all systems.
+                    // But if it fails, we can stop here early.
                     agent {
                         docker {
                             reuseNode true
@@ -811,7 +811,7 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
-                        // Put the "hello world" demo it into the folder layout
+                        // Put the "hello world" demo into the folder layout
                         // used by the SDK release package.
                         do_checkout(
                             'ss/demo_hello_world',

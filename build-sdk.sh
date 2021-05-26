@@ -432,7 +432,7 @@ function build_sdk_tools()
     local OUT_DIR=$3
     shift 3
 
-    print_info "building SDK tools into ${OUT_DIR} from ${SDK_SRC_DIR}"
+    print_info "Building SDK tools into ${OUT_DIR} from ${SDK_SRC_DIR}"
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
@@ -475,8 +475,8 @@ function build_sdk_tools()
         cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
     )
 
-    # build RPi3 flasher demo/tool using a dummy file
-    print_info "Building SDK demo/tool: rpi3_flasher"
+    # build RPi3 flasher tool using a dummy file
+    print_info "Building SDK tool: rpi3_flasher"
     local FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
     copy_files_via_tar ${SDK_SRC_DIR}/tools/rpi3_flasher ${FLASHER_SRC_TEST} --exclude-vcs
 
