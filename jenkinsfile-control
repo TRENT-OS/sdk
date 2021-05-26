@@ -159,6 +159,20 @@ def SYSTEM_CONFIGS = [
 
 
 //------------------------------------------------------------------------------
+// Demos to be included in the SDK package.
+//
+// The SDK builder will checkout the following demos and include them in the SDK
+// package.
+def DEMO_LIST = [
+    'demo_hello_world',
+    'demo_iot_app',
+    'demo_iot_app_rpi3',
+    'demo_network_filter',
+    'demo_tls_api'
+]
+
+
+//------------------------------------------------------------------------------
 // Docker
 //
 // Notes:
@@ -422,6 +436,19 @@ def do_checkout(
     {
         echo 'checkout error'
         return
+    }
+}
+
+
+//------------------------------------------------------------------------------
+def do_checkout_demos(demo_list, folder)
+{
+    for (demo in demo_list)
+    {
+        do_checkout(
+            'ss/' + demo,
+            env.BRANCH_NAME,
+            folder + '/' + demo)
     }
 }
 
@@ -732,6 +759,8 @@ pipeline {
                             ],
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
+
+                        do_checkout_demos(DEMO_LIST, 'src/demos')
 
                         do_notify_bitbucket()
                     }
