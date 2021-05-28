@@ -84,7 +84,6 @@ echo "##========================================================================
 echo "## Project:   ${OS_PROJECT_DIR}"
 echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Output:    ${BUILD_DIR}"
-echo "##------------------------------------------------------------------------------"
 
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
@@ -127,7 +126,9 @@ case "${BUILD_PLATFORM}" in
         ;;
     #-------------------------------------
     *)
-        echo "invalid platform: ${BUILD_PLATFORM}"
+        echo "##------------------------------------------------------------------------------"
+        echo "## invalid platform: ${BUILD_PLATFORM}"
+        echo "##------------------------------------------------------------------------------"
         exit 1
         ;;
 esac
@@ -170,7 +171,9 @@ if [[ -d ${BUILD_DIR} ]]; then
         if [[ ! -e ${CMAKE_PARAMS_FILE} \
               || "$(< ${CMAKE_PARAMS_FILE})" != "${CMAKE_PARAMS[@]}" \
            ]]; then
-            echo "build parameters have changed, rebuild everything"
+            echo "##------------------------------------------------------------------------------"
+            echo "## build parameters have changed: cleaning build dir"
+            echo "##------------------------------------------------------------------------------"
             exit 1
         fi
 
@@ -179,18 +182,20 @@ if [[ -d ${BUILD_DIR} ]]; then
         # CMake 3.18, "rules.ninja" is no longer in the root folder, but in the
         # subfolder "CMakeFiles". Hence, both locations are checked.
         if [[ ! -e rules.ninja && ! -e CMakeFiles/rules.ninja ]]; then
-            echo "deleting broken build folder and re-initialize it"
+            echo "##------------------------------------------------------------------------------"
+            echo "## build folder broken: cleaning build dir"
+            echo "##------------------------------------------------------------------------------"
             exit 1
         fi
 
-        echo "rebuilding ..."
         exit 0
     ) || rm -rf ${BUILD_DIR}
 fi
 
 if [[ ! -d ${BUILD_DIR} ]]; then
 
-    echo "configure build ..."
+    echo "##------------------------------------------------------------------------------"
+    echo "## configure build ..."
     echo "##------------------------------------------------------------------------------"
     mkdir -p ${BUILD_DIR}
     # use subshell to have CMake set up the build environment
@@ -202,11 +207,11 @@ if [[ ! -d ${BUILD_DIR} ]]; then
         cmake ${CMAKE_PARAMS[@]} ${ABS_OS_SDK_PATH}
     )
 
-    # cmake must run twice, so the config settings propagate properly. The
+    # CMake must run twice, so the config settings propagate properly. The
     # first runs populates the cache and the second run will find the correct
     # settings in the cache to set up the build.
     echo "##------------------------------------------------------------------------------"
-    echo "re-run cmake ..."
+    echo "## re-run configure build ..."
     echo "##------------------------------------------------------------------------------"
 
     cmake ${BUILD_DIR}
@@ -222,7 +227,11 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     )
 
     echo "##------------------------------------------------------------------------------"
-    echo "start actual build ..."
+    echo "## start clean build ..."
+    echo "##------------------------------------------------------------------------------"
+else
+    echo "##------------------------------------------------------------------------------"
+    echo "## start re-build ..."
     echo "##------------------------------------------------------------------------------"
 fi
 
