@@ -110,7 +110,8 @@ case "${BUILD_PLATFORM}" in
     rockpro64 |\
     tx1 |\
     tx2 |\
-    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
+    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 |\
+    bcm2711 | rpi4 )
         CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
         ;;
     #-------------------------------------

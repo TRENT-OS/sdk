@@ -106,6 +106,15 @@
 [submodule "components/CertServer"]
 	path = components/CertServer
 	url = ../../sc/certserver.git
+[submodule "components/RPi_SPI_LED"]
+	path = components/RPi_SPI_LED
+	url = ../../sc/rpi_spi_led.git
+[submodule "components/RPi_SPI_SD"]
+	path = components/RPi_SPI_SD
+	url = ../../sc/rpi_spi_sd.git
+[submodule "components/RPi_SD"]
+	path = components/RPi_SD
+	url = ../../sc/rpi_sd.git
 [submodule "libs/lib_compiler"]
 	path = libs/lib_compiler
 	url = ../../seos/lib_compiler.git
