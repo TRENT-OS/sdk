@@ -1,4 +1,4 @@
-/* Copyright (C) 2020, HENSOLDT Cyber GmbH */
+/* Copyright (C) 2020-2021, HENSOLDT Cyber GmbH */
 #pragma once
 
 typedef enum
@@ -11,6 +11,39 @@ typedef enum
     // ...
     // OS_ERROR_CUSTOM_BAR = -100001
     __END_OS_ERROR_CODES_CUSTOM = -100000,
+
+    //--------------------------------------------------------------------------
+    // Network specific error codes
+    //--------------------------------------------------------------------------
+    /// @cond OS_ERROR_HELPER_DEFINES
+    __START_OS_ERROR_CODES_NETWORK = -1318,
+    /// @endcond
+    //--------------------------------------
+    OS_ERROR_NETWORK_NO_SUPPORT,            /**< no network support */
+    OS_ERROR_NETWORK_OP_NO_SUPPORT,         /**< operation not supported */
+    OS_ERROR_NETWORK_DOWN,                  /**< network stack is down */
+    OS_ERROR_NETWORK_UNREACHABLE,           /**< network is unreachable */
+    OS_ERROR_NETWORK_NO_ROUTE,              /**< no route to host or network */
+
+    OS_ERROR_NETWORK_PROTO,                 /**< protocol error */
+    OS_ERROR_NETWORK_PROTO_NO_SUPPORT,      /**< protocol not supported */
+    OS_ERROR_NETWORK_PROTO_OPT_NO_SUPPORT,  /**< protocol option not supported */
+
+    OS_ERROR_NETWORK_ADDR_IN_USE,           /**< address already in use */
+    OS_ERROR_NETWORK_ADDR_NOT_AVAILABLE,    /**< address not available */
+
+    OS_ERROR_NETWORK_CONN_RESET,            /**< connection reset */
+    OS_ERROR_NETWORK_CONN_ALREADY_BOUND,    /**< already connected */
+    OS_ERROR_NETWORK_CONN_NONE,             /**< no connection */
+    OS_ERROR_NETWORK_CONN_SHUTDOWN,         /**< connection shutdown */
+    OS_ERROR_NETWORK_CONN_REFUSED,          /**< connection refused */
+
+    OS_ERROR_NETWORK_HOST_DOWN,             /**< host is down */
+    OS_ERROR_NETWORK_HOST_UNREACHABLE,      /**< host is unreachable */
+
+    /// @cond OS_ERROR_HELPER_DEFINES
+    __END_OS_ERROR_CODES_NETWORK,                   /**< -1300 */
+    /// @endcond
 
     //--------------------------------------------------------------------------
     // Device specific error codes
@@ -98,9 +131,13 @@ typedef enum
     // General error codes
     //--------------------------------------------------------------------------
     /// @cond OS_ERROR_HELPER_DEFINES
-    __START_OS_ERROR_CODES_GENERIC = -23,
+    __START_OS_ERROR_CODES_GENERIC = -27,
     /// @endcond
     //----------------------------------------
+    OS_ERROR_IN_PROGRESS,                      /**< operation in progress */
+    OS_ERROR_TIMEOUT,                          /**< operation timeout */
+    OS_ERROR_IO,                               /**< generic IO error */
+    OS_ERROR_EXISTS,                           /**< alredy exists */
     OS_ERROR_BUFFER_FULL,                      /**< buffer is full */
     OS_ERROR_BUFFER_EMPTY,                     /**< buffer is empty */
     OS_ERROR_NO_DATA,                          /**< no data available to fullfill the request */
