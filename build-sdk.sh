@@ -160,6 +160,7 @@ function collect_sdk_sources()
         ./astyle_check_sdk.sh
         ./astyle_check_submodule.sh
         ./astyle_options_default
+        ./axivion.cmake
         ./build-sdk.sh
         ./jenkinsfile-control
         ./jenkinsfile-generic
