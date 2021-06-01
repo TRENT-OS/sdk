@@ -125,21 +125,22 @@ function(add_os_libs_subdirectories)
 
     endif()
 
-    # include every sub-folder in OS_LIBS_DIR except "3rdParty", there we
-    # include all subfolders.
+    # Find every sub-folder in OS_LIBS_DIR and all sub-folders of "3rdParty".
     file(
         GLOB
         OS_LIBS_SUBDIRS
         RELATIVE "${OS_LIBS_DIR}"
-        "${OS_LIBS_DIR}/*" "${OS_LIBS_DIR}/3rdParty/*"
+        "${OS_LIBS_DIR}/*"
+        "${OS_LIBS_DIR}/3rdParty/*"
     )
 
-    list(REMOVE_ITEM OS_LIBS_SUBDIRS "3rdParty")
+    # Remove the folders "3rdParty" and "test" from the list.
+    list(REMOVE_ITEM OS_LIBS_SUBDIRS "3rdParty" "test")
 
     foreach(ITEM IN LISTS OS_LIBS_SUBDIRS)
         set(SUBDIR "${OS_LIBS_DIR}/${ITEM}")
-        # list can also contain files, e.g. ctag index files,  but we only
-        # care about the folders
+        # The list can also contain files, e.g. ctag index files, but we only
+        # care about the folders.
         if (IS_DIRECTORY "${SUBDIR}")
             add_subdirectory("${SUBDIR}" "libs/${ITEM}")
         endif()

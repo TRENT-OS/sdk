@@ -51,9 +51,4 @@ if (BUILD_TESTING)
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage
     )
-
-    #---------------------------------------------------------------------------
-    # External Mocks
-    #---------------------------------------------------------------------------
-    add_subdirectory(ext_mocks)
 endif ()
