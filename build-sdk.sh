@@ -36,10 +36,12 @@ function cmake_check_init_and_build()
     # all other params are use to initialize the CMake build
     shift 3
 
-    # wipe the build folder if it does not contain a valid setup
-    if [[ -d ${BUILD_DIR} &&
-          ( ! -e ${BUILD_DIR}/CMakeCache.txt ||
-            ! -e ${BUILD_DIR}/rules.ninja ) ]]; then
+    # Wipe the build folder if it does not contain a valid setup. CMake 3.18
+    # changed the location of rules.ninja to CMakeFiles/rules.ninja.
+    if [[ -d ${BUILD_DIR} \
+          && ( ! -e ${BUILD_DIR}/CMakeCache.txt \
+               || ( ! -e ${BUILD_DIR}/rules.ninja \
+                    && ! -e ${BUILD_DIR}/CMakeFiles/rules.ninja) ) ]]; then
         echo "deleting broken build folder ${BUILD_DIR}"
         rm -rf ${BUILD_DIR}
     fi
