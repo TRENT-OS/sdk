@@ -145,6 +145,15 @@
 [submodule "libs/os_socket"]
 	path = libs/os_socket
 	url = ../../seos/networkstack.git
+[submodule "components/RPi_SPI_LED"]
+	path = components/RPi_SPI_LED
+	url = ../../sc/rpi_spi_led.git
+[submodule "components/RPi_SPI_SD"]
+	path = components/RPi_SPI_SD
+	url = ../../sc/rpi_spi_sd.git
+[submodule "components/RPi_SD"]
+	path = components/RPi_SD
+	url = ../../sc/rpi_sd.git
 [submodule "components/NIC_RPi4"]
 	path = components/NIC_RPi4
 	url = ../../sc/nic_rpi4.git
