@@ -205,6 +205,7 @@ case "${BUILD_PLATFORM}" in
     #-------------------------------------
     fvp |\
     imx8mq-evk | imx8mm-evk |\
+    bcm2711 | rpi4 | bcm2711-rpi4 |\
     odroidc2 |\
     odroidc4 |\
     rockpro64 |\
