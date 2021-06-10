@@ -145,7 +145,6 @@ function collect_sdk_sources()
 
     local SDK_EXCLUDE_REPOS=(
         sdk-pdfs
-        sdk-sel4-camkes/tools/riscv-pk
         tools/kpt
     )
     for repo in ${SDK_EXCLUDE_REPOS[@]}; do
