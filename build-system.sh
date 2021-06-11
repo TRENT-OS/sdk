@@ -93,7 +93,7 @@ case "${BUILD_PLATFORM}" in
     exynos4 |\
     exynos5 | exynos5250 | exynos5410 | exynos5422 |\
     hikey |\
-    imx6 | sabre | imx6-sabre | wandq | imx6-wandq |\
+    imx6 | sabre | imx6-sabre | wandq | imx6-wandq | nitrogen6sx |\
     imx7  | imx7-sabre |\
     imx31 | kzm | imx31-kzm |\
     omap3 |\

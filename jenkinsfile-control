@@ -116,7 +116,7 @@ def SYSTEM_CONFIGS = [
     // verbose repo location of the form 'name@path/to/repo'.
     TestCtx('demo_hello_world@ss/demo_hello_world', ['zynq7000'], 'test_demo_hello_world.py'),
     TestCtx('demo_hello_world',       ['sabre'], 'test_demo_hello_world.py'),
-    BuildCtx('demo_hello_world',      ['rpi3', 'rpi4']),
+    BuildCtx('demo_hello_world',      ['rpi3', 'rpi4', 'nitrogen6sx']),
 
     // Demo systems
     TestCtx('demo_iot_app',           ['zynq7000'], 'test_demo_iot_app.py'),
