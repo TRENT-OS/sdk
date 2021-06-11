@@ -107,6 +107,7 @@ case "${BUILD_PLATFORM}" in
     imx8mq-evk | imx8mm-evk |\
     odroidc2 |\
     rockpro64 |\
+    rpi4 |\
     tx1 |\
     tx2 |\
     zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
