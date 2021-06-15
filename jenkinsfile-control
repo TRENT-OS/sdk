@@ -176,6 +176,66 @@ def SYSTEM_CONFIGS = [
         ]
     ),
 
+
+    BaseTestCtx(
+        'native_sel4test',
+        [
+            'zynq7000':          null,
+            'qemu-zynq7000':     [
+                buildParams: [
+                    '-D Sel4testHaveTimer=0' // no timer peripheral
+                    '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+                ]
+            ],
+            'sabre':             null,
+            'qemu-sabre':        [
+                buildParams: [
+                    '-D Sel4testHaveTimer=0' // no timer peripheral
+                    '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+                ]
+            ],
+            'qemu-arm-virt-a15': [
+                buildParams: [
+                    '-D Sel4testHaveTimer=0' // no timer peripheral
+                    '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+                ]
+            ],
+            'qemu-arm-virt-a53':[
+                buildParams: [
+                    '-D Sel4testHaveTimer=0' // no timer peripheral
+                    '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+                ]
+            ],
+            //'qemu-arm-virt-a57':[
+            //    buildParams: [
+            //        '-D Sel4testHaveTimer=0' // no timer peripheral
+            //        '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+            //    ]
+            //],
+            //'qemu-arm-virt-a72':[
+            //    buildParams: [
+            //        '-D Sel4testHaveTimer=0' // no timer peripheral
+            //        '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+            //    ]
+            // ],
+            //'spike64':[
+            //    buildParams: [
+            //        '-D Sel4testHaveTimer=0' // no timer peripheral
+            //        '-D Sel4testHaveCache=0', // no cache emulation, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+            //    ]
+            //],
+        ],
+        [
+            testSystem: 'ext/sel4test',
+            testScript: 'test_native_sel4test.py',
+            buildParams: [
+                // SDK build settings
+                '-D SDK_USE_CAMKES=0',
+                '-D SEL4TEST_DONT_USE_SEL4_DEFAULT_BUILD_SYSTEM=1',
+            ],
+        ]
+    )
+
     //--------------------------------------------------------------------------
     // Additional Official Demo System
     //--------------------------------------------------------------------------

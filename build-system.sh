@@ -141,12 +141,12 @@ case "${BUILD_PLATFORM}" in
     exynos4 |\
     exynos5 | exynos5250 | exynos5410 | exynos5422 |\
     hikey |\
-    imx6 | sabre | imx6-sabre | wandq | imx6-wandq | nitrogen6sx |\
+    imx6 | sabre | qemu-sabre | imx6-sabre | wandq | imx6-wandq | nitrogen6sx |\
     imx7  | imx7-sabre |\
     imx31 | kzm | imx31-kzm |\
     omap3 |\
     tk1 |\
-    zynq7000 )
+    zynq7000 | qemu-zynq7000 )
         BUILD_ARCH=aarch32
         ;;
     #-------------------------------------
@@ -157,8 +157,8 @@ case "${BUILD_PLATFORM}" in
     rpi4 |\
     tx1 |\
     tx2 |\
-    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
-        BUILD_ARCH=aarch64
+    zynqmp | qemu-zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
+        CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
         ;;
     #-------------------------------------
     ariane |\
@@ -221,8 +221,22 @@ if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
     TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
 fi
 
-# Set CMake parameters
-CMAKE_PARAMS+=(
+# special handling for the sel4test project executed on QEMU
+if [[ "${OS_PROJECT_DIR}" =~ ^.*/src/native/sel4test ]] && [[ "${BUILD_PLATFORM}" = *"qemu-"* ]]; then
+    echo "sel4test project running in QEMU, disable cache and timer tests"
+    # Currently the kernel build is the same for qemu and non-qemu targets
+    # so it is necessary to remove the qemu prefix before initiating the actual
+    # build.
+    BUILD_PLATFORM = ${BUILD_PLATFORM#*qemu-}
+
+    # For the qemu targets these tests within the sel4_tests project are disabled
+    PARAMS+=(
+        -DSel4testHaveCache=0
+        -DSel4testHaveTimer=0
+    )
+fi
+
+CMAKE_PARAMS=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
     -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
