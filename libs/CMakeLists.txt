@@ -1,10 +1,39 @@
 #
-# Prepare target for unit tests.
+# Prepare targets for analysis and unit tests.
 #
 # Copyright (C) 2021, HENSOLDT Cyber GmbH
 #
 
 cmake_minimum_required(VERSION 3.17)
+
+
+#-------------------------------------------------------------------------------
+# ANALYSIS
+#-------------------------------------------------------------------------------
+option(BUILD_ANALYSIS "" OFF)
+if (BUILD_ANALYSIS)
+
+    project(test)
+
+    # Analysis project
+    set(ANALYSIS_MAIN_DIR "${CMAKE_CURRENT_LIST_DIR}/test/analysis")
+    add_subdirectory(${ANALYSIS_MAIN_DIR})
+
+    # Libs to be analyzed
+    add_subdirectory(lib_compiler)
+    add_subdirectory(lib_debug)
+    add_subdirectory(lib_host)
+    add_subdirectory(lib_io)
+    add_subdirectory(lib_logs)
+    add_subdirectory(lib_macros)
+    add_subdirectory(lib_mem)
+    add_subdirectory(lib_osal)
+    add_subdirectory(lib_server)
+    add_subdirectory(lib_utils)
+
+    # External mocks
+    add_subdirectory(test/ext_mocks)
+endif ()
 
 
 #-------------------------------------------------------------------------------
