@@ -1,0 +1,27 @@
+[gcc]
+sizeof(char)         = 1
+sizeof(short)        = 2
+sizeof(int)          = 4
+sizeof(long)         = 8
+sizeof(long long)    = 8
+sizeof(pointer)      = 8
+sizeof(float)        = 4
+sizeof(double)       = 8
+sizeof(long double)  = 16
+
+alignof(short)       = 2
+alignof(int)         = 4
+alignof(long)        = 8
+alignof(long long)   = 8
+alignof(pointer)     = 8
+alignof(float)       = 4
+alignof(double)      = 8
+alignof(long double) = 16
+
+wchar_t   = int
+wint_t    = unsigned int
+char16_t  = short unsigned int
+char32_t  = unsigned int
+size_t    = long unsigned int
+ptrdiff_t = long int
+
