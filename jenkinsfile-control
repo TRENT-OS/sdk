@@ -148,9 +148,7 @@ def SYSTEM_CONFIGS = [
 
 
     // Parametrized Test systems
-    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3'], buildTarget('tcp_server')),
-    //BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['sabre'], buildTarget('tcp_server')),
-    //BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['nitrogen6sx'], buildTarget('tcp_server')),
+    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3', 'sabre', 'nitrogen6sx'], buildTarget('tcp_server')),
 
     TestCtx('test_network_api_tcp_client@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_single_socket'),    testTarget('tcp_client_single_socket')),
     TestCtx('test_network_api_tcp_client_multiple_sockets@ss/test_network_api', ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_multiple_sockets'), testTarget('tcp_client_multiple_sockets')),
