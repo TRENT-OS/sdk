@@ -57,12 +57,12 @@ DOCKER_PARAMS_ANALYSIS=(
     --device /dev/fuse
     --security-opt apparmor:unconfined
     # enable GUI to run Axivion tools
-    -e DISPLAY=$DISPLAY
+    -e DISPLAY=${DISPLAY}
     -v /tmp/.X11-unix:/tmp/.X11-unix
 
     # set environment variables for analysis
-    -e ENABLE_CI_BUILD=$ENABLE_CI_BUILD
-    -e DEVNET_CONNECTION=$DEVNET_CONNECTION
+    -e ENABLE_CI_BUILD=${ENABLE_CI_BUILD}
+    -e DEVNET_CONNECTION=${DEVNET_CONNECTION}
 )
 
 
