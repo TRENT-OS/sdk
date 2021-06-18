@@ -1,0 +1,8 @@
+{
+    "#": "NOTE: Evaluation order is from bottom to top",
+    "#": "TODO: Change rule config to desired variant",
+    "_Layers": [
+        "project_config.json",
+        "rule_config_axivion_template.json"
+    ]
+}
