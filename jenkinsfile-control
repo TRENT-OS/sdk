@@ -115,8 +115,8 @@ def SYSTEM_CONFIGS = [
     // The "Hello World" demo also acts as a test for the CI feature to use a
     // verbose repo location of the form 'name@path/to/repo'.
     TestCtx('demo_hello_world@ss/demo_hello_world', ['zynq7000'], 'test_demo_hello_world.py'),
-    TestCtx('demo_hello_world',       ['sabre'], 'test_demo_hello_world.py'),
-    BuildCtx('demo_hello_world',      ['rpi3', 'rpi4', 'nitrogen6sx']),
+    TestCtx('demo_hello_world',       ['sabre', 'spike64'], 'test_demo_hello_world.py'),
+    BuildCtx('demo_hello_world',      ['rpi3', 'rpi4', 'nitrogen6sx', 'spike32']),
 
     // Demo systems
     TestCtx('demo_iot_app',           ['zynq7000'], 'test_demo_iot_app.py'),
@@ -135,7 +135,7 @@ def SYSTEM_CONFIGS = [
     TestCtx('test_chanmux',           ['zynq7000']),
     TestCtx('test_proxy_nvm',         ['zynq7000']),
     TestCtx('test_certparser',        ['zynq7000']),
-    TestCtx('test_crypto_api',        ['zynq7000']),
+    TestCtx('test_crypto_api',        ['zynq7000', 'spike64']),
     TestCtx('test_cryptoserver',      ['zynq7000']),
     TestCtx('test_entropysource',     ['zynq7000']),
     TestCtx('test_storage_interface', ['zynq7000', 'sabre'], 'test_storage_interface*.py'),

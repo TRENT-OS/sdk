@@ -84,6 +84,24 @@ echo "## Project:   ${OS_PROJECT_DIR}"
 echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Output:    ${BUILD_DIR}"
 
+CMAKE_PARAMS_PLATFORM=()
+case "${BUILD_PLATFORM}" in
+    #-------------------------------------
+    spike32 )
+        BUILD_PLATFORM=spike
+        CMAKE_PARAMS_PLATFORM+=(
+            -D RISCV32=TRUE
+        )
+        ;;
+    #-------------------------------------
+    spike64 | spike )
+        BUILD_PLATFORM=spike
+        CMAKE_PARAMS_PLATFORM+=(
+            -D RISCV64=TRUE
+        )
+        ;;
+esac
+
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
     am335x | am335x-boneblack | am335x-boneblue | \
@@ -116,6 +134,7 @@ case "${BUILD_PLATFORM}" in
     ariane |\
     hifive |\
     spike )
+        # toolchain can build rv32 and rv64 targets
         CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
         ;;
     #-------------------------------------
@@ -140,6 +159,7 @@ CMAKE_PARAMS=(
     -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
+    ${CMAKE_PARAMS_PLATFORM[@]}
     -D KernelVerificationBuild=OFF
     # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
     # musllibc and capDL-tool) that are project agnostic, so we don't have
