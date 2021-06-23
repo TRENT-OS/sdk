@@ -126,9 +126,10 @@ case "${BUILD_PLATFORM}" in
         ;;
     #-------------------------------------
     *)
-        echo "##------------------------------------------------------------------------------"
-        echo "## invalid platform: ${BUILD_PLATFORM}"
-        echo "##------------------------------------------------------------------------------"
+        echo ""
+        echo "##"
+        echo "## ERROR: invalid platform '${BUILD_PLATFORM}'"
+        echo "##"
         exit 1
         ;;
 esac
