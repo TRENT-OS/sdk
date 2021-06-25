@@ -142,3 +142,6 @@
 [submodule "components/SysLogger"]
 	path = components/SysLogger
 	url = ../../sc/syslogger.git
+[submodule "components/NetworkStack_PicoTcp"]
+	path = components/NetworkStack_PicoTcp
+	url = ../../sc/networkstack_picotcp.git
