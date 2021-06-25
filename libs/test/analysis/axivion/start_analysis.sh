@@ -94,6 +94,9 @@ axivion_ci -j
 
 if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
 
+    # synchronize cached writes
+    sync
+
     # unmount filestorage
     fusermount -u $AXIVION_DATABASES_DIR
 
