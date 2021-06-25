@@ -302,18 +302,19 @@ function build_sdk_demos()
     local TARGETS=(
         zynq7000
         rpi3
+        rpi4
         sabre
         # migv
     )
 
     # not every demo works on all platforms
     #
-    #                      | zynq7000 | rpi3 | sabre | migv | ...
-    # ---------------------+----------+------+-------+------+-----
-    #  demo_hello_world    | yes      | yes  | yes   | yes  |
-    #  demo_iot_app        | yes      | no   | no    | no   |
-    #  demo_iot_app_rpi3   | no       | yes  | no    | no   |
-    #  demo_tls_api        | yes      | no   | no    | no   |
+    #                      | zynq7000 | rpi3 | rpi4  | sabre | migv | ...
+    # ---------------------+----------+------+-------+-------+------+
+    #  demo_hello_world    | yes      | yes  | yes   | yes   | yes  |
+    #  demo_iot_app        | yes      | no   | no    | no    | no   |
+    #  demo_iot_app_rpi3   | no       | yes  | no    | no    | no   |
+    #  demo_tls_api        | yes      | no   | no    | no    | no   |
     #
     declare -A TARGET_RESTRICTIONS=(
         [demo_iot_app]=zynq7000
