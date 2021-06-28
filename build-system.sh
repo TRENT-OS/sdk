@@ -39,6 +39,13 @@
 #
 # Any additional parameters will be passed to CMake.
 #
+# NOTE: The environment variable ENABLE_ANALYSIS has to be set to "ON" if the
+#       script is used for an analysis with the axivion suite.
+#
+# NOTE: The environment variable BUILD_TARGET might be used to specify an
+#       individual CMake build target. Usually, this is used for the analysis
+#       with the axivion suite. If not set, "all" will be used for regular
+#       builds per default.
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -62,8 +69,8 @@ done
 # manually here.
 export HOME=/home/user
 
-
 #-------------------------------------------------------------------------------
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # This script assumes it is located in the SDK root folder.
@@ -77,6 +84,17 @@ shift 3
 # all remaining parameters will be passed to CMake
 BUILD_ARGS="$@"
 CMAKE_PARAMS_FILE=cmake_params.txt
+
+#-------------------------------------------------------------------------------
+
+# Check if analysis is enabled by environment variable (default: OFF).
+ENABLE_ANALYSIS=${ENABLE_ANALYSIS:-OFF}
+
+# Check if an individual CMake build target is set in the environment variable,
+# for example used for analysis (default: all).
+BUILD_TARGET=${BUILD_TARGET:-all}
+
+#-------------------------------------------------------------------------------
 
 echo ""
 echo "##=============================================================================="
@@ -153,10 +171,20 @@ case "${BUILD_PLATFORM}" in
         ;;
 esac
 
-CMAKE_PARAMS=(
+
+# Set toolchain file for regular builds
+TOOLCHAIN_FILE=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
+
+if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
+    # Set toolchain file for axivion suite if analysis enabled
+    TOOLCHAIN_FILE=${OS_SDK_PATH}/axivion.cmake
+fi
+
+# Set CMake parameters
+CMAKE_PARAMS+=(
     # CMake settings
     -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
-    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
+    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
     ${CMAKE_PARAMS_PLATFORM[@]}
@@ -219,6 +247,12 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     echo "## configure build ..."
     echo "##------------------------------------------------------------------------------"
 
+    if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
+        # Prepare axivion suite for CMake config
+        export COMPILE_ONLY=yes
+        unset COMPILE_ONLYIR
+    fi
+
     # Create ${BUILD_DIR} and save the build parameters. Do this before even
     # invoking CMake, so we have the parameters archived in any case.
     mkdir -p ${BUILD_DIR}
@@ -261,7 +295,15 @@ else
     echo "##------------------------------------------------------------------------------"
 fi
 
-cmake --build ${BUILD_DIR} --target all
+
+if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
+    # Prepare axivion suite for CMake build
+    unset COMPILE_ONLY
+    export COMPILE_ONLYIR=yes
+fi
+
+cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
+
 
 echo "##------------------------------------------------------------------------------"
 echo "## build successful, output in ${BUILD_DIR}"
