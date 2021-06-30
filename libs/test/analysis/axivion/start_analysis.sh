@@ -20,6 +20,7 @@ source ${SCRIPT_DIR}/set_common_paths
 export ENABLE_ANALYSIS=ON
 
 export AXIVION_PROJECTNAME=LibsAnalysis
+export AXIVION_OUTFILE=${BUILD_DIR}/test/analysis/libanalysis.so
 
 
 #-------------------------------------------------------------------------------
@@ -32,7 +33,6 @@ DEVNET_CONNECTION=${DEVNET_CONNECTION:-OFF}
 # set default configuration values
 export BAUHAUS_CONFIG=${AXIVION_DIR}
 export AXIVION_PROJECT_DIR=${REPO_DIR}
-export AXIVION_BUILD_DIR=${BUILD_DIR}
 export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
 
 LOCAL_FILESTORAGE_DIR=/home/user/filestorage

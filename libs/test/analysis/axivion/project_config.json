@@ -29,7 +29,7 @@
                 "clean_before": "$(AXIVION_CLEAN_BEFORE)"
             },
             "directory": "$(AXIVION_PROJECT_DIR)",
-            "ir": "$(AXIVION_BUILD_DIR)/test/analysis/libanalysis.so",
+            "ir": "$(AXIVION_OUTFILE)",
             "name": "$(AXIVION_PROJECTNAME)"
         }
     },
