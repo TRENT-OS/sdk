@@ -24,6 +24,10 @@
             "sourceserver_gitdir": "$(AXIVION_SOURCESERVER_GITDIR)"
         },
         "Project-GlobalOptions": {
+            "ci_mode": {
+                "clean_after": false,
+                "clean_before": "$(AXIVION_CLEAN_BEFORE)"
+            },
             "directory": "$(AXIVION_PROJECT_DIR)",
             "ir": "$(AXIVION_BUILD_DIR)/test/analysis/libanalysis.so",
             "name": "$(AXIVION_PROJECTNAME)"

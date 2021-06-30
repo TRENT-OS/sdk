@@ -88,6 +88,10 @@ fi
 # Do analysis
 #-------------------------------------------------------------------------------
 
+# do "clean before"
+export AXIVION_CLEAN_BEFORE=true
+
+# run axivion
 axivion_ci -j
 
 
