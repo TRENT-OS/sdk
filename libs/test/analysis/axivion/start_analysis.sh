@@ -35,10 +35,10 @@ export AXIVION_PROJECT_DIR=${REPO_DIR}
 export AXIVION_BUILD_DIR=${BUILD_DIR}
 export AXIVION_DATABASES_DIR=/home/user/filestorage
 export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
-export AXIVION_SOURCESERVER_GITDIR=$AXIVION_DATABASES_DIR/git/$AXIVION_PROJECTNAME.git
+export AXIVION_SOURCESERVER_GITDIR=${AXIVION_DATABASES_DIR}/git/${AXIVION_PROJECTNAME}.git
 
 # ensure databases dir exists
-mkdir -p $AXIVION_DATABASES_DIR
+mkdir -p ${AXIVION_DATABASES_DIR}
 
 if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
 
@@ -49,7 +49,7 @@ if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
     echo -e "\nDo CI build (with update of dashboard server).\n"
 
     # mount filestorage
-    sshfs filestorageuser@hc-axiviondashboard:/var/filestorage $AXIVION_DATABASES_DIR -o idmap=user -o cache=no
+    sshfs filestorageuser@hc-axiviondashboard:/var/filestorage ${AXIVION_DATABASES_DIR} -o idmap=user -o cache=no
 
 else
 
@@ -67,14 +67,14 @@ else
     export AXIVION_SOURCESERVER_GITDIR=${AXIVION_PROJECT_DIR}/.git
 
     # check if database file already exists
-    PROJECT_DATABASE_FILE=$AXIVION_DATABASES_DIR/$AXIVION_PROJECTNAME.db
+    PROJECT_DATABASE_FILE=${AXIVION_DATABASES_DIR}/${AXIVION_PROJECTNAME}.db
 
-    if [[ ! -f "$PROJECT_DATABASE_FILE" ]]; then
+    if [[ ! -f "${PROJECT_DATABASE_FILE}" ]]; then
 
         # create empty database
-        cidbman database create $PROJECT_DATABASE_FILE
+        cidbman database create ${PROJECT_DATABASE_FILE}
         # install project at dashboard server
-        dashserver install-project --dbfile $PROJECT_DATABASE_FILE
+        dashserver install-project --dbfile ${PROJECT_DATABASE_FILE}
 
     fi
 
@@ -98,6 +98,6 @@ if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
     sync
 
     # unmount filestorage
-    fusermount -u $AXIVION_DATABASES_DIR
+    fusermount -u ${AXIVION_DATABASES_DIR}
 
 fi
