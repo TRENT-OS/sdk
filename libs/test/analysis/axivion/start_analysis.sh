@@ -20,7 +20,6 @@ source ${SCRIPT_DIR}/set_common_paths
 export ENABLE_ANALYSIS=ON
 
 export AXIVION_PROJECTNAME=LibsAnalysis
-export BAUHAUS_CONFIG=${AXIVION_DIR}
 
 
 #-------------------------------------------------------------------------------
@@ -31,14 +30,18 @@ ENABLE_CI_BUILD=${ENABLE_CI_BUILD:-OFF}
 DEVNET_CONNECTION=${DEVNET_CONNECTION:-OFF}
 
 # set default configuration values
+export BAUHAUS_CONFIG=${AXIVION_DIR}
 export AXIVION_PROJECT_DIR=${REPO_DIR}
 export AXIVION_BUILD_DIR=${BUILD_DIR}
-export AXIVION_DATABASES_DIR=/home/user/filestorage
 export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
-export AXIVION_SOURCESERVER_GITDIR=${AXIVION_DATABASES_DIR}/git/${AXIVION_PROJECTNAME}.git
 
-# ensure databases dir exists
-mkdir -p ${AXIVION_DATABASES_DIR}
+LOCAL_FILESTORAGE_DIR=/home/user/filestorage
+export AXIVION_DATABASES_DIR=${LOCAL_FILESTORAGE_DIR}
+SERVER_FILESTORAGE_DIR=/var/filestorage
+export AXIVION_SOURCESERVER_GITDIR=${SERVER_FILESTORAGE_DIR}/git/${AXIVION_PROJECTNAME}.git
+
+# ensure local filestorage exists
+mkdir -p ${LOCAL_FILESTORAGE_DIR}
 
 if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
 
@@ -49,7 +52,7 @@ if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
     echo -e "\nDo CI build (with update of dashboard server).\n"
 
     # mount filestorage
-    sshfs filestorageuser@hc-axiviondashboard:/var/filestorage ${AXIVION_DATABASES_DIR} -o idmap=user -o cache=no
+    sshfs filestorageuser@hc-axiviondashboard:${SERVER_FILESTORAGE_DIR} ${LOCAL_FILESTORAGE_DIR} -o idmap=user -o cache=no
 
 else
 
@@ -67,14 +70,14 @@ else
     export AXIVION_SOURCESERVER_GITDIR=${AXIVION_PROJECT_DIR}/.git
 
     # check if database file already exists
-    PROJECT_DATABASE_FILE=${AXIVION_DATABASES_DIR}/${AXIVION_PROJECTNAME}.db
+    DATABASE_FILE=${LOCAL_FILESTORAGE_DIR}/${AXIVION_PROJECTNAME}.db
 
-    if [[ ! -f "${PROJECT_DATABASE_FILE}" ]]; then
+    if [[ ! -f "${DATABASE_FILE}" ]]; then
 
         # create empty database
-        cidbman database create ${PROJECT_DATABASE_FILE}
+        cidbman database create ${DATABASE_FILE}
         # install project at dashboard server
-        dashserver install-project --dbfile ${PROJECT_DATABASE_FILE}
+        dashserver install-project --dbfile ${DATABASE_FILE}
 
     fi
 
@@ -98,6 +101,6 @@ if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
     sync
 
     # unmount filestorage
-    fusermount -u ${AXIVION_DATABASES_DIR}
+    fusermount -u ${LOCAL_FILESTORAGE_DIR}
 
 fi
