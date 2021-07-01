@@ -267,6 +267,7 @@ function collect_sdk_demos()
         local DEMO_EXCLUDES=(
             --exclude-vcs
             --exclude 'astyle_prepare_submodule.sh'
+            --exclude 'axivion'
             --exclude './README.md'
         )
 
