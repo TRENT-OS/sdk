@@ -647,7 +647,7 @@ pipeline {
                         )
 
                         archiveArtifacts(
-                            artifacts: SYSTEM_PACKAGE,
+                            artifacts: SYSTEM_PACKAGE + ', test_results.xml',
                             fingerprint: true
                         )
 
