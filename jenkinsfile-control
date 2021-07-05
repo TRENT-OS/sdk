@@ -664,21 +664,21 @@ def do_jobs_for_test_systems(branch, testConfigs)
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
 
-            // sometimes this job runs just to test the SDK generation, so
+            // Sometimes this job runs just to test the SDK generation, so
             // there are no test systems enabled. We don't want to see things
             // fail with junit complaining about missing test files in this
             // case.
             if (cnt > 0)
             {
-                // ToDo: support multiple platforms here, currently this will
+                // TODO: Support multiple platforms here, currently this will
                 //       see the same test case for each platform and it's
-                //       likely messing up the analysis
+                //       likely messing up the analysis.
                 junit('package-*/test_results.xml')
             }
 
             save_current_job_log('build.log')
 
-            // create a package of all files, so the next stage can process
+            // Create a package of all files, so the next stage can process
             // them. Ensure we never fail here if a file is missing, because
             // there is not much we can do anyway. The next stage is supposed
             // to handle this.
@@ -686,7 +686,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 'tar',
                 [
                     '--ignore-failed-read',
-                    '-cjf '+SYSTEM_PACKAGE,
+                    '-cjf ' + SYSTEM_PACKAGE,
                     'build.log',
                     'package-*/'
                 ]
