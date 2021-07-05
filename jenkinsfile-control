@@ -516,7 +516,6 @@ def execute_build(ctx, stage_ctx)
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
         {
             copyArtifacts(
-                filter: stage_ctx.system_pkg,
                 projectName: jobBuild.getFullProjectName(),
                 // need to ensure this is a string
                 selector: specific("${jobBuild.getNumber()}")
@@ -525,7 +524,8 @@ def execute_build(ctx, stage_ctx)
             do_stash(
                 stage_ctx.stash_name,
                 [
-                    stage_ctx.system_pkg
+                    stage_ctx.system_pkg,
+                    'test_results.xml'
                 ]
             )
         }
