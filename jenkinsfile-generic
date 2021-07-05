@@ -641,8 +641,7 @@ pipeline {
                                 'build/',
                                 'build.log',
                                 'test-doc/',
-                                'test-logs/',
-                                'test_results.xml',
+                                'test-logs/'
                             ]
                         )
 
