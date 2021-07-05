@@ -652,11 +652,11 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 // there might be no stash if something failed earlier
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                 {
-                    unstash(pkg_name)
                     def pkg_dir = 'package-' + pkg_name
-                    run_app('mkdir', [pkg_dir])
-                    run_app('tar', ['-xf ' + SYSTEM_PACKAGE, '-C ' + pkg_dir])
-                    run_app('rm', [SYSTEM_PACKAGE])
+                    dir(pkg_dir)
+                    {
+                        unstash(pkg_name)
+                    }
                 }
 
                 def pkg_build = job_stage_ctx.build
