@@ -545,7 +545,8 @@ function package_sdk()
         return 1
     fi
 
-    local SDK_PACKAGE_BZ2=sdk-package.tar.bz2
+    local DEV_SDK_PACKAGE=dev-sdk-package.tar.bz2
+    local SDK_PACKAGE=sdk-package.tar.bz2
 
     # All files in the SDK package will be set to the same timestamp, which is
     # the time when this script runs.
@@ -577,7 +578,7 @@ function package_sdk()
     # - The exclude list is built by prefixing entries in SDK_PACKAGE_EXCLUDES
     #   with "--exclude ".
     tar \
-        -cjf ${SDK_PACKAGE_BZ2} \
+        -cjf ${SDK_PACKAGE} \
         --no-wildcards-match-slash \
         --sort=name \
         --mtime="${SDK_PACKAGE_TIMESTAMP}" \
@@ -585,7 +586,10 @@ function package_sdk()
         ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
         .
 
-    du -sh ${SDK_PACKAGE_BZ2}
+    du -sh ${SDK_PACKAGE}
+
+    # TODO: remove copy later once individual packages are created
+    cp ${SDK_PACKAGE} ${DEV_SDK_PACKAGE}
 }
 
 #-------------------------------------------------------------------------------
