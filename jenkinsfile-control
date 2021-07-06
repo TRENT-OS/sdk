@@ -557,9 +557,10 @@ def execute_build(ctx, stage_ctx)
 //------------------------------------------------------------------------------
 def do_jobs_for_test_systems(branch, testConfigs)
 {
-    // downstream job create this package and finally we also pack all the
-    // collected results into a package with this name
-    def SYSTEM_PACKAGE = 'package.bz2'
+    // downstream jobs create theses system packages and finally we also pack
+    // all the packages into a single package
+    def SYSTEM_PACKAGE = 'system-package.tar.bz2'
+    def SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
     def summary = manager.createSummary("orange-square.png")
     summary.appendText('<hr>')
@@ -686,13 +687,13 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 'tar',
                 [
                     '--ignore-failed-read',
-                    '-cjf ' + SYSTEM_PACKAGE,
+                    '-cjf ' + SYSTEM_PACKAGES,
                     'build.log',
                     'package-*/'
                 ]
             )
 
-            do_archiveArtifacts(SYSTEM_PACKAGE)
+            do_archiveArtifacts(SYSTEM_PACKAGES)
 
             cleanWs()
 

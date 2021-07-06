@@ -19,7 +19,7 @@
 
 params.each { println it.key + " = " + it.value }
 
-def SYSTEM_PACKAGE = 'package.bz2'
+def SYSTEM_PACKAGE = 'system-package.tar.bz2'
 
 def SYSTEM_DIR = 'src/system'
 def SDK_DIR = 'src/sdk'
