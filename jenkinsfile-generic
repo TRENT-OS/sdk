@@ -617,7 +617,7 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
 
-                        save_current_job_log('build.log')
+                        save_current_job_log('build_and_test.log')
 
                         run_app(
                             'tar',
@@ -625,7 +625,7 @@ pipeline {
                                 '--ignore-failed-read',
                                 '-cjf ' + SYSTEM_PACKAGE,
                                 'build/',
-                                'build.log',
+                                'build_and_test.log',
                                 'test-doc/',
                                 'test-logs/'
                             ]
