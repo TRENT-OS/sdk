@@ -583,11 +583,12 @@ function package_sdk()
     local SDK_PACKAGE_BZ2=sdk-package.tar.bz2
 
     # All files in the SDK package will be set to the same timestamp, which is
-    # the time when this script runs. Change this to enforce a specific
-    # timestamp (e.g. "UTC 2021-02-19 18:00:00") for official releases.
-    local SDK_PACKET_TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
+    # the time when this script runs.
+    # To enforce a specific timestamp for official releases the variable should
+    # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
+    local SDK_PACKAGE_TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
 
-    print_info "Packaging SDK with timestamp '${SDK_PACKET_TIMESTAMP}' to ${SDK_PACKAGE_BZ2}"
+    print_info "Packaging SDK with timestamp '${SDK_PACKAGE_TIMESTAMP}' to ${SDK_PACKAGE_BZ2}"
 
     du -sh ${SDK_SRC_DIR}
 
@@ -625,13 +626,14 @@ function package_sdk()
         ./libs/lib_utils/test
     )
 
-    # Create the SDK package where all files have the same well defined
-    # timestamp. The exclude list is simply built by prefixing everything in
-    # SDK_PACKAGE_EXCLUDES with "--exclude ".
+    # Create the SDK package:
+    # - All files have the same timestamp.
+    # - The exclude list is built by prefixing entries in SDK_PACKAGE_EXCLUDES
+    #   with "--exclude ".
     tar \
         -cjf ${SDK_PACKAGE_BZ2} \
         --sort=name \
-        --mtime="${SDK_PACKET_TIMESTAMP}" \
+        --mtime="${SDK_PACKAGE_TIMESTAMP}" \
         -C ${SDK_SRC_DIR} \
         ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
         .
