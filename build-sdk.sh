@@ -95,9 +95,6 @@ function copy_imx6_resources
     local DST_DIR=$2
     shift 2
 
-    print_info \
-      "Copying Nitrogen SoloX resources from ${SRC_DIR} to ${DST_DIR}"
-
     copy_files_via_tar \
         ${SRC_DIR}/nitrogen6sx \
         ${DST_DIR}/nitrogen6sx_sd_card
@@ -105,9 +102,6 @@ function copy_imx6_resources
     copy_files_via_tar \
         ${SRC_DIR}/common \
         ${DST_DIR}/nitrogen6sx_sd_card
-
-    print_info \
-      "Copying Sabre Lite resources from ${SRC_DIR} to ${DST_DIR}"
 
     copy_files_via_tar \
         ${SRC_DIR}/sabre \
@@ -126,34 +120,33 @@ function collect_sdk_sources()
     local OUT_PKG_DIR=$3
     shift 3
 
-    print_info "collecting SDK sources from ${SDK_SRC_DIR}"
+    #---------------------------------------------------------------------------
+    # Prepare clean output folder
+    #---------------------------------------------------------------------------
 
-    # remove any existing output directory
-    mkdir -p ${OUT_BASE_DIR}
-
-    # remove any existing output directory
     if [ -d ${OUT_PKG_DIR} ]; then
         rm -rf ${OUT_PKG_DIR}
     fi
+
     mkdir -p ${OUT_PKG_DIR}
+
+    #---------------------------------------------------------------------------
+    # Create version file with git submodule infos
+    #---------------------------------------------------------------------------
 
     local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
-    # create file with git infos
     local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
     (
         cd ${SDK_SRC_DIR}
-        git submodule status --recursive >${ABS_VERSION_INFO_FILE}
+        git submodule status --recursive > ${ABS_VERSION_INFO_FILE}
     )
 
-    local SDK_EXCLUDE_REPOS=(
-        sdk-pdfs
-        tools/kpt
-    )
-    for repo in ${SDK_EXCLUDE_REPOS[@]}; do
-        # replace "/" by "\/" via bash magic ${repo//\//\\/}
-        sed --in-place "/ ${repo//\//\\/} /d" ${VERSION_INFO_FILE}
-    done
+    #---------------------------------------------------------------------------
+    # Prepare basic SDK excludes
+    # NOTE: Specify files that are not needed for the SDK build process. Further
+    # exclusions are possible in package_sdk().
+    #---------------------------------------------------------------------------
 
     local SDK_EXCLUDES=(
         # remove all astyle prepare scripts
@@ -173,78 +166,51 @@ function collect_sdk_sources()
         ./scripts/open_trentos_analysis_env.sh
 
         # remove unwanted repos
-        ${SDK_EXCLUDE_REPOS[@]/#/./} # prefix every element with "./"
+        ./sdk-pdfs
+        ./tools/kpt
 
         # remove all readme files except from os_core_api which shall be
         # included in the doxygen documentation
         ./README.md
-        ./components/ChanMux/README.md
-        ./components/CertServer/README.md
-        ./components/CryptoServer/README.md
-        ./components/EntropySource/README.md
-        ./components/NIC_ChanMux/README.md
-        ./components/NIC_Dummy/README.md
-        ./components/NIC_iMX6/README.md
-        ./components/NIC_RPi/README.md
-        ./components/RamDisk/README.md
-        ./components/RPi_SPI_Flash/README.md
-        ./components/SdHostController/README.md
-        ./components/Storage_ChanMux/README.md
-        ./components/StorageServer/README.md
-        ./components/TimeServer/README.md
-        ./components/TlsServer/README.md
-        ./components/UART/README.md
-        ./libs/chanmux/README.md
-        ./libs/chanmux_nic_driver/README.md
-        ./libs/lib_compiler/README.md
-        ./libs/lib_debug/README.md
-        ./libs/lib_host/README.md
-        ./libs/lib_io/README.md
-        ./libs/lib_logs/README.md
-        ./libs/lib_macros/README.md
-        ./libs/lib_mem/README.md
-        ./libs/lib_osal/README.md
-        ./libs/lib_server/README.md
-        ./libs/lib_utils/README.md
-        ./libs/os_cert/README.md
-        ./libs/os_configuration/README.md
-        ./libs/os_crypto/README.md
-        ./libs/os_filesystem/README.md
-        ./libs/os_keystore/README.md
-        ./libs/os_logger/Readme.md
-        ./libs/os_network_stack/README.md
-        ./libs/os_tls/README.md
-        #./os_core_api/README.md
+        ./components/*/README.md
+        ./libs/*/README.md
+        #./os_core_api/README.md # remove later after doxygen
         ./resources/README.md
-        ./resources/rpi3_sd_card/README.md
-        ./resources/rpi4_sd_card/README.md
-        ./resources/zcu102_sd_card/README.md
+        ./resources/*/README.md
         ./scripts/README.md
         ./sdk-sel4-camkes/README.md
-        ./tools/cpt/README.md
-        ./tools/proxy/README.md
-        ./tools/rdgen/README.md
-        ./tools/rpi3_flasher/README.md
+        ./tools/*/README.md
 
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
     )
 
-    # copy files using tar and filtering. Seems there is a bug in tar, for
-    # "--exclude '.gitmodules'" the file .gitmodules is not excluded. So we
-    # trust in "--exclude-vcs" to do the job properly.
+    #---------------------------------------------------------------------------
+    # Copy SDK sources using tar and filtering.
+    # NOTE: Use "--exclude-vcs" to exclude vcs directories since there seems to
+    # be a bug in tar when using "--exclude .gitmodules".
+    #---------------------------------------------------------------------------
+
+    print_info "Copying SDK sources from ${SDK_SRC_DIR} to ${OUT_PKG_DIR}"
+
     copy_files_via_tar \
         ${SDK_SRC_DIR} \
         ${OUT_PKG_DIR} \
         --exclude-vcs \
+        --no-wildcards-match-slash \
         ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
 
-    copy_imx6_resources \
-        ${SDK_SRC_DIR}/resources/imx6_sd_card \
-        ${OUT_PKG_DIR}/resources
+    #---------------------------------------------------------------------------
+    # Special handling to copy common imx6 resources to the specific platform
+    # folders.
+    #---------------------------------------------------------------------------
 
-    # put a version.info into the SDK package for the seL4/CAmkES repos
-    #sed "/ sdk-sel4-camkes\//!d" ${VERSION_INFO_FILE} > ${OUT_PKG_DIR}/sdk-sel4-camkes/version.info
+    local RES_SRC_DIR=${SDK_SRC_DIR}/resources/imx6_sd_card
+    local RES_DST_DIR=${OUT_PKG_DIR}/resources
+
+    print_info "Copying imx6 resources from ${RES_SRC_DIR} to ${RES_DST_DIR}"
+
+    copy_imx6_resources ${RES_SRC_DIR} ${RES_DST_DIR}
 }
 
 
