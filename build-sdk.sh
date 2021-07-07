@@ -569,21 +569,11 @@ function package_sdk()
     local SDK_PACKAGE_EXCLUDES=(
         # remove prepare_test.sh from demos
         prepare_test.sh
-        # remove readme file from os_core_api
-        ./os_core_api/README.md
-        # remove all doxygen files from our modules
+
+        # remove files used by doxygen
         ./Doxyfile
-        ./libs/chanmux/Doxyfile
-        ./libs/chanmux_nic_driver/Doxyfile
-        ./libs/os_cert/Doxyfile
-        ./libs/os_configuration/Doxyfile
-        ./os_core_api/Doxyfile
-        ./libs/os_crypto/Doxyfile
-        ./libs/os_filesystem/Doxyfile
-        ./libs/os_keystore/Doxyfile
-        ./libs/os_logger/Doxyfile
-        ./libs/os_network_stack/Doxyfile
-        ./libs/os_tls/Doxyfile
+        ./os_core_api/README.md
+
         # remove unit-tests
         ./libs/CMakeLists.txt
         ./libs/test
