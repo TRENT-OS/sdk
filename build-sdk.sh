@@ -548,13 +548,34 @@ function package_sdk()
     local DEV_SDK_PACKAGE=dev-sdk-package.tar.bz2
     local SDK_PACKAGE=sdk-package.tar.bz2
 
+    print_info "Start creating packages from ${SDK_PACKAGE_SRC}:"
+    du -sh ${SDK_PACKAGE_SRC}
+
+    #---------------------------------------------------------------------------
+    # Create development SDK package
+    #---------------------------------------------------------------------------
+
+    print_info "Create development SDK package ${DEV_SDK_PACKAGE}:"
+
+    tar \
+        -cjf ${DEV_SDK_PACKAGE} \
+        --sort=name \
+        -C ${SDK_PACKAGE_SRC} \
+        .
+
+    du -sh ${DEV_SDK_PACKAGE}
+
+    #---------------------------------------------------------------------------
+    # Create SDK package
+    #---------------------------------------------------------------------------
+
     # All files in the SDK package will be set to the same timestamp, which is
     # the time when this script runs.
     # To enforce a specific timestamp for official releases the variable should
     # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
     local SDK_PACKAGE_TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
 
-    print_info "Packaging SDK with timestamp '${SDK_PACKAGE_TIMESTAMP}' to ${SDK_PACKAGE_BZ2}"
+    print_info "Create SDK package ${SDK_PACKAGE} with timestamp '${SDK_PACKAGE_TIMESTAMP}':"
 
     du -sh ${SDK_PACKAGE_SRC}
 
@@ -573,8 +594,7 @@ function package_sdk()
         ./libs/*/test
     )
 
-    # Create the SDK package:
-    # - All files have the same timestamp.
+    # - Apply same timestamp to all files.
     # - The exclude list is built by prefixing entries in SDK_PACKAGE_EXCLUDES
     #   with "--exclude ".
     tar \
@@ -587,9 +607,6 @@ function package_sdk()
         .
 
     du -sh ${SDK_PACKAGE}
-
-    # TODO: remove copy later once individual packages are created
-    cp ${SDK_PACKAGE} ${DEV_SDK_PACKAGE}
 }
 
 #-------------------------------------------------------------------------------
