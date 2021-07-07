@@ -549,10 +549,10 @@ function build_sdk_docs()
 #-------------------------------------------------------------------------------
 function package_sdk()
 {
-    local SDK_SRC_DIR=$1
+    local SDK_PACKAGE_SRC=$1
     shift 1
 
-    if [ ! -d ${SDK_SRC_DIR} ]; then
+    if [ ! -d ${SDK_PACKAGE_SRC} ]; then
         echo "missing SDK source folder, did you run the collect step?"
         return 1
     fi
@@ -567,7 +567,7 @@ function package_sdk()
 
     print_info "Packaging SDK with timestamp '${SDK_PACKAGE_TIMESTAMP}' to ${SDK_PACKAGE_BZ2}"
 
-    du -sh ${SDK_SRC_DIR}
+    du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
         # remove prepare_test.sh from demos
@@ -601,7 +601,7 @@ function package_sdk()
         -cjf ${SDK_PACKAGE_BZ2} \
         --sort=name \
         --mtime="${SDK_PACKAGE_TIMESTAMP}" \
-        -C ${SDK_SRC_DIR} \
+        -C ${SDK_PACKAGE_SRC} \
         ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
         .
 
