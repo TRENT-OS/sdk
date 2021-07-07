@@ -219,12 +219,13 @@ function collect_sdk_demos()
 {
     local DEMOS_DIR=$1
     local OUT_BASE_DIR=$2
-    local SDK_DEMOS_DIR=$3
+    local SDK_PACKAGE_DEMOS=$3
     shift 3
 
     for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
 
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
+        local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}/src
 
         local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
@@ -234,19 +235,32 @@ function collect_sdk_demos()
             echo " $(git rev-parse HEAD) ${SDK_DEMO_NAME}" >> ${ABS_VERSION_INFO_FILE}
         )
 
-        print_info "collecting demo sources from ${DEMO_SRC_DIR}"
+        #-----------------------------------------------------------------------
+        # Prepare basic demo excludes
+        # NOTE: Specify files that are not needed for the SDK build process.
+        # Further exclusions are possible in package_sdk().
+        #-----------------------------------------------------------------------
 
         local DEMO_EXCLUDES=(
-            --exclude-vcs
-            --exclude 'astyle_prepare_submodule.sh'
-            --exclude 'axivion'
-            --exclude './README.md'
+            astyle_prepare_submodule.sh
+            axivion
+            ./README.md
         )
+
+        #-----------------------------------------------------------------------
+        # Copy demo sources using tar and filtering.
+        # NOTE: Use "--exclude-vcs" to exclude vcs directories since there seems
+        # to be a bug in tar when using "--exclude .gitmodules".
+        #-----------------------------------------------------------------------
+
+        print_info "Copying demo sources from ${DEMO_SRC_DIR} to ${DEMO_DST_DIR}"
 
         copy_files_via_tar \
             ${DEMO_SRC_DIR} \
-            ${SDK_DEMOS_DIR}/${SDK_DEMO_NAME}/src \
-            ${DEMO_EXCLUDES[@]}
+            ${DEMO_DST_DIR} \
+            --exclude-vcs \
+            --no-wildcards-match-slash \
+            ${DEMO_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
     done
 }
 
