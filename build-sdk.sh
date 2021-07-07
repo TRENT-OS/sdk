@@ -580,17 +580,8 @@ function package_sdk()
         # remove unit-tests
         ./libs/CMakeLists.txt
         ./libs/test
-        ./libs/lib_compiler/mocks
-        ./libs/lib_debug/mocks
-        ./libs/lib_host/test
-        ./libs/lib_logs/mocks
-        ./libs/lib_macros/mocks
-        ./libs/lib_mem/mocks
-        ./libs/lib_mem/test
-        ./libs/lib_osal/mocks
-        ./libs/lib_server/test
-        ./libs/lib_utils/mocks
-        ./libs/lib_utils/test
+        ./libs/*/mocks
+        ./libs/*/test
     )
 
     # Create the SDK package:
@@ -599,6 +590,7 @@ function package_sdk()
     #   with "--exclude ".
     tar \
         -cjf ${SDK_PACKAGE_BZ2} \
+        --no-wildcards-match-slash \
         --sort=name \
         --mtime="${SDK_PACKAGE_TIMESTAMP}" \
         -C ${SDK_PACKAGE_SRC} \
