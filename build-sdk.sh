@@ -158,9 +158,12 @@ function collect_sdk_sources()
         ./astyle_options_default
         ./axivion.cmake
         ./build-sdk.sh
+        ./publish_doc.sh
+
+        # remove jenkins files
+        ./jenkinsfile
         ./jenkinsfile-control
         ./jenkinsfile-generic
-        ./publish_doc.sh
 
         # remove internal script
         ./scripts/open_trentos_analysis_env.sh
