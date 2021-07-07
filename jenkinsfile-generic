@@ -433,7 +433,6 @@ pipeline {
                         run_app('tar', [
                             '--ignore-failed-read',
                             '-cjf ' + SYSTEM_PACKAGE,
-                            'build/camkes-tool/*.cpp',
                             'build/camkes-tool/libsel4camkes/gen_config/',
                             'build/capdl/capdl-loader-app/gen_config/',
                             'build/capdl/object_sizes/object_sizes.yaml',
