@@ -17,6 +17,9 @@ OS_SDK_PATH="${SCRIPT_DIR}"
 # SDK creatin CI job adapts to this layout.
 DEMOS_SRC_DIR="${SCRIPT_DIR}/../src/demos"
 
+# Name of the version info file.
+VERSION_INFO_FILENAME="version.info"
+
 
 #-------------------------------------------------------------------------------
 function print_info()
@@ -134,7 +137,7 @@ function collect_sdk_sources()
     fi
     mkdir -p ${OUT_PKG_DIR}
 
-    local VERSION_INFO_FILE=${OUT_BASE_DIR}/version.info
+    local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
     # create file with git infos
     local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
@@ -255,12 +258,21 @@ function collect_sdk_sources()
 function collect_sdk_demos()
 {
     local DEMOS_DIR=$1
-    local SDK_DEMOS_DIR=$2
-    shift 2
+    local OUT_BASE_DIR=$2
+    local SDK_DEMOS_DIR=$3
+    shift 3
 
     for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
 
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
+
+        local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
+
+        local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
+        (
+            cd ${DEMO_SRC_DIR}
+            echo " $(git rev-parse HEAD) ${SDK_DEMO_NAME}" >> ${ABS_VERSION_INFO_FILE}
+        )
 
         print_info "collecting demo sources from ${DEMO_SRC_DIR}"
 
@@ -674,7 +686,7 @@ function do_sdk_step()
             ;;
 
         collect-demos)
-            collect_sdk_demos ${DEMOS_SRC_DIR} ${SDK_PACKAGE_DEMOS}
+            collect_sdk_demos ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_DEMOS}
             ;;
 
         build-demos)
