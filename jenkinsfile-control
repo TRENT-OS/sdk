@@ -796,6 +796,7 @@ pipeline {
                         print_step_info env.STAGE_NAME
 
                         do_archiveArtifacts(SDK_PACKAGE)
+                        do_archiveArtifacts('sdk-package/version.info')
 
                         do_stash(
                             'stash_doc',
