@@ -243,12 +243,6 @@ function collect_sdk_sources()
         ${SDK_SRC_DIR}/resources/imx6_sd_card \
         ${OUT_PKG_DIR}/resources
 
-    # copy the OpenOCD configuration files for all available platforms
-    # to the resources/openocd_cfgs directory
-    copy_files_via_tar \
-        ${SDK_SRC_DIR}/resources/openocd_cfgs \
-        ${OUT_PKG_DIR}/resources/openocd_cfgs
-
     # put a version.info into the SDK package for the seL4/CAmkES repos
     #sed "/ sdk-sel4-camkes\//!d" ${VERSION_INFO_FILE} > ${OUT_PKG_DIR}/sdk-sel4-camkes/version.info
 }
