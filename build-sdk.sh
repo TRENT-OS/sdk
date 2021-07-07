@@ -580,6 +580,9 @@ function package_sdk()
     du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
+        # remove development components
+        ./components/SysLogger
+
         # remove prepare_test.sh from demos
         prepare_test.sh
 
