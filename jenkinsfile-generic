@@ -433,6 +433,13 @@ pipeline {
                         run_app('tar', [
                             '--ignore-failed-read',
                             '-cjf ' + SYSTEM_PACKAGE,
+
+                            // NOTE: Uncomment the following line in case the
+                            //       whole build folder should be stored.
+                            // 'build/*',
+
+                            // Store the following artifacts. The image will be
+                            // required in the test stage (if tests enabled).
                             'build/images/os_image.elf',
                             'build/os_system/graph.svg',
                             'build/compile_commands.json',
