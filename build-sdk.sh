@@ -94,7 +94,7 @@ function collect_sdk_sandbox()
     shift 3
 
     #---------------------------------------------------------------------------
-    # Prepare clean output folder
+    # Prepare clean output folder.
     #---------------------------------------------------------------------------
 
     if [ -d ${OUT_PKG_DIR} ]; then
@@ -104,7 +104,7 @@ function collect_sdk_sandbox()
     mkdir -p ${OUT_PKG_DIR}
 
     #---------------------------------------------------------------------------
-    # Create version file with git submodule infos
+    # Create version file with git submodule infos.
     #---------------------------------------------------------------------------
 
     local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
@@ -116,7 +116,7 @@ function collect_sdk_sandbox()
     )
 
     #---------------------------------------------------------------------------
-    # Prepare basic sandbox excludes
+    # Prepare basic sandbox excludes.
     # NOTE: Specify files that are not needed for the SDK build process. Further
     # exclusions are possible in package_sdk().
     #---------------------------------------------------------------------------
@@ -227,7 +227,7 @@ function collect_sdk_demos()
         )
 
         #-----------------------------------------------------------------------
-        # Prepare basic demo excludes
+        # Prepare basic demo excludes.
         # NOTE: Specify files that are not needed for the SDK build process.
         # Further exclusions are possible in package_sdk().
         #-----------------------------------------------------------------------
@@ -545,14 +545,18 @@ function package_sdk()
         return 1
     fi
 
+    # Name of the development SDK package (for testing).
     local DEV_SDK_PACKAGE=dev-sdk-package.tar.bz2
+    # Name of the SDK package (for releases).
     local SDK_PACKAGE=sdk-package.tar.bz2
 
     print_info "Start creating packages from ${SDK_PACKAGE_SRC}:"
     du -sh ${SDK_PACKAGE_SRC}
 
     #---------------------------------------------------------------------------
-    # Create development SDK package
+    # Create development SDK package.
+    # This package is used for internal testing. Only a basic filtering has been
+    # applied based on the sandbox and demo repositories during the collection.
     #---------------------------------------------------------------------------
 
     print_info "Create development SDK package ${DEV_SDK_PACKAGE}:"
@@ -566,7 +570,9 @@ function package_sdk()
     du -sh ${DEV_SDK_PACKAGE}
 
     #---------------------------------------------------------------------------
-    # Create SDK package
+    # Create SDK package.
+    # This package is used for releases. Compared to the development SDK package
+    # a further filtering is applied to remove not-to-be-released files.
     #---------------------------------------------------------------------------
 
     # All files in the SDK package will be set to the same timestamp, which is
