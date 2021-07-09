@@ -550,7 +550,13 @@ function package_sdk()
     # Name of the SDK package (for releases).
     local SDK_PACKAGE=sdk-package.tar.bz2
 
-    print_info "Start creating packages from ${SDK_PACKAGE_SRC}:"
+    # All files in the packages will be set to the same timestamp, which is the
+    # time when this script runs.
+    # To enforce a specific timestamp for official releases the variable should
+    # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
+    local TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
+
+    print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}':"
     du -sh ${SDK_PACKAGE_SRC}
 
     #---------------------------------------------------------------------------
@@ -561,9 +567,11 @@ function package_sdk()
 
     print_info "Create development SDK package ${DEV_SDK_PACKAGE}:"
 
+    # - Apply timestamp to all files.
     tar \
         -cjf ${DEV_SDK_PACKAGE} \
         --sort=name \
+        --mtime="${TIMESTAMP}" \
         -C ${SDK_PACKAGE_SRC} \
         .
 
@@ -575,13 +583,7 @@ function package_sdk()
     # a further filtering is applied to remove not-to-be-released files.
     #---------------------------------------------------------------------------
 
-    # All files in the SDK package will be set to the same timestamp, which is
-    # the time when this script runs.
-    # To enforce a specific timestamp for official releases the variable should
-    # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
-    local SDK_PACKAGE_TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
-
-    print_info "Create SDK package ${SDK_PACKAGE} with timestamp '${SDK_PACKAGE_TIMESTAMP}':"
+    print_info "Create SDK package ${SDK_PACKAGE}:"
 
     du -sh ${SDK_PACKAGE_SRC}
 
@@ -603,14 +605,13 @@ function package_sdk()
         ./libs/*/test
     )
 
-    # - Apply same timestamp to all files.
-    # - The exclude list is built by prefixing entries in SDK_PACKAGE_EXCLUDES
-    #   with "--exclude ".
+    # - Apply timestamp to all files.
+    # - Prefix excludes with "--exclude ".
     tar \
         -cjf ${SDK_PACKAGE} \
         --no-wildcards-match-slash \
         --sort=name \
-        --mtime="${SDK_PACKAGE_TIMESTAMP}" \
+        --mtime="${TIMESTAMP}" \
         -C ${SDK_PACKAGE_SRC} \
         ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
         .
