@@ -86,7 +86,7 @@ function copy_files_via_tar()
 
 
 #-------------------------------------------------------------------------------
-function collect_sdk_sources()
+function collect_sdk_sandbox()
 {
     local SDK_SRC_DIR=$1
     local OUT_BASE_DIR=$2
@@ -116,12 +116,12 @@ function collect_sdk_sources()
     )
 
     #---------------------------------------------------------------------------
-    # Prepare basic SDK excludes
+    # Prepare basic sandbox excludes
     # NOTE: Specify files that are not needed for the SDK build process. Further
     # exclusions are possible in package_sdk().
     #---------------------------------------------------------------------------
 
-    local SDK_EXCLUDES=(
+    local BASIC_SANDBOX_EXCLUDES=(
         # remove all astyle prepare scripts
         astyle_prepare_submodule.sh
 
@@ -174,7 +174,7 @@ function collect_sdk_sources()
         ${OUT_PKG_DIR} \
         --exclude-vcs \
         --no-wildcards-match-slash \
-        ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
+        ${BASIC_SANDBOX_EXCLUDES[@]/#/--exclude } # prefix with "--exclude "
 
     #---------------------------------------------------------------------------
     # Special handling for imx6 resources.
@@ -232,7 +232,7 @@ function collect_sdk_demos()
         # Further exclusions are possible in package_sdk().
         #-----------------------------------------------------------------------
 
-        local DEMO_EXCLUDES=(
+        local BASIC_DEMO_EXCLUDES=(
             astyle_prepare_submodule.sh
             axivion
             ./README.md
@@ -251,7 +251,7 @@ function collect_sdk_demos()
             ${DEMO_DST_DIR} \
             --exclude-vcs \
             --no-wildcards-match-slash \
-            ${DEMO_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
+            ${BASIC_DEMO_EXCLUDES[@]/#/--exclude } # prefix with "--exclude "
     done
 }
 
@@ -620,7 +620,7 @@ OUT_BASE_DIR=$2
 shift 2
 
 # for development purposes, all the steps can also run directly from the SDK
-# sources. In this case don't run "collect_sdk_sources" and set SDK_PACKAGE_SRC
+# sources. In this case don't run "collect_sdk_sandbox" and set SDK_PACKAGE_SRC
 # to OS_SDK_PATH for all steps
 
 
@@ -639,7 +639,7 @@ function do_sdk_step()
 
     case "${STEP}" in
         collect-sources)
-            collect_sdk_sources ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
+            collect_sdk_sandbox ${OS_SDK_PATH} ${OUT_BASE_DIR} ${SDK_PACKAGE_SRC}
             ;;
 
         build-package)
