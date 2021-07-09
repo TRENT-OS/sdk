@@ -8,6 +8,7 @@
 
 unset_common_paths () {
     unset AXIVION_DIR
+    unset AXIVION_COMMON_DIR
     unset REPO_DIR
     unset SOURCE_DIR
     unset BUILD_DIR
@@ -17,6 +18,8 @@ unset_common_paths () {
 AXIVION_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # set derived directories
+AXIVION_COMMON_DIR="${AXIVION_DIR}/../../../../axivion_common"  # e.g. /host/sandbox/axivion_common
+
 REPO_DIR="${AXIVION_DIR}/../../../.."   # e.g. /host/sandbox
 SOURCE_DIR="${AXIVION_DIR}/../../.."    # e.g. /host/sandbox/libs
 BUILD_DIR="/home/user/build_analysis"   # folder within container
