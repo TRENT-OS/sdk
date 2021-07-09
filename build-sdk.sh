@@ -86,33 +86,6 @@ function copy_files_via_tar()
 
 
 #-------------------------------------------------------------------------------
-# i.MX6 platforms' resources require special handling as some files are common
-# in the source repository, but we don't want to expose this in the final
-# packages.
-function copy_imx6_resources
-{
-    local SRC_DIR=$1
-    local DST_DIR=$2
-    shift 2
-
-    copy_files_via_tar \
-        ${SRC_DIR}/nitrogen6sx \
-        ${DST_DIR}/nitrogen6sx_sd_card
-
-    copy_files_via_tar \
-        ${SRC_DIR}/common \
-        ${DST_DIR}/nitrogen6sx_sd_card
-
-    copy_files_via_tar \
-        ${SRC_DIR}/sabre \
-        ${DST_DIR}/sabre_sd_card
-
-    copy_files_via_tar \
-        ${SRC_DIR}/common \
-        ${DST_DIR}/sabre_sd_card
-}
-
-#-------------------------------------------------------------------------------
 function collect_sdk_sources()
 {
     local SDK_SRC_DIR=$1
@@ -204,8 +177,9 @@ function collect_sdk_sources()
         ${SDK_EXCLUDES[@]/#/--exclude } # prefix all with "--exclude "
 
     #---------------------------------------------------------------------------
-    # Special handling to copy common imx6 resources to the specific platform
-    # folders.
+    # Special handling for imx6 resources.
+    # NOTE: Some files are in a common folder in the resources repository and
+    # need to be copied to the specific platform folders.
     #---------------------------------------------------------------------------
 
     local RES_SRC_DIR=${SDK_SRC_DIR}/resources/imx6_sd_card
@@ -213,7 +187,21 @@ function collect_sdk_sources()
 
     print_info "Copying imx6 resources from ${RES_SRC_DIR} to ${RES_DST_DIR}"
 
-    copy_imx6_resources ${RES_SRC_DIR} ${RES_DST_DIR}
+    copy_files_via_tar \
+        ${RES_SRC_DIR}/nitrogen6sx \
+        ${RES_DST_DIR}/nitrogen6sx_sd_card
+
+    copy_files_via_tar \
+        ${RES_SRC_DIR}/common \
+        ${RES_DST_DIR}/nitrogen6sx_sd_card
+
+    copy_files_via_tar \
+        ${RES_SRC_DIR}/sabre \
+        ${RES_DST_DIR}/sabre_sd_card
+
+    copy_files_via_tar \
+        ${RES_SRC_DIR}/common \
+        ${RES_DST_DIR}/sabre_sd_card
 }
 
 
