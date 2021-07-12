@@ -5,7 +5,7 @@
 #
 
 # include regular toolchain file
-include("${CMAKE_CURRENT_LIST_DIR}/sdk-sel4-camkes/kernel/gcc.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../sdk-sel4-camkes/kernel/gcc.cmake")
 
 # force compiler ID to "GNU"
 set(CMAKE_C_COMPILER_ID   GNU CACHE STRING "CMAKE_C_COMPILER_ID"   FORCE)

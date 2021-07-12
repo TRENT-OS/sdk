@@ -177,7 +177,7 @@ TOOLCHAIN_FILE=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
 
 if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
     # Set toolchain file for axivion suite if analysis enabled
-    TOOLCHAIN_FILE=${OS_SDK_PATH}/axivion.cmake
+    TOOLCHAIN_FILE=${OS_SDK_PATH}/axivion_common/axivion-sel4-toolchain.cmake
 fi
 
 # Set CMake parameters

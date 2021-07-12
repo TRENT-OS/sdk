@@ -38,7 +38,7 @@ if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
 
     CMAKE_PARAMS+=(
         # CMake settings for axivion suite
-        -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${SCRIPT_DIR}/axivion.cmake
+        -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${SCRIPT_DIR}/axivion-native-toolchain.cmake
     )
 
 fi
