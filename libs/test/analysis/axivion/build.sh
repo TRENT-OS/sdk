@@ -13,7 +13,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # set common paths
-source ${SCRIPT_DIR}/set_common_paths
+source ${SCRIPT_DIR}/set_axivion_config
 
 
 #-------------------------------------------------------------------------------
@@ -38,10 +38,12 @@ if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
 
     CMAKE_PARAMS+=(
         # CMake settings for axivion suite
-        -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${AXIVION_DIR}/axivion.cmake
+        -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${SCRIPT_DIR}/axivion.cmake
     )
 
 fi
+
+SOURCE_DIR="${SCRIPT_DIR}/../../.."
 
 cmake ${CMAKE_PARAMS[@]} -S ${SOURCE_DIR} -B ${BUILD_DIR}
 

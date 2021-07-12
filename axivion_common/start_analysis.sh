@@ -3,15 +3,50 @@
 #-------------------------------------------------------------------------------
 # Copyright (C) 2021, HENSOLDT Cyber GmbH
 #
-# Helper script to execute the analysis workflow with the Axivion Suite.
-# The script is inteded to be called by a start_analysis.sh script that lives in
-# the project context and defines the following project dependent variables:
-# - PROJECTNAME
-# - TARGETS
-# - AXIVION_DIR
-# - REPO_DIR
-# - BUILD_DIR
+# Starts the static code analysis with the Axivion Suite for the given Axivion
+# configuration directory of an analysis project.
+#
+# Usage: start_analysis.sh axivion_config_dir [repo_dir]
+#     axivion_config_dir  Project specific axivion configuration directory.
+#     repo_dir            Root repo folder containing '.git' (default: cwd).
 #-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Get arguments / show usage information
+#-------------------------------------------------------------------------------
+
+AXIVION_CONFIG_DIR=${1:-}
+REPO_DIR=${2:-$(pwd)}
+
+USAGE_INFO="Usage: $(basename $0) axivion_config_dir [repo_dir]
+    axivion_config_dir  Project specific axivion configuration directory.
+    repo_dir            Root repo folder containing '.git' (default: cwd)."
+
+if [ "$#" -lt 1 ]; then
+    echo "${USAGE_INFO}"
+    exit 0
+fi
+
+if [ ! -f "${AXIVION_CONFIG_DIR}/set_axivion_config" ]; then
+    echo "Invalid argument: AXIVION_CONFIG_DIR=${AXIVION_CONFIG_DIR}"
+    echo
+    echo "${USAGE_INFO}"
+    exit 0
+fi
+
+if [ ! -d "${REPO_DIR}/.git" ]; then
+    echo "Invalid argument: REPO_DIR=${REPO_DIR}"
+    echo
+    echo "${USAGE_INFO}"
+    exit 0
+fi
+
+
+#-------------------------------------------------------------------------------
+# Prepare analysis
+#-------------------------------------------------------------------------------
+
+source ${AXIVION_CONFIG_DIR}/set_axivion_config
 
 
 #-------------------------------------------------------------------------------
@@ -22,8 +57,8 @@ ENABLE_CI_BUILD=${ENABLE_CI_BUILD:-OFF}
 DEVNET_CONNECTION=${DEVNET_CONNECTION:-OFF}
 
 # set default configuration values
-export BAUHAUS_CONFIG=${AXIVION_DIR}
-export AXIVION_PROJECT_DIR=${REPO_DIR}
+export BAUHAUS_CONFIG=$(realpath ${AXIVION_CONFIG_DIR})
+export AXIVION_PROJECT_DIR=$(realpath ${REPO_DIR})
 export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
 
 LOCAL_FILESTORAGE_DIR=/home/user/filestorage

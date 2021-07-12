@@ -10,7 +10,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # set common paths
-source ${SCRIPT_DIR}/set_common_paths
+source ${SCRIPT_DIR}/set_axivion_config
 
 
 #-------------------------------------------------------------------------------
