@@ -11,6 +11,10 @@
 #     repo_dir            Root repo folder containing '.git' (default: cwd).
 #-------------------------------------------------------------------------------
 
+# get the directory the script is located in
+AXIVION_COMMON_CONFIG_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+
+
 #-------------------------------------------------------------------------------
 # Get arguments / show usage information
 #-------------------------------------------------------------------------------
@@ -57,7 +61,9 @@ ENABLE_CI_BUILD=${ENABLE_CI_BUILD:-OFF}
 DEVNET_CONNECTION=${DEVNET_CONNECTION:-OFF}
 
 # set default configuration values
-export BAUHAUS_CONFIG=$(realpath ${AXIVION_CONFIG_DIR})
+export BAUHAUS_CONFIG="$(realpath ${AXIVION_CONFIG_DIR}):$(realpath ${AXIVION_COMMON_CONFIG_DIR})"
+
+export AXIVION_CONFIG_DIR=$(realpath ${AXIVION_CONFIG_DIR})
 export AXIVION_PROJECT_DIR=$(realpath ${REPO_DIR})
 export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
 

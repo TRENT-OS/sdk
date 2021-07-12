@@ -1,8 +1,17 @@
 {
-    "#": "NOTE: Evaluation order is from bottom to top",
-    "#": "TODO: Change rule config to desired variant",
-    "_Layers": [
-        "project_config.json",
-        "rule_config_axivion_template.json"
+    "Analysis": {
+        "Analysis-GlobalOptions": {
+            "global_excludes": [
+                "libs/test/ext_mocks/*"
+            ]
+        }
+    },
+    "_Format": "1.0",
+    "_Version": "7.2.0",
+    "_VersionNum": [
+        7,
+        2,
+        0,
+        7204
     ]
 }
