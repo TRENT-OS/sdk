@@ -250,9 +250,11 @@ function(create_disassembly elf_file target_base)
     add_custom_command(
         OUTPUT "${LST_FILE}"
         DEPENDS "${elf_file}"
-        COMMAND ${CROSS_COMPILER_PREFIX}objdump -fphdSt "${elf_file}" > "${LST_FILE}"
-        VERBATIM
         COMMENT "create disassembly for ${elf_file}"
+        COMMAND "${OS_SDK_DIR}/scripts/elf-dump.sh"
+                -c "${CROSS_COMPILER_PREFIX}"
+                -i "${elf_file}"
+                -o "${LST_FILE}"
     )
 
     add_custom_target(
