@@ -129,7 +129,6 @@ function collect_sdk_sandbox()
         ./astyle_check_sdk.sh
         ./astyle_check_submodule.sh
         ./astyle_options_default
-        ./axivion.cmake
         ./build-sdk.sh
         ./publish_doc.sh
 
@@ -138,7 +137,8 @@ function collect_sdk_sandbox()
         ./jenkinsfile-control
         ./jenkinsfile-generic
 
-        # remove internal script
+        # remove axivion scripts
+        ./scripts/axivion
         ./scripts/open_trentos_analysis_env.sh
 
         # remove unwanted repos
@@ -234,7 +234,7 @@ function collect_sdk_demos()
 
         local BASIC_DEMO_EXCLUDES=(
             astyle_prepare_submodule.sh
-            axivion
+            ./axivion
             ./README.md
         )
 
