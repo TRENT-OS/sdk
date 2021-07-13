@@ -168,8 +168,8 @@ function(include_os_components)
 
     foreach(ITEM IN LISTS OS_COMPONENTS_SUBDIRS)
         set(SUBDIR "${OS_COMPONENTS_DIR}/${ITEM}")
-        # list can also contain files, e.g. ctag index files,  but we only
-        # care about the folders
+        # List can also contain files, e.g. ctag index files,  but we only
+        # care about the folders.
         if (IS_DIRECTORY "${SUBDIR}")
             # Components aren't CMake projects, their CMakeLists.txt files
             # contain functions that must be called to create the actual
