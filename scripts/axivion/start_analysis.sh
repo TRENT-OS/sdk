@@ -28,21 +28,21 @@ USAGE_INFO="Usage: $(basename $0) axivion_config_dir [repo_dir]
 
 if [ "$#" -lt 1 ]; then
     echo "${USAGE_INFO}"
-    exit 0
+    exit 1
 fi
 
 if [ ! -f "${AXIVION_CONFIG_DIR}/set_axivion_config" ]; then
     echo "Invalid argument: AXIVION_CONFIG_DIR=${AXIVION_CONFIG_DIR}"
     echo
     echo "${USAGE_INFO}"
-    exit 0
+    exit 1
 fi
 
 if [ ! -d "${REPO_DIR}/.git" ]; then
     echo "Invalid argument: REPO_DIR=${REPO_DIR}"
     echo
     echo "${USAGE_INFO}"
-    exit 0
+    exit 1
 fi
 
 
