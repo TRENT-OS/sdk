@@ -173,11 +173,11 @@ esac
 
 
 # Set toolchain file for regular builds
-TOOLCHAIN_FILE=${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake
+TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
 
 if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
     # Set toolchain file for axivion suite if analysis enabled
-    TOOLCHAIN_FILE=${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake
+    TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
 fi
 
 # Set CMake parameters
