@@ -73,8 +73,8 @@ export HOME=/home/user
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
-# This script assumes it is located in the SDK root folder.
-OS_SDK_PATH="${SCRIPT_DIR}"
+# this script is located in the SDK folder
+export OS_SDK_PATH="${SCRIPT_DIR}"
 
 # read parameters
 OS_PROJECT_DIR=$1
