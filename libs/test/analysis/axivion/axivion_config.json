@@ -2,7 +2,7 @@
     "Analysis": {
         "Analysis-GlobalOptions": {
             "global_excludes": [
-                "libs/test/ext_mocks/*"
+                "*/ext_mocks/*"
             ]
         }
     },
