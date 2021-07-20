@@ -121,9 +121,11 @@ def SYSTEM_CONFIGS = [
 
     // Demo systems
     TestCtx('demo_iot_app',           ['zynq7000'], 'test_demo_iot_app.py'),
+    BuildCtx('demo_iot_app_imx6',     ['sabre', 'nitrogen6sx']),
     BuildCtx('demo_iot_app_rpi3',     ['rpi3']),
     TestCtx('demo_tls_api',           ['zynq7000'], 'test_demo_tls_api.py'),
-    BuildCtx('demo_network_filter',   ['zynq7000']),
+    BuildCtx('demo_tls_api',          ['sabre', 'nitrogen6sx', 'rpi3']),
+    BuildCtx('demo_network_filter',   ['zynq7000', 'nitrogen6sx']),
     BuildCtx('demo_raspi_ethernet',   ['rpi3']),
     BuildCtx('demo_i2c',              ['sabre']),
 
