@@ -5,6 +5,8 @@
 #
 # Build the analysis project.
 #
+# Usage: build.sh
+#
 # The environment variable ENABLE_ANALYSIS has to be set to ON if the build
 # shall be executed with the Axivion Suite. Default for regular build is OFF.
 #-------------------------------------------------------------------------------
