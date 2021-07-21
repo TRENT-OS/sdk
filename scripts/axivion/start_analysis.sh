@@ -37,14 +37,14 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-if [ ! -f "${CONFIG_DIR}/set_axivion_config" ]; then
+if [ ! -x "${CONFIG_DIR}/set_axivion_config" ]; then
     echo "Invalid argument: CONFIG_DIR=${CONFIG_DIR} does not contain 'set_axivion_config'."
     echo
     echo "${USAGE_INFO}"
     exit 1
 fi
 
-if [ ! -f "${SANDBOX_DIR}/build-system.sh" ]; then
+if [ ! -x "${SANDBOX_DIR}/build-system.sh" ]; then
     echo "Invalid argument: SANDBOX_DIR=${SANDBOX_DIR} does not contain 'build-system.sh'."
     echo
     echo "${USAGE_INFO}"
