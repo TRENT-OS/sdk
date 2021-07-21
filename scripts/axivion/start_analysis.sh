@@ -25,7 +25,7 @@ COMMON_CONFIG_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 CONFIG_DIR=${1:-}
 SANDBOX_DIR=${2:-"seos_sandbox"}
-REPO_DIR=${3:-$(pwd)}
+REPO_DIR=${3:-"$(pwd)"}
 
 USAGE_INFO="Usage: $(basename $0) config_dir [sandbox_dir] [repo_dir]
     config_dir  Project specific axivion configuration directory.
@@ -73,18 +73,18 @@ source ${CONFIG_DIR}/set_axivion_config
 ENABLE_CI_BUILD=${ENABLE_CI_BUILD:-OFF}
 
 # set configuration values
-export AXIVION_CONFIG_DIR=$(realpath ${CONFIG_DIR})
+export AXIVION_CONFIG_DIR="$(realpath ${CONFIG_DIR})"
 export BAUHAUS_CONFIG="${AXIVION_CONFIG_DIR}:$(realpath ${COMMON_CONFIG_DIR})"
 
-export AXIVION_DASHBOARD_URL=http://hc-axiviondashboard:9090/axivion
+export AXIVION_DASHBOARD_URL="http://hc-axiviondashboard:9090/axivion"
 
-LOCAL_FILESTORAGE_DIR=/home/user/filestorage
-export AXIVION_DATABASES_DIR=${LOCAL_FILESTORAGE_DIR}
-SERVER_FILESTORAGE_DIR=/var/filestorage
+LOCAL_FILESTORAGE_DIR="/home/user/filestorage"
+export AXIVION_DATABASES_DIR="${LOCAL_FILESTORAGE_DIR}"
+SERVER_FILESTORAGE_DIR="/var/filestorage"
 
-export AXIVION_PROJECT_DIR=$(realpath ${REPO_DIR})
-export AXIVION_SANDBOX_DIR=$(realpath ${SANDBOX_DIR})
-export AXIVION_SOURCESERVER_GITDIR=${SERVER_FILESTORAGE_DIR}/git/${PROJECTNAME}/.git
+export AXIVION_PROJECT_DIR="$(realpath ${REPO_DIR})"
+export AXIVION_SANDBOX_DIR="$(realpath ${SANDBOX_DIR})"
+export AXIVION_SOURCESERVER_GITDIR="${SERVER_FILESTORAGE_DIR}/git/${PROJECTNAME}/.git"
 
 # print variables for debugging
 echo
@@ -124,8 +124,8 @@ else
 
     echo -e "Do local build (no dashboard server update).\n"
 
-    export AXIVION_USERNAME=test
-    export AXIVION_PASSWORD=cyber2020
+    export AXIVION_USERNAME="test"
+    export AXIVION_PASSWORD="cyber2020"
     export AXIVION_LOCAL_BUILD=1
 
     for TARGET_NAME in "${!TARGETS[@]}"; do
@@ -159,12 +159,12 @@ export AXIVION_CLEAN_BEFORE=true
 for TARGET_NAME in "${!TARGETS[@]}"; do
 
     # set project name for target
-    export AXIVION_PROJECTNAME=${PROJECTNAME}_${TARGET_NAME}
+    export AXIVION_PROJECTNAME="${PROJECTNAME}_${TARGET_NAME}"
 
     # create target arguments list and set environment variables
     read -a TARGET_ARGS <<< ${TARGETS[${TARGET_NAME}]}
-    export BUILD_TARGET=${TARGET_ARGS[0]}
-    export AXIVION_OUTFILE=${BUILD_DIR}/${TARGET_ARGS[1]}
+    export BUILD_TARGET="${TARGET_ARGS[0]}"
+    export AXIVION_OUTFILE="${BUILD_DIR}/${TARGET_ARGS[1]}"
 
     # run axivion
     axivion_ci -j
