@@ -5,9 +5,8 @@
 #
 # Start the analysis container for the local workflow.
 #
-# The container will be started using the ssh keys of the current user to run a
-# local build. Also the local build requires a devnet connection to communicate
-# with the dashboard server what will be checked in the start analysis script.
+# The script checks if the dashboard server is reachable because a local build
+# needs to retrieve the latest analysis results from there.
 #
 # NOTE: This script defines the name and default tag of the TRENTOS analysis
 # container and implements the startup functionality. Because the container and
@@ -49,7 +48,7 @@ fi
 parse_command_line_arguments "$@"
 
 DOCKER_PARAMS_ANALYSIS=(
-    # add the runtime GID used for the haskell tools
+    # add user to group stack (for the haskell tools)
     --group-add=stack
 
     # set permissions to use SSHFS
@@ -60,13 +59,6 @@ DOCKER_PARAMS_ANALYSIS=(
     # enable GUI to run Axivion tools
     -e DISPLAY=${DISPLAY}
     -v /tmp/.X11-unix:/tmp/.X11-unix
-
-    # use devnet DNS server to resolve internal/external hostnames (e.g.
-    # hc-axiviondashboard, git-server, bitbucket.hensoldt-cyber.systems)
-    --dns="192.168.82.14"
-
-    # mount ssh keys of current user and overwrite .ssh folder in container
-    -v ~/.ssh:/home/user/.ssh:ro
 )
 
 
