@@ -9,7 +9,7 @@
         },
         "Command": {
             "_active": true,
-            "build_command": "$(AXIVION_CONFIG_DIR)/build.sh",
+            "build_command": "$(AXIVION_CONFIG_DIR)/build.sh $(AXIVION_SANDBOX_DIR)",
             "clean_command": "$(AXIVION_CONFIG_DIR)/clean.sh"
         },
         "Git": {

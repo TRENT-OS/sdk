@@ -3,12 +3,11 @@
 #-------------------------------------------------------------------------------
 # Copyright (C) 2021, HENSOLDT Cyber GmbH
 #
-# Start the analysis container for the corresponding workflow.
+# Start the analysis container for the local workflow.
 #
-# ENABLE_CI_BUILD has to be set to ON to activate a CI build which requires a
-# devnet connection. If not set the container will be started for a local CI
-# build using the ssh keys of the current user (instead of the keys prepared in
-# the container).
+# The container will be started using the ssh keys of the current user to run a
+# local build. Also the local build requires a devnet connection to communicate
+# with the dashboard server what will be checked in the start analysis script.
 #
 # NOTE: This script defines the name and default tag of the TRENTOS analysis
 # container and implements the startup functionality. Because the container and
@@ -31,15 +30,16 @@ source ${SCRIPT_DIR}/bash_functions.def
 
 
 #-------------------------------------------------------------------------------
-# Prepare variables for workflow decision
+# Check devnet connection
 #-------------------------------------------------------------------------------
 
-# check if CI build enabled (ON/OFF), default is OFF
-ENABLE_CI_BUILD=${ENABLE_CI_BUILD:-OFF}
+if ! ping -c1 -W1 hc-axiviondashboard &> /dev/null; then
 
-# check devnet connection (ON/OFF)
-DEVNET_CONNECTION=OFF
-ping -c1 -W1 hc-axiviondashboard &> /dev/null && DEVNET_CONNECTION=ON
+    echo "ERROR: Running an analysis requires devnet connection."
+    echo
+    exit 1
+
+fi
 
 
 #-------------------------------------------------------------------------------
@@ -56,68 +56,18 @@ DOCKER_PARAMS_ANALYSIS=(
     --cap-add SYS_ADMIN
     --device /dev/fuse
     --security-opt apparmor:unconfined
+
     # enable GUI to run Axivion tools
     -e DISPLAY=${DISPLAY}
     -v /tmp/.X11-unix:/tmp/.X11-unix
 
-    # set environment variables for analysis
-    -e ENABLE_CI_BUILD=${ENABLE_CI_BUILD}
-    -e DEVNET_CONNECTION=${DEVNET_CONNECTION}
+    # use devnet DNS server to resolve internal/external hostnames (e.g.
+    # hc-axiviondashboard, git-server, bitbucket.hensoldt-cyber.systems)
+    --dns="192.168.82.14"
+
+    # mount ssh keys of current user and overwrite .ssh folder in container
+    -v ~/.ssh:/home/user/.ssh:ro
 )
-
-
-#-------------------------------------------------------------------------------
-# Set workflow dependent DOCKER_ARGS and ARGS
-#-------------------------------------------------------------------------------
-
-if [[ ${ENABLE_CI_BUILD} == "ON" ]]; then
-
-    #---------------------------------------------------------------------------
-    # CI build (with devnet connection)
-    #---------------------------------------------------------------------------
-
-    if [[ ${DEVNET_CONNECTION} != "ON" ]]; then
-
-        echo -e "\nERROR: Starting analysis container for CI build requires devnet connection.\n"
-        exit 1
-
-    fi
-
-    echo -e "\nStarting analysis container for CI build (devnet connection: ${DEVNET_CONNECTION}).\n"
-
-else
-
-    #---------------------------------------------------------------------------
-    # Local CI build (with or without devnet connection)
-    #---------------------------------------------------------------------------
-
-    echo -e "\nStarting analysis container for local CI build (devnet connection: ${DEVNET_CONNECTION}).\n"
-
-    # set ssh keys of current user if no CI build
-    DOCKER_PARAMS_ANALYSIS+=(
-        # mount ssh keys of current user and overwrite .ssh folder in container
-        -v ~/.ssh:/home/user/.ssh:ro
-    )
-
-fi
-
-if [[ ${DEVNET_CONNECTION} == "ON" ]]; then
-
-    DOCKER_PARAMS_ANALYSIS+=(
-        # use devnet DNS server to resolve internal/external hostnames (e.g.
-        # hc-axiviondashboard, git-server, bitbucket.hensoldt-cyber.systems)
-        --dns="192.168.82.14"
-    )
-
-else
-
-    DOCKER_PARAMS_ANALYSIS+=(
-        # use public DNS server to resolve external hostnames (e.g.
-        # bitbucket.hensoldt-cyber.systems)
-        --dns="1.1.1.1"
-    )
-
-fi
 
 
 #-------------------------------------------------------------------------------
