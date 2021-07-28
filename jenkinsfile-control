@@ -457,7 +457,7 @@ def do_checkout(
 
 
 //------------------------------------------------------------------------------
-def do_checkout_demos(demo_list, folder)
+def do_checkout_demos(demo_list, test_configs, folder)
 {
     for (demo in demo_list)
     {
@@ -465,6 +465,13 @@ def do_checkout_demos(demo_list, folder)
             'ss/' + demo,
             env.BRANCH_NAME,
             folder + '/' + demo)
+
+        // Check if the SDK demo is also built and/or tested.
+        if (!test_configs.any {it.systemName == demo})
+        {
+            error("SDK demo " + demo + " must be included at least once in SYSTEM_CONFIGS.")
+            return
+        }
     }
 }
 
@@ -783,7 +790,7 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        do_checkout_demos(SystemCtx.DEMO_LIST, 'src/demos')
+                        do_checkout_demos(SystemCtx.DEMO_LIST, SYSTEM_CONFIGS, 'src/demos')
 
                         do_notify_bitbucket()
                     }
