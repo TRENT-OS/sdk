@@ -829,6 +829,14 @@ pipeline {
                         do_archiveArtifacts('sdk-package/version.info')
 
                         do_stash(
+                            'stash_sanity_check',
+                            [
+                                'scm-src/build-sdk.sh',
+                                SDK_PACKAGE
+                            ]
+                        )
+
+                        do_stash(
                             'stash_doc',
                             [
                                 'scm-src/publish_doc.sh',
@@ -902,6 +910,12 @@ pipeline {
                     }
                     steps {
                         print_step_info env.STAGE_NAME
+
+                        // Remove content within workspace folder.
+                        run_app('rm', ['*', '-r'])
+
+                        // Unstack SDK package and SDK build script.
+                        unstash('stash_sanity_check')
 
                         // Create folder structure for sanity check and extract
                         // the SDK package. The subfolder 'pkg' is hard-coded in
