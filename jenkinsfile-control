@@ -829,9 +829,10 @@ pipeline {
                         do_archiveArtifacts('sdk-package/version.info')
 
                         do_stash(
-                            'stash_sanity_check',
+                            'stash_sdk_packages',
                             [
                                 'scm-src/build-sdk.sh',
+                                DEV_SDK_PACKAGE,
                                 SDK_PACKAGE
                             ]
                         )
@@ -841,94 +842,6 @@ pipeline {
                             [
                                 'scm-src/publish_doc.sh',
                                 'sdk-package/pkg/doc/'
-                            ]
-                        )
-                    }
-                }
-
-                //--------------------------------------------------------------
-                stage('unit_test') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
-                            image DOCKER_TEST_ENV.image
-                            args DOCKER_TEST_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            run_shell_script(
-                                'scm-src/build-sdk.sh',
-                                [
-                                    'unit-tests', // mode
-                                    'sdk-package' // base dir
-                                ]
-                            )
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
-                stage('astyle') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-
-                        // Continue with the SDK package build even on style
-                        // errors, but mark the stage and the build as failed
-                        // already.
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            run_shell_script('scm-src/astyle_check_sdk.sh')
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
-                stage('sanity_check') {
-                    // Do a quick sanity test for the SDK package by building
-                    // the demo Hello World for zynq7000. Only if it works, the
-                    // time consuming builds and tests of all systems are done.
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info env.STAGE_NAME
-
-                        // Remove content within workspace folder.
-                        run_app('rm', ['*', '-r'])
-
-                        // Unstack SDK package and SDK build script.
-                        unstash('stash_sanity_check')
-
-                        // Create folder structure for sanity check and extract
-                        // the SDK package. The subfolder 'pkg' is hard-coded in
-                        // and required by the SDK build script.
-                        run_app('mkdir', ['-p', 'sanity_check_sdk/pkg'])
-                        run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sanity_check_sdk/pkg'])
-
-                        // Build demo Hello World.
-                        run_shell_script(
-                            'scm-src/build-sdk.sh',
-                            [
-                                'sanity-check', // mode
-                                'sanity_check_sdk' // base dir
                             ]
                         )
                     }
@@ -964,6 +877,113 @@ pipeline {
 
         //----------------------------------------------------------------------
         stage('Test SDK') {
+            parallel {
+
+                //--------------------------------------------------------------
+                stage('unit_test') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        run_app('rm', ['*', '-rf'])
+                        unstash('stash_sdk_packages')
+
+                        // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
+                        // hard-coded in and required by the SDK build script.
+                        run_app('mkdir', ['-p', 'unit_test_sdk/pkg'])
+                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C unit_test_sdk/pkg'])
+
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script(
+                                'scm-src/build-sdk.sh',
+                                [
+                                    'unit-tests', // mode
+                                    'unit_test_sdk' // base dir
+                                ]
+                            )
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('astyle') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        run_app('rm', ['*', '-rf'])
+                        unstash('stash_sdk_packages')
+
+                        // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
+                        // hard-coded in and required by the SDK build script.
+                        run_app('mkdir', ['-p', 'astyle_sdk/pkg'])
+                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C astyle_sdk/pkg'])
+
+                        // Continue with the SDK package build even on style
+                        // errors, but mark the stage and the build as failed
+                        // already.
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            run_shell_script('astyle_sdk/pkg/astyle_check_sdk.sh')
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('sanity_check') {
+                    // Do a quick sanity test for the SDK package by building
+                    // the demo Hello World for zynq7000. Only if it works, the
+                    // time consuming builds and tests of all systems are done.
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+
+                        run_app('rm', ['*', '-rf'])
+                        unstash('stash_sdk_packages')
+
+                        // Extract the SDK_PACKAGE. The subfolder 'pkg' is
+                        // hard-coded in and required by the SDK build script.
+                        run_app('mkdir', ['-p', 'sanity_check_sdk/pkg'])
+                        run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sanity_check_sdk/pkg'])
+
+                        // Build demo Hello World.
+                        run_shell_script(
+                            'scm-src/build-sdk.sh',
+                            [
+                                'sanity-check', // mode
+                                'sanity_check_sdk' // base dir
+                            ]
+                        )
+                    }
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test Systems') {
             parallel {
 
                 //--------------------------------------------------------------

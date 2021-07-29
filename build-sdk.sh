@@ -126,9 +126,6 @@ function collect_sdk_sandbox()
         astyle_prepare_submodule.sh
 
         # remove internal files in the sandbox root folder
-        ./astyle_check_sdk.sh
-        ./astyle_check_submodule.sh
-        ./astyle_options_default
         ./build-sdk.sh
         ./publish_doc.sh
 
@@ -236,7 +233,6 @@ function collect_sdk_demos()
         #-----------------------------------------------------------------------
 
         local BASIC_DEMO_EXCLUDES=(
-            astyle_prepare_submodule.sh
             ./axivion
             ./README.md
         )
@@ -553,6 +549,12 @@ function package_sdk()
     du -sh ${SDK_PACKAGE_SRC}
 
     local SDK_PACKAGE_EXCLUDES=(
+        # remove astyle scripts
+        ./astyle_check_sdk.sh
+        ./astyle_check_submodule.sh
+        ./astyle_options_default
+        astyle_prepare_submodule.sh
+
         # remove development components
         ./components/SysLogger
 
@@ -621,7 +623,7 @@ function do_sdk_step()
             package_sdk ${SDK_PACKAGE_SRC}
             ;;
 
-        run-unit-tests)
+        unit-tests)
             sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
             ;;
 
@@ -677,11 +679,6 @@ case "${ACTION}" in
         # collect sources and build the SDK binaries
         do_sdk_step collect-sources
         do_sdk_step build-tools
-        ;;
-
-    unit-tests)
-        do_sdk_step collect-sources
-        do_sdk_step run-unit-tests
         ;;
 
     doc)
