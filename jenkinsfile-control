@@ -921,20 +921,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('cleanup') {
-                    steps {
-                        print_step_info env.STAGE_NAME
-                        cleanWs()
-                    }
-                }
-            }
-        }
-
-        //----------------------------------------------------------------------
-        stage('Test SDK') {
-            parallel {
-
-                //--------------------------------------------------------------
                 stage('publish_docs') {
                     agent { label "publish_doc" }
                     when {
@@ -949,12 +935,25 @@ pipeline {
                         cleanWs()
                         unstash('stash_doc')
                         run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
-                        cleanWs()
                     }
                 }
 
                 //--------------------------------------------------------------
-                stage('system_tests') {
+                stage('cleanup') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        cleanWs()
+                    }
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test SDK') {
+            parallel {
+
+                //--------------------------------------------------------------
+                stage('create_system_tests') {
                     steps {
                         print_step_info env.STAGE_NAME
                         do_jobs_for_test_systems(
