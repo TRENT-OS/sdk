@@ -218,13 +218,8 @@ function collect_sdk_demos()
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
         local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}/src
 
-        local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
-
-        local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
-        (
-            cd ${DEMO_SRC_DIR}
-            echo " $(git rev-parse HEAD) ${SDK_DEMO_NAME}" >> ${ABS_VERSION_INFO_FILE}
-        )
+        echo " $(cd ${DEMO_SRC_DIR}; git rev-parse HEAD) ${SDK_DEMO_NAME}" \
+             >> ${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
         #-----------------------------------------------------------------------
         # Prepare basic demo excludes.
