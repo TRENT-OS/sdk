@@ -159,6 +159,9 @@ function collect_sdk_sandbox()
 
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
+
+        # remove keystore_ram_fv test folder
+        ./libs/os_keystore/os_keystore_ram_fv/keystore_ram_fv/test
     )
 
     #---------------------------------------------------------------------------
