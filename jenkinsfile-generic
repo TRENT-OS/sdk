@@ -14,14 +14,23 @@
 //    TEST_SYSTEM
 //    BUILD_PARAMS
 //    TEST_SCRIPT
+//    TEST_PARAMS
 //    UPSTREAM_JOB_NAME
 //    UPSTREAM_JOB_ID
 
 params.each { println it.key + " = " + it.value }
 
+// SYSTEM_DIR holds the path to the current system under test:
+// - Per default the repo specified by TEST_SYSTEM will be checked out into
+//   SYSTEM_DIR.
+// - For SDK demos TEST_SYSTEM specifies the demo path relative within SDK_DIR
+//   and SYSTEM_DIR will be updated in 'get_sdk_and_system()'.
+SYSTEM_DIR = 'src/system'
+
+def SDK_PACKAGE = 'sdk-package.tar.bz2'
+def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 def SYSTEM_PACKAGE = 'system-package.tar.bz2'
 
-def SYSTEM_DIR = 'src/system'
 def SDK_DIR = 'src/sdk'
 def TESTS_DIR = 'src/tests'
 def TEST_COMMON_DIR = 'src/test-common'
@@ -265,21 +274,49 @@ def do_checkout(
 
 //------------------------------------------------------------------------------
 def get_sdk(
+    package_name,
     dir = '.'
 ) {
 
     // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
 
-    def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
-
     copyArtifacts(
         projectName: UPSTREAM_JOB_NAME,
         selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
-        filter: DEV_SDK_PACKAGE,
+        filter: package_name,
     )
 
     run_app('mkdir', ['-p', dir])
-    run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C ' + dir])
+    run_app('tar', ['-xf ' + package_name, '-C ' + dir])
+}
+
+
+//------------------------------------------------------------------------------
+def get_sdk_and_system(
+    sdk_package_name,
+    dev_sdk_package_name,
+    sdk_dir = '.'
+)
+{
+    if (TEST_SYSTEM.startsWith('demos/'))
+    {
+        // Build against SDK package
+        get_sdk(sdk_package_name, sdk_dir)
+
+        // Build from SDK package
+        SYSTEM_DIR = sdk_dir + '/' + TEST_SYSTEM
+    }
+    else
+    {
+        // Build against dev SDK package
+        get_sdk(dev_sdk_package_name, sdk_dir)
+
+        // Build from repo
+        do_checkout(
+            TEST_SYSTEM,
+            BRANCH_OR_COMMIT,
+            SYSTEM_DIR)
+    }
 }
 
 
@@ -351,12 +388,7 @@ pipeline {
 
                         cleanWs()
 
-                        get_sdk(SDK_DIR)
-
-                        do_checkout(
-                            TEST_SYSTEM,
-                            BRANCH_OR_COMMIT,
-                            SYSTEM_DIR)
+                        get_sdk_and_system(SDK_PACKAGE, DEV_SDK_PACKAGE, SDK_DIR)
 
                         do_notify_bitbucket()
                     }
@@ -513,7 +545,7 @@ pipeline {
                         unstash('test_package')
                         run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
 
-                        get_sdk(SDK_DIR)
+                        get_sdk(DEV_SDK_PACKAGE, SDK_DIR)
 
                         do_checkout(
                             'ta/common',

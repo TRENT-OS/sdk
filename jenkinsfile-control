@@ -14,12 +14,25 @@ def SDK_PACKAGE = 'sdk-package.tar.bz2'
 // System context
 class SystemCtx {
 
+    // Demos to be included in the SDK package. CI will checkout the following
+    // demos from their default repo (e.g. 'ss/demo_hello_world'). At least the
+    // demo Hello World is required for the SDK package sanity check.
+    static DEMO_LIST = [
+        'demo_hello_world',
+        'demo_iot_app',
+        'demo_iot_app_rpi3',
+        'demo_network_filter',
+        'demo_tls_api'
+    ]
+
     static FLAG_BUILD      = 1 << 0
     static FLAG_TEST       = 1 << 1
 
     String      systemName   // Name of the system to build.
     Integer     flags        // Flags
-    String      repo         // Repo location of the system.
+    String      testSystem   // Location of the test system. Either a repo or
+                             // the path within the SDK package starting with
+                             // 'demos/'.
     ArrayList   platforms    // List of supported platforms.
     String      testScript   // Test script to be executed.
     String      buildParams  // Additional build parameters.
@@ -38,19 +51,33 @@ class SystemCtx {
         String testParams)
     {
         // Use ss/<systemName> as default repo.
-        def repo = 'ss/' + systemName
+        def testSystem = 'ss/' + systemName
 
         // Split <systemName> to detect non-default repo.
         def arr = systemName.split('@',2)
         if (2 == arr.length)
         {
+            // Use non-default repo.
             systemName = arr[0]
-            repo = arr[1]
+            testSystem = arr[1]
+        }
+
+        // For demos in DEMO_LIST use SDK demo instead of repo.
+        if (DEMO_LIST.contains(systemName))
+        {
+            testSystem = 'demos/' + systemName + '/src'
+
+            if (arr.length > 1)
+            {
+                // SDK demos are built against the SDK package so non-default
+                // repos are not supported. Init to 'null' and fail later.
+                testSystem = null
+            }
         }
 
         this.systemName  = systemName
         this.flags       = flags
-        this.repo        = repo
+        this.testSystem  = testSystem
         this.platforms   = platforms
         this.testScript  = testScript
         this.buildParams = buildParams
@@ -158,21 +185,6 @@ def SYSTEM_CONFIGS = [
     TestCtx('test_network_api_tcp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_server'),                  testTarget('tcp_server')),
     TestCtx('test_network_api_udp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('udp_server'),                  testTarget('udp_server'))
 
-]
-
-
-//------------------------------------------------------------------------------
-// Demos to be included in the SDK package.
-//
-// The SDK builder will checkout the following demos and include them in the SDK
-// package.
-def DEMO_LIST = [
-    'demo_hello_world',
-    'demo_iot_app',
-    'demo_iot_app_imx6',
-    'demo_iot_app_rpi3',
-    'demo_network_filter',
-    'demo_tls_api'
 ]
 
 
@@ -467,7 +479,7 @@ def execute_build(ctx, stage_ctx)
         parameters: [
             string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
             string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
-            string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.repo),
+            string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.testSystem),
             string(name: 'BUILD_PARAMS',       value: stage_ctx.test_ctx.buildParams ?: ''),
             string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: ''),
             string(name: 'TEST_PARAMS',        value: stage_ctx.test_ctx.testParams ?: ''),
@@ -585,11 +597,17 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
     testConfigs.each { test_ctx ->
 
-        def test_system = test_ctx.systemName
+        def systemName = test_ctx.systemName
 
         test_ctx.platforms.each { platform ->
 
-            def pkg_name = platform + '-' + test_system
+            if (!test_ctx.testSystem)
+            {
+                error("SDK demo " + systemName + " must not use a non-default repo. Check DEMO_LIST and SYSTEM_CONFIGS.")
+                return
+            }
+
+            def pkg_name = platform + '-' + systemName
 
             def job_stage_ctx = [
                 // do not try storing "sub_jobs_ctx" in here, this ends in a
@@ -765,7 +783,7 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        do_checkout_demos(DEMO_LIST, 'src/demos')
+                        do_checkout_demos(SystemCtx.DEMO_LIST, 'src/demos')
 
                         do_notify_bitbucket()
                     }

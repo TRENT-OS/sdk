@@ -220,6 +220,9 @@ function collect_sdk_demos()
     for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
 
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
+
+        # WARNING: The folder 'src' is required by CI to build SDK demos against
+        #          the SDK package.
         local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}/src
 
         # Record git revision of demo.
@@ -637,6 +640,9 @@ SDK_UNIT_TEST=${OUT_BASE_DIR}/unit-tests
 SDK_PACKAGE_SRC=${OUT_BASE_DIR}/pkg
 SDK_PACKAGE_DOC=${SDK_PACKAGE_SRC}/doc
 SDK_PACKAGE_BIN=${SDK_PACKAGE_SRC}/bin
+
+# WARNING: The folder 'demos' is required by CI to build SDK demos against the
+#          SDK package.
 SDK_PACKAGE_DEMOS=${SDK_PACKAGE_SRC}/demos
 
 
