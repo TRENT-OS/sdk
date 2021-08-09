@@ -165,7 +165,8 @@ function collect_sdk_sandbox()
     )
 
     #---------------------------------------------------------------------------
-    # Copy SDK sources using tar and filtering.
+    # Copy SDK sources using tar and filtering, this is faster and more flexibel
+    # than the cp command.
     # NOTE: Use "--exclude-vcs" to exclude vcs directories since there seems to
     # be a bug in tar when using "--exclude .gitmodules".
     #---------------------------------------------------------------------------
@@ -221,24 +222,31 @@ function collect_sdk_demos()
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
         local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}/src
 
-        print_info "Copying demo sources from ${DEMO_SRC_DIR} to ${DEMO_DST_DIR}"
-
         # Record git revision of demo.
         echo " $(cd ${DEMO_SRC_DIR}; git rev-parse HEAD) ${SDK_DEMO_NAME}" \
              >> ${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
-        # Copy demo sources using tar and filtering, this is faster and more
-        # flexible then the cp command. Files excluded here are not needed when
-        # building a demos with the SDK package. Further exclusions can be done
-        # in package_sdk() later.
-        # NOTE: Due to a strange bug in tar "--exclude .gitmodules" does not
-        #       work, so "--exclude-vcs" is used instead to exclude any known
-        #       version control system directories.
+        #-----------------------------------------------------------------------
+        # Prepare basic demo excludes.
+        # NOTE: Specify files that are not needed for the SDK build process.
+        # Further exclusions are possible in package_sdk().
+        #-----------------------------------------------------------------------
+
         local BASIC_DEMO_EXCLUDES=(
             astyle_prepare_submodule.sh
             ./axivion
             ./README.md
         )
+
+        #-----------------------------------------------------------------------
+        # Copy demo sources using tar and filtering, this is faster and more
+        # flexibel than the cp command.
+        # NOTE: Use "--exclude-vcs" to exclude vcs directories since there seems
+        # to be a bug in tar when using "--exclude .gitmodules".
+        #-----------------------------------------------------------------------
+
+        print_info "Copying demo sources from ${DEMO_SRC_DIR} to ${DEMO_DST_DIR}"
+
         copy_files_via_tar \
             ${DEMO_SRC_DIR} \
             ${DEMO_DST_DIR} \
