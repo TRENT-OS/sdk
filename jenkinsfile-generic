@@ -6,11 +6,12 @@
 //
 //------------------------------------------------------------------------------
 //
-// job parameters (must be configured in the Jenkins job, otherwise we do not
-// see them here as global variables)
+// Job parameters (must be configured in the Jenkins job, otherwise we do not
+// see them here as global variables):
 //
 //    PLATFORM
 //    BRANCH_OR_COMMIT
+//    FLAGS (NOTE: Passed as String, convert to Integer for evaluation.)
 //    TEST_SYSTEM
 //    BUILD_PARAMS
 //    TEST_SCRIPT
@@ -20,12 +21,15 @@
 
 params.each { println it.key + " = " + it.value }
 
+// Flag used in the control pipeline to identify SDK demos.
+FLAG_SDK_DEMO = 1 << 2
+
 // SYSTEM_DIR holds the path to the current system under test:
-// - For SDK demos TEST_SYSTEM specifies the demo path relative within SDK_DIR
-//   (starting with 'demos/') and SYSTEM_DIR will be updated accordingly in
+// - For SDK demos - with the SDK demo flag set - TEST_SYSTEM specifies the demo
+//   path relative within SDK_DIR and SYSTEM_DIR will be updated accordingly in
 //   'get_sdk_and_system()'.
 // - Otherwise TEST_SYSTEM specifies a repo that will be checked out into the
-//   default path of SYSTEM_DIR.
+//   default path of SYSTEM_DIR in 'get_sdk_and_system()'.
 SYSTEM_DIR = 'src/system'
 
 def SDK_PACKAGE = 'sdk-package.tar.bz2'
@@ -83,7 +87,10 @@ def set_build_info()
     currentBuild.displayName = BRANCH_OR_COMMIT + ', ' +
                                TEST_SYSTEM + ', ' +
                                PLATFORM +
-                               ' [build' + (TEST_SCRIPT ? '+test' : '') + ']'
+                               ' [build' +
+                               (TEST_SCRIPT ? '+test' : '') +
+                               ((FLAGS.toInteger() & FLAG_SDK_DEMO) ? '+demo' : '') +
+                               ']'
 
     manager.createSummary("text.gif").appendText(
         '<table style="border: 1px solid black; border-collapse: collapse;">'+
@@ -299,7 +306,7 @@ def get_sdk_and_system(
     sdk_dir = '.'
 )
 {
-    if (TEST_SYSTEM.startsWith('demos/'))
+    if (FLAGS.toInteger() & FLAG_SDK_DEMO)
     {
         // Build against SDK package
         get_sdk(sdk_package_name, sdk_dir)
