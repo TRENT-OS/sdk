@@ -261,78 +261,39 @@ function collect_sdk_demos()
 
 
 #-------------------------------------------------------------------------------
-function build_sdk_demos()
+function sdk_sanity_check()
 {
     local SDK_SRC_DIR=$1
     local SDK_DEMOS_DIR=$2
     local BUILD_DIR=$3
     shift 3
 
-    print_info "Building SDK demos"
+    local DEMO_NAME="demo_hello_world"
+    local DEMO_TARGET="zynq7000"
+    local DEMO_BUILD_TYPE="Debug"
+
+    print_info "Building ${DEMO_NAME} for ${DEMO_TARGET} as a sanity check for the SDK package."
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
-        echo "missing SDK source folder, did you run the collect step?"
+        echo "missing SDK folder, did you run the collect step?"
         return 1
     fi
 
-    # there is always at least the hello world demo, so this folder can't be
-    # missing
-    if [ ! -d ${SDK_DEMOS_DIR} ]; then
-        echo "missing SDK demo folder, did you run the collect step?"
+    if [ ! -d ${SDK_DEMOS_DIR}/${DEMO_NAME} ]; then
+        echo "missing ${DEMO_NAME} folder, did you run the collect step?"
         return 1
     fi
 
-    local TARGETS=(
-        zynq7000
-        rpi3
-        rpi4
-        sabre
-        # migv
+    local DEMO_BUILD_DIR=${BUILD_DIR}/${DEMO_NAME}-${DEMO_TARGET}
+
+    local BUILD_PARAMS=(
+        ${SDK_DEMOS_DIR}/${DEMO_NAME}/src
+        ${DEMO_TARGET}
+        ${DEMO_BUILD_DIR}
+        -D CMAKE_BUILD_TYPE=${DEMO_BUILD_TYPE}
     )
 
-    # not every demo works on all platforms
-    #
-    #                      | zynq7000 | rpi3 | rpi4  | sabre | migv | ...
-    # ---------------------+----------+------+-------+-------+------+
-    #  demo_hello_world    | yes      | yes  | yes   | yes   | yes  |
-    #  demo_iot_app        | yes      | no   | no    | no    | no   |
-    #  demo_iot_app_rpi3   | no       | yes  | no    | no    | no   |
-    #  demo_tls_api        | yes      | no   | no    | no    | no   |
-    #
-    declare -A TARGET_RESTRICTIONS=(
-        [demo_iot_app]=zynq7000
-        [demo_iot_app_rpi3]=rpi3
-        [demo_tls_api]=zynq7000
-    )
-
-    for SDK_DEMO_NAME in $(ls ${SDK_DEMOS_DIR}) ; do
-
-        local CUR_TARGETS=(
-            ${TARGET_RESTRICTIONS[${SDK_DEMO_NAME}]:-${TARGETS[@]}}
-        )
-
-        for TARGET in ${CUR_TARGETS[@]}; do
-            print_info "Building SDK demo: ${SDK_DEMO_NAME} for ${TARGET}"
-
-            local SDK_DEMO_OUT=${BUILD_DIR}/${SDK_DEMO_NAME}-${TARGET}
-
-            local BUILD_PARAMS=(
-                ${SDK_DEMOS_DIR}/${SDK_DEMO_NAME}/src
-                ${TARGET}
-                ${SDK_DEMO_OUT}
-                -D CMAKE_BUILD_TYPE=Debug
-            )
-            ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
-
-            # we just build the demos to check that there is no error, but we
-            # don't release prebuilt images. If we are here, we've created the
-            # SDK package already anyway, so we can't simply copy the images.
-            #
-            # mkdir -p ${SDK_DEMO_BASE}/bin
-            # cp ${SDK_DEMO_OUT}/images/os_image.elf \
-            #    ${SDK_DEMO_BASE}/bin/os_image-${TARGET}.bin
-        done
-    done
+    ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
 }
 
 
@@ -676,8 +637,8 @@ function do_sdk_step()
             collect_sdk_demos ${DEMOS_SRC_DIR} ${OUT_BASE_DIR} ${SDK_PACKAGE_DEMOS}
             ;;
 
-        build-demos)
-            build_sdk_demos ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DEMOS} ${SDK_BUILD}
+        sanity-check)
+            sdk_sanity_check ${SDK_PACKAGE_SRC} ${SDK_PACKAGE_DEMOS} ${SDK_BUILD}
             ;;
 
         create-package)
@@ -701,11 +662,11 @@ function do_sdk_step()
 #-------------------------------------------------------------------------------
 case "${ACTION}" in
     all)
-        # create SDK package including docs and demos, run unit test and build
-        # all demos
+        # create SDK package including docs and demos, run unit test and do the
+        # build hello world sanity check
         do_sdk_step create-package
         do_sdk_step run-unit-tests
-        do_sdk_step build-demos
+        do_sdk_step sanity-check
         ;;
 
     package)
@@ -716,13 +677,6 @@ case "${ACTION}" in
         # collect sources and build the SDK binaries
         do_sdk_step collect-sources
         do_sdk_step build-tools
-        ;;
-
-    demos)
-        # create SDK snapshot, collect demos and build them
-        do_sdk_step collect-sources
-        do_sdk_step collect-demos
-        do_sdk_step build-demos
         ;;
 
     unit-tests)
