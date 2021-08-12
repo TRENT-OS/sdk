@@ -31,17 +31,21 @@ class SystemCtx {
     String      systemName   // Name of the system to build.
     Integer     flags        // Flags
     String      testSystem   // Location of the test system. Either a repo or
-                             // the path within the SDK package starting with
-                             // 'demos/'.
+                             // for SDK demos the path within the SDK package
+                             // starting with 'demos/'.
     ArrayList   platforms    // List of supported platforms.
     String      testScript   // Test script to be executed.
     String      buildParams  // Additional build parameters.
     String      testParams   // Additional test parameters.
 
     //--------------------------------------------------------------------------
-    // Format of 'systemName' is "name[@path/to/repo]". If no repo is given, we
-    // use "ss/<systemName>". There is no ".git" extension given here here, this
-    // will be added internally.
+    // The system name has to be either a name from DEMO_LIST or the name of a
+    // test system in the format "systemName[@path/to/repo]".
+    // SDK demos will be directly used from the SDK package whereas test systems
+    // will be checked out from a repository.
+    // If no repository path is specified for a test system, "ss/<systemName>"
+    // will be used. The repository path does not include a ".git" extension
+    // (it will be added internally).
     public SystemCtx(
         String systemName,
         Integer flags,
@@ -70,7 +74,8 @@ class SystemCtx {
             if (arr.length > 1)
             {
                 // SDK demos are built against the SDK package so non-default
-                // repos are not supported. Init to 'null' and fail later.
+                // repos are not supported. Init to 'null' and fail later (since
+                // failing with an error message here does not work).
                 testSystem = null
             }
         }
@@ -610,6 +615,9 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             if (!test_ctx.testSystem)
             {
+                // Test system is initialized to 'null' in the constructor if a
+                // non-default repo is specified for an SDK demo, which is not
+                // supported.
                 error("SDK demo " + systemName + " must not use a non-default repo. Check DEMO_LIST and SYSTEM_CONFIGS.")
                 return
             }
@@ -893,11 +901,12 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
+                        // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
                         unstash('stash_sdk_packages')
 
                         // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
-                        // hard-coded in and required by the SDK build script.
+                        // required by the SDK build script.
                         run_app('mkdir', ['-p', 'unit_test_sdk/pkg'])
                         run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C unit_test_sdk/pkg'])
 
@@ -927,11 +936,12 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
+                        // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
                         unstash('stash_sdk_packages')
 
                         // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
-                        // hard-coded in and required by the SDK build script.
+                        // required by the SDK build script.
                         run_app('mkdir', ['-p', 'astyle_sdk/pkg'])
                         run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C astyle_sdk/pkg'])
 
@@ -961,11 +971,12 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
+                        // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
                         unstash('stash_sdk_packages')
 
                         // Extract the SDK_PACKAGE. The subfolder 'pkg' is
-                        // hard-coded in and required by the SDK build script.
+                        // required by the SDK build script.
                         run_app('mkdir', ['-p', 'sanity_check_sdk/pkg'])
                         run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sanity_check_sdk/pkg'])
 

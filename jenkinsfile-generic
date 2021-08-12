@@ -21,10 +21,11 @@
 params.each { println it.key + " = " + it.value }
 
 // SYSTEM_DIR holds the path to the current system under test:
-// - Per default the repo specified by TEST_SYSTEM will be checked out into
-//   SYSTEM_DIR.
 // - For SDK demos TEST_SYSTEM specifies the demo path relative within SDK_DIR
-//   and SYSTEM_DIR will be updated in 'get_sdk_and_system()'.
+//   (starting with 'demos/') and SYSTEM_DIR will be updated accordingly in
+//   'get_sdk_and_system()'.
+// - Otherwise TEST_SYSTEM specifies a repo that will be checked out into the
+//   default path of SYSTEM_DIR.
 SYSTEM_DIR = 'src/system'
 
 def SDK_PACKAGE = 'sdk-package.tar.bz2'
