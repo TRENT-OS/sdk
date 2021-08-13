@@ -75,6 +75,9 @@ class SystemCtx {
         if (DEMO_LIST.contains(systemName))
         {
             flags |= SystemCtx.FLAG_SDK_DEMO
+
+            // WARNING: The SDK build script puts the SDK demos into the folder
+            //          'demos' within the SDK package.
             testSystem = 'demos/' + systemName
 
             if (arr.length > 1)
@@ -808,6 +811,8 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
+                        // WARNING: The CI job has to checkout the demos into a
+                        //          folder structure like the one of seos_tests.
                         do_checkout_demos(SystemCtx.DEMO_LIST, SYSTEM_CONFIGS, 'src/demos')
 
                         do_notify_bitbucket()

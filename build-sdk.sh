@@ -13,8 +13,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 # This script assumes it is located in the SDK root folder
 OS_SDK_PATH="${SCRIPT_DIR}"
 
-# This script assumes is exists in the directory structure of seos_tests, the
-# SDK creatin CI job adapts to this layout.
+# WARNING: This script assumes it exists in a directory structure like the one
+# of seos_tests. The CI job has to check out the demos according to this layout
+# before running the script in order to build the SDK package.
 DEMOS_SRC_DIR="${SCRIPT_DIR}/../src/demos"
 
 # Name of the version info file.
