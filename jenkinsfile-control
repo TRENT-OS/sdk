@@ -20,6 +20,7 @@ class SystemCtx {
     static DEMO_LIST = [
         'demo_hello_world',
         'demo_iot_app',
+        'demo_iot_app_imx6',
         'demo_iot_app_rpi3',
         'demo_network_filter',
         'demo_tls_api'
