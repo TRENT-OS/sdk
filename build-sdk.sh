@@ -217,10 +217,7 @@ function collect_sdk_demos()
     for SDK_DEMO_NAME in $(ls ${DEMOS_DIR}) ; do
 
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
-
-        # WARNING: The folder 'src' is required by CI to build SDK demos against
-        #          the SDK package.
-        local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}/src
+        local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}
 
         # Record git revision of demo.
         echo " $(cd ${DEMO_SRC_DIR}; git rev-parse HEAD) ${SDK_DEMO_NAME}" \
@@ -283,7 +280,7 @@ function sdk_sanity_check()
     local DEMO_BUILD_DIR=${BUILD_DIR}/${DEMO_NAME}-${DEMO_TARGET}
 
     local BUILD_PARAMS=(
-        ${SDK_DEMOS_DIR}/${DEMO_NAME}/src
+        ${SDK_DEMOS_DIR}/${DEMO_NAME}
         ${DEMO_TARGET}
         ${DEMO_BUILD_DIR}
         -D CMAKE_BUILD_TYPE=${DEMO_BUILD_TYPE}

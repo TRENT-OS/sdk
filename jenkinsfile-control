@@ -75,7 +75,7 @@ class SystemCtx {
         if (DEMO_LIST.contains(systemName))
         {
             flags |= SystemCtx.FLAG_SDK_DEMO
-            testSystem = 'demos/' + systemName + '/src'
+            testSystem = 'demos/' + systemName
 
             if (arr.length > 1)
             {
