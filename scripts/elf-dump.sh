@@ -108,6 +108,9 @@ while getopts ":hc:i:o: -l help" ARG; do
         \?)
             print_err "invalid parameter ${OPTARG}"
             ;;
+        :)
+            print_err "parameter ${OPTARG} requires an argument"
+            ;;
     esac
 done
 
