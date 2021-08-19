@@ -90,7 +90,7 @@ if [ $# -eq 0 ]; then
     print_usage_help
     exit 1
 fi
-while getopts "hc:i:o: -l help" ARG; do
+while getopts ":hc:i:o: -l help" ARG; do
     case "${ARG}" in
         h|help)
             print_usage_help
