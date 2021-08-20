@@ -15,7 +15,7 @@ function print_usage_help()
     echo "ELF dumper script"
     echo ""
     echo "Usage:"
-    echo "   -h | --help"
+    echo "   -h"
     echo "   -i <ELF file>"
     echo "   -c <CROSS_COMPILER_PREFIX>  (optional)"
     echo "   -o <dump file>  (optional, stdout will be used otherwise)"
@@ -90,9 +90,9 @@ if [ $# -eq 0 ]; then
     print_usage_help
     exit 1
 fi
-while getopts ":hc:i:o: -l help" ARG; do
+while getopts ":hc:i:o:" ARG; do
     case "${ARG}" in
-        h|help)
+        h)
             print_usage_help
             exit 0
             ;;
