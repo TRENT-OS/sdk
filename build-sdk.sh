@@ -489,7 +489,7 @@ function build_sdk_docs()
         cp -a ${SDK_PDF_DIR}/${PDF_FILE} ${OUT_DIR_PDF}
     done
 
-    cp -a ${SDK_PDF_DIR}/3rd_party_pdf/ ${OUT_DIR_PDF}/3rd_party
+    cp -a ${SDK_PDF_DIR}/3rd_party/ ${OUT_DIR_PDF}/3rd_party
 }
 
 
