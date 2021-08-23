@@ -474,28 +474,15 @@ function build_sdk_docs()
     )
 
     #---------------------------------------------------------------------------
-    # Collect PDF files from the sdk-pdfs repository.
+    # Copy PDF files from the sdk-pdfs repository.
     #---------------------------------------------------------------------------
-
-    mkdir ${OUT_DOC_DIR}/pdf
 
     local SDK_PDF_DIR=${OS_SDK_PATH}/sdk-pdfs
     local OUT_PDF_DIR=${OUT_DOC_DIR}/pdf
 
-    echo "Copying PDF files into ${OUT_PDF_DIR} from ${SDK_PDF_DIR}"
+    echo "Copying all PDF files into ${OUT_PDF_DIR} from ${SDK_PDF_DIR}"
 
-    PDF_FILES=(
-        TRENTOS-M_GettingStarted_SDK_V1.2.pdf
-        TRENTOS-M_Handbook_SDK_V1.2.pdf
-        TRENTOS-M_MigrationNotes_SDK_V1.1_to_V1.2.pdf
-        TRENTOS-M_ReleaseNotes_SDK_V1.2.pdf
-    )
-
-    for PDF_FILE in ${PDF_FILES[@]}; do
-        cp -a ${SDK_PDF_DIR}/${PDF_FILE} ${OUT_PDF_DIR}
-    done
-
-    cp -a ${SDK_PDF_DIR}/3rd_party/ ${OUT_DIR_PDF}/3rd_party
+    cp -a ${SDK_PDF_DIR} ${OUT_PDF_DIR}
 }
 
 
@@ -561,6 +548,9 @@ function package_sdk()
 
         # remove development components
         ./components/SysLogger
+
+        # remove files from documentation
+        ./doc/pdf/README.md
 
         # remove prepare_test.sh from demos
         prepare_test.sh
