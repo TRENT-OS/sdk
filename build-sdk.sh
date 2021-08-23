@@ -445,38 +445,44 @@ EOF
 function build_sdk_docs()
 {
     local SDK_SRC_DIR=$1
-    local OUT_DIR=$2
+    local OUT_DOC_DIR=$2
 
-    print_info "Building SDK docs into ${OUT_DIR} from ${SDK_SRC_DIR}"
+    print_info "Building SDK docs into ${OUT_DOC_DIR} from ${SDK_SRC_DIR}"
 
     if [ ! -d ${SDK_SRC_DIR} ]; then
         echo "missing SDK source folder, did you run the collect step?"
         return 1
     fi
 
-    # clear folder where we collect docs
-    if [[ -e ${OUT_DIR} ]]; then
-        echo "removing attic API documentation collection folder"
-        rm -rf ${OUT_DIR}
-    fi
+    # Ensure the doc folder exists and is empty.
+    rm -rf ${OUT_DOC_DIR}
+    mkdir -p ${OUT_DOC_DIR}
 
-    mkdir -p ${OUT_DIR}/pdf
+    #---------------------------------------------------------------------------
+    # Create the Doxygen documentation of the os_core_api.
+    # TODO: Create documentation of the entire SDK once it is well documented.
+    #---------------------------------------------------------------------------
 
-    # TODO We only create the documentation of the os_core_api.
-    #
-    # It is planned to do a documentation of the entire SDK once it is well
-    # documented.
+    echo "Generating Doxygen documentation into ${OUT_DOC_DIR}"
+
     (
-        export DOXYGEN_OUTPUT_DIR=$(realpath ${OUT_DIR})
+        export DOXYGEN_INPUT_DIR="os_core_api"
+        export DOXYGEN_OUTPUT_DIR=$(realpath ${OUT_DOC_DIR})
+
         cd ${SDK_SRC_DIR}
-        export DOXYGEN_INPUT_DIR=os_core_api
         doxygen Doxyfile
     )
 
-    # collect all the PDFs from the sandbox directory
+    #---------------------------------------------------------------------------
+    # Collect PDF files from the sdk-pdfs repository.
+    #---------------------------------------------------------------------------
+
+    mkdir ${OUT_DOC_DIR}/pdf
+
     local SDK_PDF_DIR=${OS_SDK_PATH}/sdk-pdfs
-    local OUT_DIR_PDF=${OUT_DIR}/pdf
-    echo "Collecting PDF documentation in ${OUT_DIR_PDF}/..."
+    local OUT_PDF_DIR=${OUT_DOC_DIR}/pdf
+
+    echo "Copying PDF files into ${OUT_PDF_DIR} from ${SDK_PDF_DIR}"
 
     PDF_FILES=(
         TRENTOS-M_GettingStarted_SDK_V1.2.pdf
@@ -486,7 +492,7 @@ function build_sdk_docs()
     )
 
     for PDF_FILE in ${PDF_FILES[@]}; do
-        cp -a ${SDK_PDF_DIR}/${PDF_FILE} ${OUT_DIR_PDF}
+        cp -a ${SDK_PDF_DIR}/${PDF_FILE} ${OUT_PDF_DIR}
     done
 
     cp -a ${SDK_PDF_DIR}/3rd_party/ ${OUT_DIR_PDF}/3rd_party
