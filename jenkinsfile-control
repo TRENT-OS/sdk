@@ -156,8 +156,9 @@ def SYSTEM_CONFIGS = [
 
     // Official Demo Systems
     TestCtx('demo_hello_world',        ['zynq7000', 'sabre', 'spike64'], 'test_demo_hello_world.py'),
-    BuildCtx('demo_hello_world',       ['rpi3', 'rpi4', 'nitrogen6sx', 'spike32']),
+    BuildCtx('demo_hello_world',       ['rpi3', 'rpi4', 'nitrogen6sx', 'spike32', 'zynqmp']),
     TestCtx('demo_iot_app',            ['zynq7000'], 'test_demo_iot_app.py'),
+    BuildCtx('demo_iot_app',           ['zynqmp']),
     BuildCtx('demo_iot_app_imx6',      ['sabre', 'nitrogen6sx']),
     BuildCtx('demo_iot_app_rpi3',      ['rpi3']),
     TestCtx('demo_tls_api',            ['zynq7000', 'sabre'], 'test_demo_tls_api.py'),
@@ -169,23 +170,38 @@ def SYSTEM_CONFIGS = [
     BuildCtx('demo_i2c',               ['sabre']),
 
     // Test Systems
+    // All supported systems are enabled as build-only for zynqmp because
+    // testing requires changing the test container to trentos_test:20210316
+    // which contains the xilinx QEMU. Also, if adding zynqmp builds results in
+    // a too long CI pipeline we can disable them again.
     TestCtx('test_timeserver',         ['zynq7000', 'sabre']),
-    BuildCtx('test_timeserver',        ['rpi3']),
+    BuildCtx('test_timeserver',        ['rpi3', 'zynqmp']),
     TestCtx('test_certserver',         ['zynq7000', 'sabre']),
-    BuildCtx('test_certserver',        ['rpi3']),
+    BuildCtx('test_certserver',        ['rpi3', 'zynqmp']),
     TestCtx('test_uart',               ['zynq7000', 'sabre']),
+    BuildCtx('test_uart',              ['zynqmp']),
     TestCtx('test_chanmux',            ['zynq7000']),
+    BuildCtx('test_chanmux',           ['zynqmp']),
     TestCtx('test_proxy_nvm',          ['zynq7000']),
+    BuildCtx('test_proxy_nvm',         ['zynqmp']),
     TestCtx('test_certparser',         ['zynq7000']),
+    BuildCtx('test_certparser',        ['zynqmp']),
     TestCtx('test_crypto_api',         ['zynq7000', 'spike64']),
+    BuildCtx('test_crypto_api',        ['zynqmp']),
     TestCtx('test_cryptoserver',       ['zynq7000']),
+    BuildCtx('test_cryptoserver',      ['zynqmp']),
     TestCtx('test_entropysource',      ['zynq7000']),
+    BuildCtx('test_entropysource',     ['zynqmp']),
     TestCtx('test_storage_interface',  ['zynq7000', 'sabre'], 'test_storage_interface*.py'),
     BuildCtx('test_storage_interface', ['rpi3']),
     TestCtx('test_filesystem',         ['zynq7000']),
+    BuildCtx('test_filesystem',        ['zynqmp']),
     TestCtx('test_config_server',      ['zynq7000']),
+    BuildCtx('test_config_server',     ['zynqmp']),
     TestCtx('test_keystore',           ['zynq7000']),
+    BuildCtx('test_keystore',          ['zynqmp']),
     TestCtx('test_logserver',          ['zynq7000']),
+    BuildCtx('test_logserver',         ['zynqmp']),
     TestCtx('test_tls_api',            ['zynq7000']),
     TestCtx('test_tlsserver',          ['zynq7000']),
 
