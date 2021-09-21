@@ -193,7 +193,7 @@ def SYSTEM_CONFIGS = [
     TestCtx('test_entropysource',      ['zynq7000']),
     BuildCtx('test_entropysource',     ['zynqmp']),
     TestCtx('test_storage_interface',  ['zynq7000', 'sabre'], 'test_storage_interface*.py'),
-    BuildCtx('test_storage_interface', ['rpi3']),
+    BuildCtx('test_storage_interface', ['rpi3', 'rpi4']),
     TestCtx('test_filesystem',         ['zynq7000']),
     BuildCtx('test_filesystem',        ['zynqmp']),
     TestCtx('test_config_server',      ['zynq7000']),
