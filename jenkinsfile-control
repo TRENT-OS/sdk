@@ -175,7 +175,7 @@ def SYSTEM_CONFIGS = [
     // which contains the xilinx QEMU. Also, if adding zynqmp builds results in
     // a too long CI pipeline we can disable them again.
     TestCtx('test_timeserver',         ['zynq7000', 'sabre']),
-    BuildCtx('test_timeserver',        ['rpi3', 'zynqmp']),
+    BuildCtx('test_timeserver',        ['rpi3', 'rpi4', 'zynqmp']),
     TestCtx('test_certserver',         ['zynq7000', 'sabre']),
     BuildCtx('test_certserver',        ['rpi3', 'zynqmp']),
     TestCtx('test_uart',               ['zynq7000', 'sabre']),
