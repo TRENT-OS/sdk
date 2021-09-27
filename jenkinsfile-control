@@ -946,7 +946,7 @@ pipeline {
                             run_shell_script(
                                 'scm-src/build-sdk.sh',
                                 [
-                                    'unit-tests', // mode
+                                    'run-unit-tests', // mode
                                     'unit_test_sdk' // base dir
                                 ]
                             )

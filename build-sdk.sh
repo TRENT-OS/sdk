@@ -617,7 +617,7 @@ function do_sdk_step()
             package_sdk ${SDK_PACKAGE_SRC}
             ;;
 
-        unit-tests)
+        run-unit-tests)
             sdk_unit_test ${SDK_PACKAGE_SRC} ${SDK_UNIT_TEST}
             ;;
 
