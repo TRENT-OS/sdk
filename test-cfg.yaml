@@ -311,6 +311,7 @@ test_network_api_tcp_server:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    rpi4:
 
 test_network_api_udp_server:
   testScript: test_network_api.py
