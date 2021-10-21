@@ -170,6 +170,7 @@ def SYSTEM_CONFIGS = [
     // rework.
     // BuildCtx('demo_raspi_ethernet',    ['rpi3']),
     BuildCtx('demo_i2c',               ['sabre']),
+    BuildCtx('demo_tls_server',        ['zynq7000']),
 
     // Test Systems
     // All supported systems are enabled as build-only for zynqmp because
