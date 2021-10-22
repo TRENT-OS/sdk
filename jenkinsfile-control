@@ -205,7 +205,9 @@ def SYSTEM_CONFIGS = [
     TestCtx('test_logserver',          ['zynq7000']),
     BuildCtx('test_logserver',         ['zynqmp']),
     TestCtx('test_tls_api',            ['zynq7000']),
+    BuildCtx('test_tls_api',           ['rpi3', 'sabre', 'nitrogen6sx']),
     TestCtx('test_tlsserver',          ['zynq7000']),
+    BuildCtx('test_tlsserver',         ['rpi3', 'sabre', 'nitrogen6sx']),
 
     // Parametrized Test Systems:
     // - using verbose repo locations according to 'name@path/to/repo'
