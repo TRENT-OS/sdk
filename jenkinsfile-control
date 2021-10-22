@@ -166,7 +166,9 @@ def SYSTEM_CONFIGS = [
     BuildCtx('demo_network_filter',    ['zynq7000', 'nitrogen6sx']),
 
     // Unofficial Demo Systems
-    BuildCtx('demo_raspi_ethernet',    ['rpi3']),
+    // Demo below Currently deactivated as it is not adapted to the Socket API
+    // rework.
+    // BuildCtx('demo_raspi_ethernet',    ['rpi3']),
     BuildCtx('demo_i2c',               ['sabre']),
 
     // Test Systems

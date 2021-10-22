@@ -28,9 +28,6 @@
 [submodule "libs/chanmux"]
 	path = libs/chanmux
 	url = ../../seos/chanmux.git
-[submodule "libs/os_network_stack"]
-	path = libs/os_network_stack
-	url = ../../seos/networkstack.git
 [submodule "libs/chanmux_nic_driver"]
 	path = libs/chanmux_nic_driver
 	url = ../../seos/seos_network_driver_tap_proxy_lib.git
@@ -145,3 +142,6 @@
 [submodule "components/NetworkStack_PicoTcp"]
 	path = components/NetworkStack_PicoTcp
 	url = ../../sc/networkstack_picotcp.git
+[submodule "libs/os_socket"]
+	path = libs/os_socket
+	url = ../../seos/networkstack.git
