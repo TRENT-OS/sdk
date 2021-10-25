@@ -1,4 +1,4 @@
-# TRENTOS-M SDK
+# TRENTOS SDK
 
 Please refer to the SDK documentation for details:
 

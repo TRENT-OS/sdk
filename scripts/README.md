@@ -1,4 +1,4 @@
-# TRENTOS-M Helper Scripts
+# TRENTOS Helper Scripts
 
 * `open_trentos_build_env.sh <CMD>`
 
