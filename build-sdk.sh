@@ -482,7 +482,10 @@ function build_sdk_docs()
 
     echo "Copying all PDF files into ${OUT_PDF_DIR} from ${SDK_PDF_DIR}"
 
-    cp -a ${SDK_PDF_DIR} ${OUT_PDF_DIR}
+    copy_files_via_tar \
+        ${SDK_PDF_DIR} \
+        ${OUT_PDF_DIR} \
+        --exclude-vcs
 }
 
 
