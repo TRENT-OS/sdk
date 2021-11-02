@@ -241,7 +241,7 @@ def get_sdk(
     )
 
     run_app('mkdir', ['-p', dir])
-    run_app('tar', ['-xf ' + DEV_DK_PACKAGE, '-C ' + dir])
+    run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C ' + dir])
 }
 
 
