@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 
 
-def SDK_PACKAGE = 'sdk-package.tar.bz2'
+def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 
 //------------------------------------------------------------------------------
 // Test system list
@@ -705,7 +705,7 @@ pipeline {
                     steps {
                         print_step_info env.STAGE_NAME
 
-                        do_archiveArtifacts(SDK_PACKAGE)
+                        do_archiveArtifacts(DEV_SDK_PACKAGE)
 
                     }
                 }
