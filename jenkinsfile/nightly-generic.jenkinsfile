@@ -286,7 +286,7 @@ pipeline {
                                     artifactDaysToKeepStr: '',
                                     artifactNumToKeepStr: '',
                                     daysToKeepStr: '1',
-                                    numToKeepStr: '5',
+                                    numToKeepStr: '500',
                                     discardOnlyOnSuccess: false,
                                     holdMaxBuilds: false])
     }
