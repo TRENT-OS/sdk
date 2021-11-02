@@ -155,6 +155,11 @@ function collect_sdk_sandbox()
         ./sdk-sel4-camkes/README.md
         ./tools/*/README.md
 
+        # remove unwanted resources
+        ./resources/rpi4_sd_card
+        ./resources/scripts
+        ./resources/zcu102_sd_card
+
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
 
