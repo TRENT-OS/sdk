@@ -600,9 +600,9 @@ pipeline {
                         // the cases where the (buggy) test framework doesn't
                         // kill all threads and these threads keep it from
                         // terminating. The longest test execution time seen
-                        // so far was 310 seconds for test_uart, so 420 seconds
-                        // looks like a good value to use for now.
-                        timeout(time: 420, unit: 'SECONDS')
+                        // so far was 310 seconds for test_uart, so double of
+                        // that looks like a good value to use for now.
+                        timeout(time: 620, unit: 'SECONDS')
                    }
 
                     agent {
