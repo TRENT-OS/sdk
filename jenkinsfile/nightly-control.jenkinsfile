@@ -509,7 +509,7 @@ def do_jobs_for_test_systems(branch, testConfig, release_type, debug_level)
 
         testConfig.platforms.each { platform ->
 
-            def pkg_name = platform + '-' + test_system
+            def pkg_name = platform + '-' + test_system + '-' + UUID.randomUUID().toString()
 
             def filter = test_ctx.platforms
             if(filter == null
