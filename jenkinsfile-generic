@@ -370,7 +370,9 @@ pipeline {
         // keep their builds. The potential work around is having a conditional
         // stage where "master" and "integration" push a package to an artifact
         // server, which then preserves this.
-        buildDiscarder(logRotator(numToKeepStr: '100', daysToKeepStr: '5',))
+        // Building one sandbox branch currently generates ~75 jobs. 300 should
+        // allow for 4 branches to build at the same time.
+        buildDiscarder(logRotator(numToKeepStr: '300', daysToKeepStr: '5',))
     }
 
     stages {
