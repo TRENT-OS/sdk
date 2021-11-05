@@ -261,8 +261,13 @@ def run_app(
     {
         cmdLine += ' ' + param_array.join(' ')
     }
+    // Don't exit shell if wget returned an error code.
+    if (application == 'wget')
+    {
+        cmdLine = 'set +e;'+cmdLine+';set -e;'
+    }
 
-    sh(cmdLine);
+    sh(cmdLine)
 }
 
 

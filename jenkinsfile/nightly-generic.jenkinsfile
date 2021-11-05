@@ -122,8 +122,13 @@ def run_app(
     {
         cmdLine += ' ' + param_array.join(' ')
     }
+    // Don't exit shell if wget returned an error code.
+    if (application == 'wget')
+    {
+        cmdLine = 'set +e;'+cmdLine+';set -e;'
+    }
 
-    sh(cmdLine);
+    sh(cmdLine)
 }
 
 
@@ -251,7 +256,6 @@ def save_current_job_log(
 ) {
     // get the current job's log up to now. One day we should find a nicer way
     // for this than downloading it
-
     run_app(
         'wget',
         [
