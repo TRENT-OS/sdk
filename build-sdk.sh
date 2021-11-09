@@ -514,7 +514,7 @@ function package_sdk()
     # time when this script runs.
     # To enforce a specific timestamp for official releases the variable should
     # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
-    local TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
+    local TIMESTAMP="UTC 2021-11-09 14:00:00"
 
     print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}':"
     du -sh ${SDK_PACKAGE_SRC}
