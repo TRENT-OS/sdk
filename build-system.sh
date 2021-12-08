@@ -106,6 +106,25 @@ CMAKE_PARAMS_PLATFORM=()
 
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
+    qemu-arm-virt )
+        # seL4 build system defaults to Cortex-A53
+        BUILD_ARCH=aarch64
+        ;;
+    #-------------------------------------
+    qemu-arm-virt-a15 )
+        QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
+        BUILD_PLATFORM=qemu-arm-virt
+        BUILD_ARCH=aarch32
+        CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
+        ;;
+    #-------------------------------------
+    qemu-arm-virt-a53 | qemu-arm-virt-a57 | qemu-arm-virt-a72)
+        QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
+        BUILD_PLATFORM=qemu-arm-virt
+        BUILD_ARCH=aarch64
+        CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
+        ;;
+    #-------------------------------------
     spike32 )
         BUILD_PLATFORM=spike
         BUILD_ARCH=riscv32
@@ -126,7 +145,6 @@ case "${BUILD_PLATFORM}" in
     imx7  | imx7-sabre |\
     imx31 | kzm | imx31-kzm |\
     omap3 |\
-    qemu-arm-virt |\
     tk1 |\
     zynq7000 )
         BUILD_ARCH=aarch32
