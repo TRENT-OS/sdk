@@ -103,24 +103,18 @@ echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Output:    ${BUILD_DIR}"
 
 CMAKE_PARAMS_PLATFORM=()
+
 case "${BUILD_PLATFORM}" in
     #-------------------------------------
     spike32 )
         BUILD_PLATFORM=spike
-        CMAKE_PARAMS_PLATFORM+=(
-            -D RISCV32=TRUE
-        )
+        BUILD_ARCH=riscv32
         ;;
     #-------------------------------------
     spike64 | spike )
         BUILD_PLATFORM=spike
-        CMAKE_PARAMS_PLATFORM+=(
-            -D RISCV64=TRUE
-        )
+        BUILD_ARCH=riscv64
         ;;
-esac
-
-case "${BUILD_PLATFORM}" in
     #-------------------------------------
     am335x | am335x-boneblack | am335x-boneblue | \
     apq8064 |\
@@ -135,7 +129,7 @@ case "${BUILD_PLATFORM}" in
     qemu-arm-virt |\
     tk1 |\
     zynq7000 )
-        CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
+        BUILD_ARCH=aarch32
         ;;
     #-------------------------------------
     fvp |\
@@ -146,20 +140,18 @@ case "${BUILD_PLATFORM}" in
     tx1 |\
     tx2 |\
     zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
-        CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
+        BUILD_ARCH=aarch64
         ;;
     #-------------------------------------
     ariane |\
-    hifive |\
-    spike )
-        # toolchain can build rv32 and rv64 targets
-        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
+    hifive )
+        BUILD_ARCH=riscv64
         ;;
     #-------------------------------------
     pc99 |\
     x86_64 |\
     ia32)
-        CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
+        BUILD_ARCH=${BUILD_PLATFORM}
         ;;
     #-------------------------------------
     *)
@@ -171,6 +163,37 @@ case "${BUILD_PLATFORM}" in
         ;;
 esac
 
+case "${BUILD_ARCH}" in
+    aarch32)
+        CMAKE_PARAMS_PLATFORM+=( -D AARCH32=TRUE )
+        CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
+        ;;
+    aarch64)
+        CMAKE_PARAMS_PLATFORM+=( -D AARCH64=TRUE )
+        CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
+        ;;
+    riscv32)
+        CMAKE_PARAMS_PLATFORM+=( -D RISCV32=TRUE )
+        # 64-bit toolchain can build 32 targets also
+        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
+        ;;
+    riscv64)
+        CMAKE_PARAMS_PLATFORM+=( -D RISCV64=TRUE )
+        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
+        ;;
+
+    pc99 | ia32 | x86_64)
+        # 64-bit toolchain can build 32 targets also
+        CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
+        ;;
+    *)
+       echo ""
+        echo "##"
+        echo "## ERROR: invalid architecture '${BUILD_ARCH}'"
+        echo "##"
+        exit 1
+        ;;
+esac
 
 # Set toolchain file for regular builds
 TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
