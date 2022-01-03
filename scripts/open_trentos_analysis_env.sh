@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 #-------------------------------------------------------------------------------
-# Copyright (C) 2021, HENSOLDT Cyber GmbH
+# Copyright (C) 2021-2022, HENSOLDT Cyber GmbH
 #
 # Start the analysis container for the local workflow.
 #
@@ -17,7 +17,7 @@
 
 # the name is fixed, but the tag can be set externally also
 TRENTOS_ANALYSIS_CONTAINER_NAME="trentos_analysis"
-TRENTOS_ANALYSIS_CONTAINER_TAG=${TRENTOS_ANALYSIS_CONTAINER_TAG:-20210601}
+TRENTOS_ANALYSIS_CONTAINER_TAG=${TRENTOS_ANALYSIS_CONTAINER_TAG:-20220103}
 TRENTOS_ANALYSIS_CONTAINER=${TRENTOS_ANALYSIS_CONTAINER_NAME}:${TRENTOS_ANALYSIS_CONTAINER_TAG}
 
 
