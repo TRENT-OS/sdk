@@ -1,0 +1,17 @@
+{
+    "Analysis": {
+        "Analysis-GlobalOptions": {
+            "global_excludes": [
+                "*/ext_mocks/*"
+            ]
+        }
+    },
+    "_Format": "1.0",
+    "_Version": "7.2.0",
+    "_VersionNum": [
+        7,
+        2,
+        0,
+        7204
+    ]
+}
