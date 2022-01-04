@@ -213,13 +213,13 @@ def SYSTEM_CONFIGS = [
     // Parametrized Test Systems:
     // - using verbose repo locations according to 'name@path/to/repo'
     // - using build and test parameters
-    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3', 'sabre', 'nitrogen6sx'], buildTarget('tcp_server')),
+    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3', 'nitrogen6sx'], buildTarget('tcp_server')),
 
-    TestCtx('test_network_api_tcp_client@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_single_socket'),    testTarget('tcp_client_single_socket')),
-    TestCtx('test_network_api_tcp_client_multiple_sockets@ss/test_network_api', ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_multiple_sockets'), testTarget('tcp_client_multiple_sockets')),
-    TestCtx('test_network_api_tcp_client_multiple_clients@ss/test_network_api', ['zynq7000'], 'test_network_api.py', buildTarget('tcp_client_multiple_clients'), testTarget('tcp_client_multiple_clients')),
-    TestCtx('test_network_api_tcp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('tcp_server'),                  testTarget('tcp_server')),
-    TestCtx('test_network_api_udp_server@ss/test_network_api',                  ['zynq7000'], 'test_network_api.py', buildTarget('udp_server'),                  testTarget('udp_server'))
+    TestCtx('test_network_api_tcp_client@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_single_socket'),    testTarget('tcp_client_single_socket')),
+    TestCtx('test_network_api_tcp_client_multiple_sockets@ss/test_network_api', ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_multiple_sockets'), testTarget('tcp_client_multiple_sockets')),
+    TestCtx('test_network_api_tcp_client_multiple_clients@ss/test_network_api', ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_multiple_clients'), testTarget('tcp_client_multiple_clients')),
+    TestCtx('test_network_api_tcp_server@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_server'),                  testTarget('tcp_server')),
+    TestCtx('test_network_api_udp_server@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('udp_server'),                  testTarget('udp_server'))
 
 ]
 
