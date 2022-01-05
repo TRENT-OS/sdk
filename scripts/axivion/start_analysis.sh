@@ -1,13 +1,18 @@
 #!/bin/bash -ue
 
 #-------------------------------------------------------------------------------
-# Copyright (C) 2021, HENSOLDT Cyber GmbH
+# Copyright (C) 2021-2022, HENSOLDT Cyber GmbH
 #
 # Starts the static code analysis with the Axivion Suite for the given Axivion
 # configuration directory of an analysis project.
 #
+# NOTE: The environment variable ENABLE_CI_BUILD is OFF per default to support
+# local builds. If it is set to ON it will run a CI build that will update the
+# analysis databases on the dashboard server.
+#
 # Running an analysis requires a devnet connection for communication with the
-# dashboard server.
+# dashboard server. Also local builds need to retrieve the latest CI results
+# from the dashboard server for comparison with the local results.
 #
 # Usage: start_analysis.sh config_dir [sandbox_dir] [repo_dir]
 #     config_dir  Project specific axivion configuration directory.
