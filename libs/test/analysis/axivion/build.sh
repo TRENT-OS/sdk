@@ -1,7 +1,7 @@
 #!/bin/bash -ue
 
 #-------------------------------------------------------------------------------
-# Copyright (C) 2021, HENSOLDT Cyber GmbH
+# Copyright (C) 2021-2022, HENSOLDT Cyber GmbH
 #
 # Build the analysis project.
 #
@@ -16,6 +16,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
 # set common paths
 source ${SCRIPT_DIR}/set_axivion_config
+
+# Use CMake build target set in the environment variable (default: analysis).
+BUILD_TARGET=${BUILD_TARGET:-analysis}
 
 
 #-------------------------------------------------------------------------------
@@ -54,4 +57,4 @@ cmake ${CMAKE_PARAMS[@]} -S ${SOURCE_DIR} -B ${BUILD_DIR}
 # CMake build
 #-------------------------------------------------------------------------------
 
-cmake --build ${BUILD_DIR} --target analysis
+cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
