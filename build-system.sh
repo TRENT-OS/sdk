@@ -187,7 +187,7 @@ case "${BUILD_ARCH}" in
         CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
         ;;
     *)
-       echo ""
+        echo ""
         echo "##"
         echo "## ERROR: invalid architecture '${BUILD_ARCH}'"
         echo "##"
