@@ -103,7 +103,10 @@ do_run_docker()
         ${DOCKER_ARGS[@]}
     )
 
-    docker run "${DOCKER_PARAMS[@]}" ${CONTAINER} "${ARGS[@]}"
+    (
+        set -x
+        docker run "${DOCKER_PARAMS[@]}" ${CONTAINER} "${ARGS[@]}"
+    )
 }
 
 
