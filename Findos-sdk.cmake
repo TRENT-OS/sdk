@@ -352,10 +352,10 @@ macro(os_sdk_set_defaults)
 
     endif()
 
-    # default to ZF_LOG_DEBUG (2), because ZF_LOG_INFO (3) is sometimes not
-    # verbose enough. Apps and components can use ZF_LOG_LEVEL=n to tailor this
-    # to their needs.
-    set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
+    # default to ZF_LOG_INFO (3), because ZF_LOG_DEBUG (2) is too verbose
+    # enough. Apps and components can use ZF_LOG_LEVEL=n to tailor this to their
+    needs.
+    set(LibUtilsDefaultZfLogLevel 3 CACHE STRING "")
 
 endmacro()
 
@@ -460,12 +460,6 @@ function(os_sdk_create_CAmkES_system camkes_system_file)
     DeclareCAmkESRootserver(${camkes_system_file})
     GenerateCAmkESRootServer()
     GenerateSimulateScript()
-
-    # Use ZF_LOG_INFO (3) for the CapDL Loader, because usually we are not
-    # interested in seeing all details of the cap setup during boot. This also
-    # makes the boot quite slow for large systems due to the amount of data that
-    # is printed.
-    target_compile_definitions("capdl-loader" PRIVATE ZF_LOG_LEVEL=3)
 
     os_sdk_postprocess_targets()
 
