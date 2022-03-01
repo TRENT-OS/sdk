@@ -334,6 +334,9 @@ macro(os_sdk_build system_project_dir)
 
     set(SEL4_CONFIG_DEFAULT_ADVANCED ON)
 
+    # enable mixed criticallity scheduling
+    set(KernelIsMCS ON CACHE BOOL "")
+
     # we need one scheduling domain only
     set(KernelNumDomains 1 CACHE STRING "")
 
