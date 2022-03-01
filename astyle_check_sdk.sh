@@ -183,6 +183,6 @@ if [ ! -z "${FILES}" ]; then
     exit 1 # error
 fi
 
-echo "INFO: No astyle issue found."
-
-exit 0 # success
+echo "INFO: No astyle issue found, running sel4 style."
+sdk-sel4-camkes/tools/seL4/misc/style.py *
+echo "---"
