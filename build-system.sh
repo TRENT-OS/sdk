@@ -220,7 +220,9 @@ case "${BUILD_PLATFORM}" in
         ;;
     #-------------------------------------
     ariane |\
-    hifive )
+    hifive |\
+    polarfire |\
+    rocketchip )
         BUILD_ARCH=riscv64
         ;;
     #-------------------------------------
