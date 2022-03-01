@@ -340,7 +340,7 @@ function run_build()
         export COMPILE_ONLYIR=yes
     fi
 
-    cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
+    cmake --build ${BUILD_DIR} --target ${BUILD_TARGET} -- -v
 
     echo "##------------------------------------------------------------------------------"
     echo "## build successful, output in ${BUILD_DIR}"
