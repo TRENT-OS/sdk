@@ -337,6 +337,24 @@ macro(os_sdk_build system_project_dir)
     # enable mixed criticallity scheduling
     set(KernelIsMCS ON CACHE BOOL "")
 
+
+    # generic
+    #   Enable global benchmarks config variable with no specific features.
+    # track_kernel_entries
+    #   Log kernel entries information including timing, number of invocations
+    #   and arguments for system calls, interrupts, user faults and VM faults.
+    # tracepoints
+    #   Enable manually inserted tracepoints that the kernel will track time
+    #   consumed between.
+    # track_utilisation
+    #   Enable the kernel to track each thread's utilisation time.
+    set(KernelBenchmarks "track_utilisation" CACHE STRING "")
+
+    # EXPORT_PMU_USER
+    #set(KernelArmExportPMUUser ON CACHE BOOL "" FORCE)
+    # DANGEROUS_CODE_INJECTION
+    set(KernelDangerousCodeInjection ON CACHE BOOL "" FORCE)
+
     # we need one scheduling domain only
     set(KernelNumDomains 1 CACHE STRING "")
 
@@ -384,6 +402,8 @@ macro(os_sdk_build system_project_dir)
     # NOTE: We enable this here after all the seL4/CAmkES stuff because we only
     # want our system's stuff in the file.
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    #set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
 
     # NOTE: Linting does not work on seL4/CAmkES code, thus we define details
     # here after we've included the seL4/CAmkES stuff.
