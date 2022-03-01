@@ -221,6 +221,7 @@ case "${BUILD_PLATFORM}" in
     #-------------------------------------
     ariane |\
     hifive |\
+    migv |\
     polarfire |\
     rocketchip )
         BUILD_ARCH=riscv64

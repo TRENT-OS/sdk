@@ -40,7 +40,7 @@ demo_hello_world:
       addFlags: TEST
     spike64:
       addFlags: TEST
-
+    migv:
 
 #-------------------------------------------------------------------------------
 # Additional Official Demo System
