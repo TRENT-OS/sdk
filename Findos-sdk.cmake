@@ -393,17 +393,23 @@ macro(os_sdk_setup)
     # NOTE: Linting does not work on seL4/CAmkES code, thus we define details
     # here after we've included the seL4/CAmkES stuff.
     if (ENABLE_LINT)
-        set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr")
+        # SEOS-1370: https://gitlab.kitware.com/cmake/cmake/-/issues/22020 would
+        # be nice to have, then we can use a specific output file instead of
+        # the "--output-file=cppcheck_output.txt" that gets corrupted due to
+        # the doing things in parallel
+        #set(CMAKE_C_CPPCHECK "cppcheck;--enable=warning;--inline-suppr")
+        set(CMAKE_C_CPPCHECK "${OS_SDK_DIR}/scripts/cppcheck.sh")
 
         # NOTE: We cannot use set(CMAKE_C_CLANG_TIDY "clang-tidy;...") because
         # CMake passes the compile target architecture to clang-tidy in a wrong
         # way when crosscompiling. As a workaround we use -p to pass the
         # location of compile_commands.json to clang-tidy.
-        find_program(CLANGTIDY clang-tidy)
-        if(NOT CLANGTIDY)
-            message(FATAL_ERROR "Didn't find clang-tidy executable!")
-        endif()
-        set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
+        #find_program(CLANGTIDY clang-tidy)
+        #if(NOT CLANGTIDY)
+        #    message(FATAL_ERROR "Didn't find clang-tidy executable!")
+        #endif()
+        #set(CMAKE_CXX_CLANG_TIDY ${OS_SDK_DIR}/scripts/clang-tidy.sh -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
+        #set(CMAKE_C_CLANG_TIDY ${OS_SDK_DIR}/scripts/clang-tidy.sh -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
     if(SETUP_PARAM_CONFIG_FILE)
