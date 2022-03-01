@@ -39,13 +39,24 @@
 #
 # Any additional parameters will be passed to CMake.
 #
-# NOTE: The environment variable ENABLE_ANALYSIS has to be set to "ON" if the
-#       script is used for an analysis with the axivion suite.
+# Supported environment variables:
 #
-# NOTE: The environment variable BUILD_TARGET might be used to specify an
-#       individual CMake build target. Usually, this is used for the analysis
-#       with the axivion suite. If not set, "all" will be used for regular
-#       builds per default.
+#    TOOLCHAIN=[gcc|clang|axivion]
+#        Toolchain to be used, currently supported are:
+#          "gcc"      use GCC toolchain, used as default if nothing is set.
+#          "clang"    use LLVM/clang toolchain.
+#          "axivion"  use Axivion suite to run code analysis.
+#
+#    ENABLE_ANALYSIS=ON
+#        Currently this is basically an alias for "TOOLCHAIN=axivion" to run
+#        analysis with the Axivion suite.
+#
+#    BUILD_TARGET=<target>
+#       Specify the CMake build configuration target, defaults to "all" if
+#       nothing is set. Currently, the main use case for different targets is
+#       running the analysis with the Axivion suite.
+#
+#
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -87,8 +98,21 @@ CMAKE_PARAMS_FILE=cmake_params.txt
 
 #-------------------------------------------------------------------------------
 
-# Check if analysis is enabled by environment variable (default: OFF).
-ENABLE_ANALYSIS=${ENABLE_ANALYSIS:-OFF}
+# Check requested toolchain or if analysis is enabled by environment variable
+if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
+    # Default to "gcc" if TOOLCHAIN is not set.
+    TOOLCHAIN=${TOOLCHAIN:-gcc}
+else
+    # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
+    TOOLCHAIN=${TOOLCHAIN:-axivion}
+    if [[ "${TOOLCHAIN}" != "axivion" ]]; then
+        echo ""
+        echo "##"
+        echo "## ERROR: ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
+        echo "##"
+        exit 1
+    fi
+fi
 
 # Check if an individual CMake build target is set in the environment variable,
 # for example used for analysis (default: all).
@@ -100,6 +124,7 @@ echo ""
 echo "##=============================================================================="
 echo "## Project:   ${OS_PROJECT_DIR}"
 echo "## Platform:  ${BUILD_PLATFORM}"
+echo "## Toolchain: ${TOOLCHAIN}"
 echo "## Output:    ${BUILD_DIR}"
 
 CMAKE_PARAMS_PLATFORM=()
@@ -184,25 +209,25 @@ esac
 case "${BUILD_ARCH}" in
     aarch32)
         CMAKE_PARAMS_PLATFORM+=( -D AARCH32=TRUE )
-        CROSS_COMPILER_PREFIX=arm-linux-gnueabi-
+        TRIPLE=arm-linux-gnueabi
         ;;
     aarch64)
         CMAKE_PARAMS_PLATFORM+=( -D AARCH64=TRUE )
-        CROSS_COMPILER_PREFIX=aarch64-linux-gnu-
+        TRIPLE=aarch64-linux-gnu
         ;;
     riscv32)
         CMAKE_PARAMS_PLATFORM+=( -D RISCV32=TRUE )
         # 64-bit toolchain can build 32 targets also
-        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
+        TRIPLE=riscv64-unknown-linux-gnu
         ;;
     riscv64)
         CMAKE_PARAMS_PLATFORM+=( -D RISCV64=TRUE )
-        CROSS_COMPILER_PREFIX=riscv64-unknown-linux-gnu-
+        TRIPLE=riscv64-unknown-linux-gnu
         ;;
 
     pc99 | ia32 | x86_64)
         # 64-bit toolchain can build 32 targets also
-        CROSS_COMPILER_PREFIX=x86_64-linux-gnu-
+        TRIPLE=x86_64-linux-gnu
         ;;
     *)
         echo ""
@@ -213,18 +238,36 @@ case "${BUILD_ARCH}" in
         ;;
 esac
 
-# Set toolchain file for regular builds
-TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
+case "${TOOLCHAIN}" in
+    gcc)
+        TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
+        # Luckily, CROSS_COMPILER_PREFIX can be built from TRIPLE by just adding
+        # a dash.
+        CMAKE_PARAMS_PLATFORM+=( -D CROSS_COMPILER_PREFIX=${TRIPLE}- )
+        ;;
 
-if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
-    # Set toolchain file for axivion suite if analysis enabled
-    TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
-fi
+    clang)
+        TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/llvm.cmake"
+        CMAKE_PARAMS_PLATFORM+=( -D TRIPLE=${TRIPLE} )
+        ;;
+
+    axivion)
+        TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
+        CMAKE_PARAMS_PLATFORM+=( -D CROSS_COMPILER_PREFIX=${TRIPLE}- )
+        ;;
+
+    *)
+        echo ""
+        echo "##"
+        echo "## ERROR: unsupported toolchain '${TOOLCHAIN}'"
+        echo "##"
+        exit 1
+        ;;
+esac
 
 # Set CMake parameters
 CMAKE_PARAMS=(
     # CMake settings
-    -D CROSS_COMPILER_PREFIX=${CROSS_COMPILER_PREFIX}
     -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
@@ -290,7 +333,7 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     echo "## configure build ..."
     echo "##------------------------------------------------------------------------------"
 
-    if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
+    if [[ ${TOOLCHAIN} == "axivion" ]]; then
         # Prepare axivion suite for CMake config
         export COMPILE_ONLY=yes
         unset COMPILE_ONLYIR
@@ -333,7 +376,7 @@ else
 fi
 
 
-if [[ ${ENABLE_ANALYSIS} == "ON" ]]; then
+if [[ ${TOOLCHAIN} == "axivion" ]]; then
     # Prepare axivion suite for CMake build
     unset COMPILE_ONLY
     export COMPILE_ONLYIR=yes
