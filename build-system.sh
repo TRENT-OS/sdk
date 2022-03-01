@@ -94,12 +94,258 @@ BUILD_ARGS=("$@")
 # By definition, this script is located in the SDK root folder.
 OS_SDK_PATH="${SCRIPT_DIR}"
 
-# Check if an individual CMake build target is set in the environment variable,
-# for example used for analysis (default: all).
-BUILD_TARGET=${BUILD_TARGET:-all}
-
 CMAKE_PARAMS_FILE=cmake_params.txt
-BUILD_TARGETS_GRAPH=build-targets-graph
+
+
+#-------------------------------------------------------------------------------
+function run_build()
+{
+    # Check requested toolchain or if analysis is enabled by environment variable
+    if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
+        # Default to "gcc" if TOOLCHAIN is not set.
+        TOOLCHAIN=${TOOLCHAIN:-gcc}
+    else
+        # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
+        TOOLCHAIN=${TOOLCHAIN:-axivion}
+        if [[ "${TOOLCHAIN}" != "axivion" ]]; then
+            print_error "ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
+            exit 1
+        fi
+    fi
+
+    CMAKE_PARAMS_PLATFORM=()
+
+    case "${BUILD_PLATFORM}" in
+        #-------------------------------------
+        qemu-arm-virt )
+            # seL4 build system defaults to Cortex-A53
+            BUILD_ARCH=aarch64
+            ;;
+        #-------------------------------------
+        qemu-arm-virt-a15 )
+            QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
+            BUILD_PLATFORM=qemu-arm-virt
+            BUILD_ARCH=aarch32
+            CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
+            ;;
+        #-------------------------------------
+        qemu-arm-virt-a53 | qemu-arm-virt-a57 | qemu-arm-virt-a72)
+            QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
+            BUILD_PLATFORM=qemu-arm-virt
+            BUILD_ARCH=aarch64
+            CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
+            ;;
+        #-------------------------------------
+        qemu-riscv-virt )
+            # seL4 build system defaults to rv64
+            BUILD_ARCH=riscv64
+            ;;
+        #-------------------------------------
+        qemu-riscv-virt32 )
+            BUILD_ARCH=riscv32
+            BUILD_PLATFORM=qemu-riscv-virt
+            ;;
+        #-------------------------------------
+        qemu-riscv-virt64 )
+            BUILD_ARCH=riscv64
+            BUILD_PLATFORM=qemu-riscv-virt
+            ;;
+        #-------------------------------------
+        spike32 )
+            BUILD_PLATFORM=spike
+            BUILD_ARCH=riscv32
+            ;;
+        #-------------------------------------
+        spike64 | spike )
+            BUILD_PLATFORM=spike
+            BUILD_ARCH=riscv64
+            ;;
+        #-------------------------------------
+        am335x | am335x-boneblack | am335x-boneblue | \
+        apq8064 |\
+        bcm2837 | rpi3 | bcm2837-rpi3 |\
+        exynos4 |\
+        exynos5 | exynos5250 | exynos5410 | exynos5422 |\
+        hikey |\
+        imx6 | sabre | imx6-sabre | wandq | imx6-wandq | nitrogen6sx |\
+        imx7  | imx7-sabre |\
+        imx31 | kzm | imx31-kzm |\
+        omap3 |\
+        tk1 |\
+        zynq7000 )
+            BUILD_ARCH=aarch32
+            ;;
+        #-------------------------------------
+        fvp |\
+        imx8mq-evk | imx8mm-evk |\
+        odroidc2 |\
+        odroidc4 |\
+        rockpro64 |\
+        rpi4 |\
+        tx1 |\
+        tx2 |\
+        zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
+            BUILD_ARCH=aarch64
+            ;;
+        #-------------------------------------
+        ariane |\
+        hifive |\
+        polarfire )
+            BUILD_ARCH=riscv64
+            ;;
+        #-------------------------------------
+        pc99 |\
+        x86_64 |\
+        ia32)
+            BUILD_ARCH=${BUILD_PLATFORM}
+            ;;
+        #-------------------------------------
+        *)
+            print_error "invalid platform '${BUILD_PLATFORM}'"
+            exit 1
+            ;;
+    esac
+
+    case "${BUILD_ARCH}" in
+        aarch32)
+            CMAKE_PARAMS_PLATFORM+=( -D AARCH32=TRUE )
+            TRIPLE=arm-linux-gnueabi
+            ;;
+        aarch64)
+            CMAKE_PARAMS_PLATFORM+=( -D AARCH64=TRUE )
+            TRIPLE=aarch64-linux-gnu
+            ;;
+        riscv32)
+            CMAKE_PARAMS_PLATFORM+=( -D RISCV32=TRUE )
+            # 64-bit toolchain can build 32 targets also
+            TRIPLE=riscv64-unknown-linux-gnu
+            ;;
+        riscv64)
+            CMAKE_PARAMS_PLATFORM+=( -D RISCV64=TRUE )
+            TRIPLE=riscv64-unknown-linux-gnu
+            ;;
+
+        pc99 | ia32 | x86_64)
+            # 64-bit toolchain can build 32 targets also
+            TRIPLE=x86_64-linux-gnu
+            ;;
+        *)
+            print_error "invalid architecture '${BUILD_ARCH}'"
+            exit 1
+            ;;
+    esac
+
+    case "${TOOLCHAIN}" in
+        gcc)
+            TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
+            # Luckily, CROSS_COMPILER_PREFIX can be built from TRIPLE by just
+            # adding a dash.
+            CMAKE_PARAMS_PLATFORM+=( -D CROSS_COMPILER_PREFIX=${TRIPLE}- )
+            ;;
+
+        clang)
+            TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/llvm.cmake"
+            CMAKE_PARAMS_PLATFORM+=( -D TRIPLE=${TRIPLE} )
+            ;;
+
+        axivion)
+            TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
+            CMAKE_PARAMS_PLATFORM+=(
+                -D PARENT_TOOLCHAIN_FILE:FILEPATH="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
+                -D CROSS_COMPILER_PREFIX=${TRIPLE}
+            )
+            ;;
+
+        *)
+            print_error "unsupported toolchain '${TOOLCHAIN}'"
+            exit 1
+            ;;
+    esac
+
+    echo ""
+    echo "##=============================================================================="
+    echo "## Project:   ${PROJECT_DIR}"
+    echo "## Platform:  ${BUILD_PLATFORM}"
+    echo "## Toolchain: ${TOOLCHAIN} (${TRIPLE})"
+    echo "## Output:    ${BUILD_DIR}"
+
+    # Check if an individual CMake build target is set in the environment
+    # variable, for example used for analysis (default: all).
+    BUILD_TARGET=${BUILD_TARGET:-all}
+
+    BUILD_TARGETS_GRAPH=build-targets-graph
+
+    # Set CMake parameters
+    CMAKE_PARAMS=(
+        # CMake settings
+        -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
+        # seL4 build system settings
+        -D PLATFORM=${BUILD_PLATFORM}
+        "${CMAKE_PARAMS_PLATFORM[@]}"
+        -D KernelVerificationBuild=OFF
+        # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
+        # musllibc and capDL-tool) that are project agnostic, so we don't have
+        # to rebuild them every time. This reduces the build time a lot.
+        -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
+        -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
+        "${BUILD_ARGS[@]}"
+        --warn-uninitialized
+        --graphviz=${BUILD_TARGETS_GRAPH}.dot
+        -G Ninja
+        # Use absolute path of PROJECT_DIR, because we change the current working
+        # folder to ${BUILD_DIR}/${BUILD_TARGETS_GRAPH} when invoking CMake.
+        -S "$(cd "${PROJECT_DIR}" >/dev/null 2>&1 && pwd)"
+        -B ..
+    )
+
+    # If there is a file with the parameters at this stage, we can just do a
+    # rebuild. Otherwise the build workspace has been wiped and we need to start
+    # the build from scratch.
+    if [[ -e ${BUILD_DIR}/${CMAKE_PARAMS_FILE} ]]; then
+        print_new_section "start re-build ..."
+    else
+        print_new_section "configure build ..."
+
+        if [[ ${TOOLCHAIN} == "axivion" ]]; then
+            # Prepare axivion suite for CMake config
+            export COMPILE_ONLY=yes
+            unset COMPILE_ONLYIR
+        fi
+
+        echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
+        (
+            # Unfortunately, when CMake generates the build targets graph, a lot
+            # of *.dot files are created in the current working folder. There is
+            # no way to specify a custom sub folder for them. A workaround to
+            # avoid polluting the build folder root is invoking CMake from a
+            # dedicated sub folder.
+            cd ${BUILD_DIR}
+            mkdir ${BUILD_TARGETS_GRAPH}
+            cd ${BUILD_TARGETS_GRAPH}
+            cmake "${CMAKE_PARAMS[@]}"
+            # Create a picture with the build targets graph.
+            dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
+        )
+
+        print_new_section "start clean build ..."
+    fi
+
+    if [[ ${TOOLCHAIN} == "axivion" ]]; then
+        # Prepare axivion suite for CMake build
+        unset COMPILE_ONLY
+        export COMPILE_ONLYIR=yes
+    fi
+
+    cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
+
+    echo "##------------------------------------------------------------------------------"
+    echo "## build successful, output in ${BUILD_DIR}"
+    echo "##=============================================================================="
+}
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 # When this script is executed from Jenkins in a docker environment, a race
 # condition in the Jenkins docker agent plugin could make it run before the
@@ -122,279 +368,50 @@ if [ -e "/usr/local/bin/fixuid" ]; then
     fi
 fi
 
-# Check requested toolchain or if analysis is enabled by environment variable
-if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
-    # Default to "gcc" if TOOLCHAIN is not set.
-    TOOLCHAIN=${TOOLCHAIN:-gcc}
-else
-    # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
-    TOOLCHAIN=${TOOLCHAIN:-axivion}
-    if [[ "${TOOLCHAIN}" != "axivion" ]]; then
-        print_error "ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
+
+# Run the check if we can do a re-build in the subshell, wipe the build folder
+# if the shell returns an error.
+(
+    cd ${BUILD_DIR}
+
+    # If the build is invoked with different parameters as last time, then
+    # we have to do a full rebuild. Note that we do not implement the
+    # feature that a command line with no build arguments takes what was
+    # stored in the argument file. It turned out this does not match the
+    # common workflow. Usually, a command line is rarely typed in, but for
+    # re-builds one just takes a command line from the shell's history
+    # buffer. Thus, specifying no arguments is usually intended to
+    # explicitly trigger a build with the default configuration.
+    #
+    # !-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!
+    print_error "TODO: THIS FAILS, as 'CMAKE_PARAMS' is not yet defined here!"
+    # !-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!
+    #
+    if [[ ! -e ${CMAKE_PARAMS_FILE} \
+          || "$(< ${CMAKE_PARAMS_FILE})" != "${CMAKE_PARAMS[@]}" \
+       ]]; then
+        echo "build parameters have changed, rebuild everything"
         exit 1
     fi
-fi
 
-CMAKE_PARAMS_PLATFORM=()
-
-case "${BUILD_PLATFORM}" in
-    #-------------------------------------
-    qemu-arm-virt )
-        # seL4 build system defaults to Cortex-A53
-        BUILD_ARCH=aarch64
-        ;;
-    #-------------------------------------
-    qemu-arm-virt-a15 )
-        QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
-        BUILD_PLATFORM=qemu-arm-virt
-        BUILD_ARCH=aarch32
-        CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
-        ;;
-    #-------------------------------------
-    qemu-arm-virt-a53 | qemu-arm-virt-a57 | qemu-arm-virt-a72)
-        QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
-        BUILD_PLATFORM=qemu-arm-virt
-        BUILD_ARCH=aarch64
-        CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
-        ;;
-    #-------------------------------------
-    qemu-riscv-virt )
-        # seL4 build system defaults to rv64
-        BUILD_ARCH=riscv64
-        ;;
-    #-------------------------------------
-    qemu-riscv-virt32 )
-        BUILD_ARCH=riscv32
-        BUILD_PLATFORM=qemu-riscv-virt
-        ;;
-    #-------------------------------------
-    qemu-riscv-virt64 )
-        BUILD_ARCH=riscv64
-        BUILD_PLATFORM=qemu-riscv-virt
-        ;;
-    #-------------------------------------
-    spike32 )
-        BUILD_PLATFORM=spike
-        BUILD_ARCH=riscv32
-        ;;
-    #-------------------------------------
-    spike64 | spike )
-        BUILD_PLATFORM=spike
-        BUILD_ARCH=riscv64
-        ;;
-    #-------------------------------------
-    am335x | am335x-boneblack | am335x-boneblue | \
-    apq8064 |\
-    bcm2837 | rpi3 | bcm2837-rpi3 |\
-    exynos4 |\
-    exynos5 | exynos5250 | exynos5410 | exynos5422 |\
-    hikey |\
-    imx6 | sabre | imx6-sabre | wandq | imx6-wandq | nitrogen6sx |\
-    imx7  | imx7-sabre |\
-    imx31 | kzm | imx31-kzm |\
-    omap3 |\
-    tk1 |\
-    zynq7000 )
-        BUILD_ARCH=aarch32
-        ;;
-    #-------------------------------------
-    fvp |\
-    imx8mq-evk | imx8mm-evk |\
-    odroidc2 |\
-    odroidc4 |\
-    rockpro64 |\
-    rpi4 |\
-    tx1 |\
-    tx2 |\
-    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
-        BUILD_ARCH=aarch64
-        ;;
-    #-------------------------------------
-    ariane |\
-    hifive |\
-    polarfire )
-        BUILD_ARCH=riscv64
-        ;;
-    #-------------------------------------
-    pc99 |\
-    x86_64 |\
-    ia32)
-        BUILD_ARCH=${BUILD_PLATFORM}
-        ;;
-    #-------------------------------------
-    *)
-        print_error "invalid platform '${BUILD_PLATFORM}'"
+    # If there are no build rules, then usually the build config failed
+    # somewhere. Try again creating a build configuration. Starting with
+    # CMake 3.18, "rules.ninja" is no longer in the root folder, but in the
+    # subfolder "CMakeFiles". Hence, both locations are checked.
+    if [[ ! -e rules.ninja && ! -e CMakeFiles/rules.ninja ]]; then
+        echo "deleting broken build folder and re-initialize it"
         exit 1
-        ;;
-esac
-
-case "${BUILD_ARCH}" in
-    aarch32)
-        CMAKE_PARAMS_PLATFORM+=( -D AARCH32=TRUE )
-        TRIPLE=arm-linux-gnueabi
-        ;;
-    aarch64)
-        CMAKE_PARAMS_PLATFORM+=( -D AARCH64=TRUE )
-        TRIPLE=aarch64-linux-gnu
-        ;;
-    riscv32)
-        CMAKE_PARAMS_PLATFORM+=( -D RISCV32=TRUE )
-        # 64-bit toolchain can build 32 targets also
-        TRIPLE=riscv64-unknown-linux-gnu
-        ;;
-    riscv64)
-        CMAKE_PARAMS_PLATFORM+=( -D RISCV64=TRUE )
-        TRIPLE=riscv64-unknown-linux-gnu
-        ;;
-
-    pc99 | ia32 | x86_64)
-        # 64-bit toolchain can build 32 targets also
-        TRIPLE=x86_64-linux-gnu
-        ;;
-    *)
-        print_error "invalid architecture '${BUILD_ARCH}'"
-        exit 1
-        ;;
-esac
-
-case "${TOOLCHAIN}" in
-    gcc)
-        TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
-        # Luckily, CROSS_COMPILER_PREFIX can be built from TRIPLE by just adding
-        # a dash.
-        CMAKE_PARAMS_PLATFORM+=( -D CROSS_COMPILER_PREFIX=${TRIPLE}- )
-        ;;
-
-    clang)
-        TOOLCHAIN_FILE="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/llvm.cmake"
-        CMAKE_PARAMS_PLATFORM+=( -D TRIPLE=${TRIPLE} )
-        ;;
-
-    axivion)
-        TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
-        CMAKE_PARAMS_PLATFORM+=(
-            -D PARENT_TOOLCHAIN_FILE:FILEPATH="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
-            -D CROSS_COMPILER_PREFIX=${TRIPLE}
-        )
-        ;;
-
-    *)
-        print_error "unsupported toolchain '${TOOLCHAIN}'"
-        exit 1
-        ;;
-esac
-
-echo ""
-echo "##=============================================================================="
-echo "## Project:   ${PROJECT_DIR}"
-echo "## Platform:  ${BUILD_PLATFORM}"
-echo "## Toolchain: ${TOOLCHAIN} (${TRIPLE})"
-echo "## Output:    ${BUILD_DIR}"
-
-# Set CMake parameters
-CMAKE_PARAMS=(
-    --warn-uninitialized
-    # CMake settings
-    -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
-    # seL4 build system settings
-    -D PLATFORM=${BUILD_PLATFORM}
-    "${CMAKE_PARAMS_PLATFORM[@]}"
-    -D KernelVerificationBuild=OFF
-    # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
-    # musllibc and capDL-tool) that are project agnostic, so we don't have
-    # to rebuild them every time. This reduces the build time a lot.
-    -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
-    -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
-    "${BUILD_ARGS[@]}"
-    --graphviz=${BUILD_TARGETS_GRAPH}.dot
-    -G Ninja
-    # Use absolute path of PROJECT_DIR, because we change the current working
-    # folder to ${BUILD_DIR}/${BUILD_TARGETS_GRAPH} when invoking CMake.
-    -S "$(cd "${PROJECT_DIR}" >/dev/null 2>&1 && pwd)"
-    -B ..
-)
-
-
-# If a build directory exists, check if we can just do a quicker rebuild based
-# on the changes
-if [[ -d ${BUILD_DIR} ]]; then
-    # Run the tests in the subshell, wipe the build folder if the shell returns
-    # an error.
-    (
-        cd ${BUILD_DIR}
-
-        # If the build is invoked with different parameters as last time, then
-        # we have to do a full rebuild. Note that we do not implement the
-        # feature that a command line with no build arguments takes what was
-        # stored in the argument file. It turned out this does not match the
-        # common workflow. Usually, a command line is rarely typed in, but for
-        # re-builds one just takes a command line from the shell's history
-        # buffer. Thus, specifying no arguments is usually intended to
-        # explicitly trigger a build with the default configuration.
-        if [[ ! -e ${CMAKE_PARAMS_FILE} \
-              || "$(< ${CMAKE_PARAMS_FILE})" != "${CMAKE_PARAMS[@]}" \
-           ]]; then
-            print_new_section "build parameters have changed: cleaning build dir"
-
-            exit 1
-        fi
-
-        # If there are no build rules, then usually the build config failed
-        # somewhere. Try again creating a build configuration. Starting with
-        # CMake 3.18, "rules.ninja" is no longer in the root folder, but in the
-        # subfolder "CMakeFiles". Hence, both locations are checked.
-        if [[ ! -e rules.ninja && ! -e CMakeFiles/rules.ninja ]]; then
-            print_new_section "build folder broken: cleaning build dir"
-            exit 1
-        fi
-
-        exit 0
-    ) || rm -rf ${BUILD_DIR}
-fi
-
-if [[ ! -d ${BUILD_DIR} ]]; then
-
-    print_new_section "configure build ..."
-
-    if [[ ${TOOLCHAIN} == "axivion" ]]; then
-        # Prepare axivion suite for CMake config
-        export COMPILE_ONLY=yes
-        unset COMPILE_ONLYIR
     fi
 
-    # Create the build workspace manually, so configuration parameters can be
-    # stored there
+    echo "rebuilding ..."
+    exit 0
+) || rm -rf ${BUILD_DIR}
+
+if [[ ! -e ${BUILD_DIR} ]]; then
     mkdir -p ${BUILD_DIR}
-    echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
-    (
-        # Unfortunately, when CMake generates the build targets graph, a lot of
-        # *.dot files are created in the current working folder. There is no
-        # way to specify a custom sub folder for them. A workaround to avoid
-        # polluting the build folder root is invoking CMake from a dedicated
-        # sub folder.
-        cd ${BUILD_DIR}
-        mkdir ${BUILD_TARGETS_GRAPH}
-        cd ${BUILD_TARGETS_GRAPH}
-        cmake "${CMAKE_PARAMS[@]}"
-        # Create a picture with the build targets graph.
-        dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
-    )
-
-    print_new_section "start clean build ..."
-else
-    print_new_section "start re-build ..."
 fi
 
-
-if [[ ${TOOLCHAIN} == "axivion" ]]; then
-    # Prepare axivion suite for CMake build
-    unset COMPILE_ONLY
-    export COMPILE_ONLYIR=yes
-fi
-
-cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
-
-
-echo "##------------------------------------------------------------------------------"
-echo "## build successful, output in ${BUILD_DIR}"
-echo "##=============================================================================="
+(
+    exec 3> ${BUILD_DIR}/build.log
+    run_build > >(tee /dev/fd/3) 2> >(tee /dev/fd/3 >&2)
+)
