@@ -155,8 +155,19 @@ def testTarget(
 def SYSTEM_CONFIGS = [
 
     // Official Demo Systems
-    TestCtx('demo_hello_world',        ['zynq7000', 'sabre', 'spike64'], 'test_demo_hello_world.py'),
-    BuildCtx('demo_hello_world',       ['rpi3', 'rpi4', 'nitrogen6sx', 'spike32', 'zynqmp']),
+
+    TestCtx('demo_hello_world',        ['zynq7000',
+                                        'sabre',
+                                        'spike64'
+                                       ], 'test_demo_hello_world.py'),
+
+    BuildCtx('demo_hello_world',       ['rpi3',
+                                        'rpi4',
+                                        'nitrogen6sx',
+                                        'spike32',
+                                        'zynqmp'
+                                       ]),
+
     TestCtx('demo_iot_app',            ['zynq7000'], 'test_demo_iot_app.py'),
     BuildCtx('demo_iot_app',           ['zynqmp']),
     BuildCtx('demo_iot_app_imx6',      ['sabre', 'nitrogen6sx']),
