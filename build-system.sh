@@ -160,6 +160,16 @@ case "${BUILD_PLATFORM}" in
         BUILD_ARCH=riscv64
         ;;
     #-------------------------------------
+    qemu-riscv-virt32)
+        BUILD_PLATFORM=qemu-riscv-virt
+        BUILD_ARCH=riscv32
+        ;;
+    #-------------------------------------
+    qemu-riscv-virt64 | qemu-riscv-virt )
+        BUILD_PLATFORM=qemu-riscv-virt
+        BUILD_ARCH=riscv64
+        ;;
+    #-------------------------------------
     am335x | am335x-boneblack | am335x-boneblue | \
     apq8064 |\
     bcm2837 | rpi3 | bcm2837-rpi3 |\
