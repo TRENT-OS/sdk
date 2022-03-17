@@ -207,6 +207,11 @@ case "${BUILD_PLATFORM}" in
         BUILD_ARCH=${BUILD_PLATFORM}
         ;;
     #-------------------------------------
+    acme42 )
+        BUILD_ARCH=acme64
+        ;;
+
+    #-------------------------------------
     *)
         echo ""
         echo "##"
@@ -239,6 +244,12 @@ case "${BUILD_ARCH}" in
         # 64-bit toolchain can build 32 targets also
         TRIPLE=x86_64-linux-gnu
         ;;
+
+    acme64)
+        # use RISC-V toolchain, so we can build something
+        TRIPLE=riscv64-unknown-linux-gnu
+        ;;
+
     *)
         echo ""
         echo "##"
