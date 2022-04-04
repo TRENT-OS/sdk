@@ -154,83 +154,343 @@ def testTarget(
 //
 def SYSTEM_CONFIGS = [
 
-    // Official Demo Systems
+    //--------------------------------------------------------------------------
+    // Fundamental Demo Systems
+    //--------------------------------------------------------------------------
 
-    TestCtx('demo_hello_world',        ['zynq7000',
-                                        'sabre',
-                                        'spike64'
-                                       ], 'test_demo_hello_world.py'),
+    TestCtx(
+        'demo_hello_world',
+        [
+            'zynq7000',
+            'sabre',
+            'spike64'
+        ],
+        'test_demo_hello_world.py'
+    ),
 
-    BuildCtx('demo_hello_world',       ['rpi3',
-                                        'rpi4',
-                                        'nitrogen6sx',
-                                        'spike32',
-                                        'zynqmp'
-                                       ]),
+    BuildCtx(
+        'demo_hello_world',
+        [
+            'rpi3',
+            'rpi4',
+            'nitrogen6sx',
+            'spike32',
+            'zynqmp'
+        ]
+    ),
 
-    TestCtx('demo_iot_app',            ['zynq7000'], 'test_demo_iot_app.py'),
-    BuildCtx('demo_iot_app',           ['zynqmp']),
-    BuildCtx('demo_iot_app_imx6',      ['sabre', 'nitrogen6sx']),
-    BuildCtx('demo_iot_app_rpi3',      ['rpi3']),
-    TestCtx('demo_tls_api',            ['zynq7000', 'sabre'], 'test_demo_tls_api.py'),
-    BuildCtx('demo_tls_api',           ['nitrogen6sx', 'rpi3']),
-    BuildCtx('demo_network_filter',    ['zynq7000', 'nitrogen6sx']),
+    //--------------------------------------------------------------------------
+    // Additional Official Demo System
+    //--------------------------------------------------------------------------
 
+    TestCtx(
+        'demo_iot_app',
+        ['zynq7000'],
+        'test_demo_iot_app.py'
+    ),
+
+    BuildCtx(
+        'demo_iot_app',
+        ['zynqmp']
+    ),
+
+    BuildCtx(
+        'demo_iot_app_imx6',
+        [
+            'sabre',
+            'nitrogen6sx'
+        ]
+    ),
+
+    BuildCtx(
+        'demo_iot_app_rpi3',
+        ['rpi3']
+    ),
+
+    TestCtx(
+        'demo_tls_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_demo_tls_api.py'
+    ),
+
+    BuildCtx(
+        'demo_tls_api',
+        [
+            'nitrogen6sx',
+            'rpi3'
+        ]
+    ),
+
+    BuildCtx(
+        'demo_network_filter',
+        [
+            'zynq7000',
+            'nitrogen6sx'
+        ]
+    ),
+
+    //--------------------------------------------------------------------------
     // Unofficial Demo Systems
+    //--------------------------------------------------------------------------
+
     // Demo below Currently deactivated as it is not adapted to the Socket API
     // rework.
-    // BuildCtx('demo_raspi_ethernet',    ['rpi3']),
-    BuildCtx('demo_i2c',               ['sabre']),
-    BuildCtx('demo_tls_server',        ['zynq7000']),
+    // BuildCtx('demo_raspi_ethernet', ['rpi3']),
 
+    BuildCtx('demo_i2c',
+        ['sabre']
+    ),
+
+    BuildCtx(
+        'demo_tls_server',
+        ['zynq7000']
+    ),
+
+    //--------------------------------------------------------------------------
     // Test Systems
+    //
     // All supported systems are enabled as build-only for zynqmp because
     // testing requires changing the test container to trentos_test:20210316
     // which contains the xilinx QEMU. Also, if adding zynqmp builds results in
     // a too long CI pipeline we can disable them again.
-    TestCtx('test_timeserver',         ['zynq7000', 'sabre']),
-    BuildCtx('test_timeserver',        ['rpi3', 'rpi4', 'zynqmp']),
-    TestCtx('test_certserver',         ['zynq7000', 'sabre']),
-    BuildCtx('test_certserver',        ['rpi3', 'zynqmp']),
-    TestCtx('test_uart',               ['zynq7000', 'sabre']),
-    BuildCtx('test_uart',              ['zynqmp']),
-    TestCtx('test_chanmux',            ['zynq7000']),
-    BuildCtx('test_chanmux',           ['zynqmp']),
-    TestCtx('test_proxy_nvm',          ['zynq7000']),
-    BuildCtx('test_proxy_nvm',         ['zynqmp']),
-    TestCtx('test_certparser',         ['zynq7000']),
-    BuildCtx('test_certparser',        ['zynqmp']),
-    TestCtx('test_crypto_api',         ['zynq7000', 'spike64']),
-    BuildCtx('test_crypto_api',        ['zynqmp']),
-    TestCtx('test_cryptoserver',       ['zynq7000']),
-    BuildCtx('test_cryptoserver',      ['zynqmp']),
-    TestCtx('test_entropysource',      ['zynq7000']),
-    BuildCtx('test_entropysource',     ['zynqmp']),
-    TestCtx('test_storage_interface',  ['zynq7000', 'sabre'], 'test_storage_interface*.py'),
-    BuildCtx('test_storage_interface', ['rpi3', 'rpi4']),
-    TestCtx('test_filesystem',         ['zynq7000']),
-    BuildCtx('test_filesystem',        ['zynqmp']),
-    TestCtx('test_config_server',      ['zynq7000']),
-    BuildCtx('test_config_server',     ['zynqmp']),
-    TestCtx('test_keystore',           ['zynq7000']),
-    BuildCtx('test_keystore',          ['zynqmp']),
-    TestCtx('test_logserver',          ['zynq7000']),
-    BuildCtx('test_logserver',         ['zynqmp']),
-    TestCtx('test_tls_api',            ['zynq7000']),
-    BuildCtx('test_tls_api',           ['rpi3', 'sabre', 'nitrogen6sx']),
-    TestCtx('test_tlsserver',          ['zynq7000']),
-    BuildCtx('test_tlsserver',         ['rpi3', 'sabre', 'nitrogen6sx']),
+    //--------------------------------------------------------------------------
+
+    TestCtx(
+        'test_timeserver',
+        [
+            'zynq7000',
+            'sabre'
+        ]
+    ),
+    BuildCtx(
+        'test_timeserver',
+        [
+            'rpi3',
+            'rpi4',
+            'zynqmp'
+        ]
+    ),
+
+    TestCtx(
+        'test_certserver',
+        [
+            'zynq7000',
+            'sabre'
+        ]
+    ),
+    BuildCtx(
+        'test_certserver',
+        [
+            'rpi3',
+            'zynqmp'
+        ]
+    ),
+
+    TestCtx(
+        'test_uart',
+        [
+            'zynq7000',
+            'sabre'
+        ]
+    ),
+    BuildCtx(
+        'test_uart',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_chanmux',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_chanmux',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_proxy_nvm',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_proxy_nvm',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_certparser',
+        ['zynq7000']
+        ),
+    BuildCtx(
+        'test_certparser',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_crypto_api',
+        ['zynq7000', 'spike64']),
+    BuildCtx(
+        'test_crypto_api',
+        ['zynqmp']),
+
+    TestCtx(
+        'test_cryptoserver',
+        ['zynq7000']),
+    BuildCtx(
+        'test_cryptoserver',
+        ['zynqmp']),
+
+    TestCtx(
+        'test_entropysource',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_entropysource',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_storage_interface',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_storage_interface*.py'
+    ),
+    BuildCtx(
+        'test_storage_interface',
+        [
+            'rpi3',
+            'rpi4'
+        ])
+    ,
+
+    TestCtx(
+        'test_filesystem',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_filesystem',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_config_server',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_config_server',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_keystore',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_keystore',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_logserver',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_logserver',
+        ['zynqmp']
+    ),
+
+    TestCtx(
+        'test_tls_api',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_tls_api',
+        [
+            'rpi3',
+            'sabre',
+            'nitrogen6sx'
+        ]
+    ),
+
+    TestCtx(
+        'test_tlsserver',
+        ['zynq7000']
+    ),
+    BuildCtx(
+        'test_tlsserver',
+        [
+            'rpi3',
+            'sabre',
+            'nitrogen6sx'
+        ]
+    ),
 
     // Parametrized Test Systems:
     // - using verbose repo locations according to 'name@path/to/repo'
     // - using build and test parameters
-    BuildCtx('test_network_api_tcp_server@ss/test_network_api', ['rpi3', 'nitrogen6sx'], buildTarget('tcp_server')),
+    BuildCtx(
+        'test_network_api_tcp_server@ss/test_network_api',
+        [
+            'rpi3',
+            'nitrogen6sx'
+        ],
+        buildTarget('tcp_server')
+    ),
 
-    TestCtx('test_network_api_tcp_client@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_single_socket'),    testTarget('tcp_client_single_socket')),
-    TestCtx('test_network_api_tcp_client_multiple_sockets@ss/test_network_api', ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_multiple_sockets'), testTarget('tcp_client_multiple_sockets')),
-    TestCtx('test_network_api_tcp_client_multiple_clients@ss/test_network_api', ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_client_multiple_clients'), testTarget('tcp_client_multiple_clients')),
-    TestCtx('test_network_api_tcp_server@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('tcp_server'),                  testTarget('tcp_server')),
-    TestCtx('test_network_api_udp_server@ss/test_network_api',                  ['zynq7000', 'sabre'], 'test_network_api.py', buildTarget('udp_server'),                  testTarget('udp_server'))
+    TestCtx(
+        'test_network_api_tcp_client@ss/test_network_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_network_api.py',
+        buildTarget('tcp_client_single_socket'),
+        testTarget('tcp_client_single_socket')
+    ),
+    TestCtx(
+        'test_network_api_tcp_client_multiple_sockets@ss/test_network_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_network_api.py',
+        buildTarget('tcp_client_multiple_sockets'),
+        testTarget('tcp_client_multiple_sockets')
+    ),
+    TestCtx(
+        'test_network_api_tcp_client_multiple_clients@ss/test_network_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_network_api.py',
+        buildTarget('tcp_client_multiple_clients'),
+        testTarget('tcp_client_multiple_clients')
+    ),
+    TestCtx(
+        'test_network_api_tcp_server@ss/test_network_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_network_api.py',
+        buildTarget('tcp_server'),
+        testTarget('tcp_server')
+    ),
+    TestCtx(
+        'test_network_api_udp_server@ss/test_network_api',
+        [
+            'zynq7000',
+            'sabre'
+        ],
+        'test_network_api.py',
+        buildTarget('udp_server'),
+        testTarget('udp_server')
+    )
 
 ]
 
@@ -531,17 +791,44 @@ def execute_build(ctx, stage_ctx)
         wait: true,   // block call until finished
         propagate: false, // don't throw exception on error
         parameters: [
-            string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
-            string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
-            // NOTE: Flags need to be passed as String and converted back to
-            //       Integer in generic job.
-            string(name: 'FLAGS',              value: stage_ctx.test_ctx.flags.toString()),
-            string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.testSystem),
-            string(name: 'BUILD_PARAMS',       value: stage_ctx.test_ctx.buildParams ?: ''),
-            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript ?: ''),
-            string(name: 'TEST_PARAMS',        value: stage_ctx.test_ctx.testParams ?: ''),
-            string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
-            string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
+            string(
+                name: 'PLATFORM',
+                value: stage_ctx.platform ?: ''
+            ),
+            string(
+                name:  'BRANCH_OR_COMMIT',
+                value: ctx.branch
+            ),
+            string(
+                name:  'FLAGS',
+                // NOTE: Flags need to be passed as String and converted back to
+                //       Integer in generic job.
+                value: stage_ctx.test_ctx.flags.toString()
+            ),
+            string(
+                name:  'TEST_SYSTEM',
+                value: stage_ctx.test_ctx.testSystem
+            ),
+            string(
+                name:  'BUILD_PARAMS',
+                value: stage_ctx.test_ctx.buildParams ?: ''
+            ),
+            string(
+                name:  'TEST_SCRIPT',
+                value: stage_ctx.test_ctx.testScript ?: ''
+            ),
+            string(
+                name:  'TEST_PARAMS',
+                value: stage_ctx.test_ctx.testParams ?: ''
+            ),
+            string(
+                name:  'UPSTREAM_JOB_NAME',
+                value: currentBuild.fullProjectName
+            ),
+            string(
+                name:  'UPSTREAM_JOB_ID',
+                value: currentBuild.id
+            ),
         ]
     )
 
