@@ -598,7 +598,7 @@ def execute_build(ctx, stage_ctx)
             do_stash(
                 stage_ctx.stash_name,
                 [
-                    stage_ctx.system_pkg,
+                    'system-package.tar.bz2',
                     'test_results.xml'
                 ]
             )
@@ -631,9 +631,7 @@ def execute_build(ctx, stage_ctx)
 //------------------------------------------------------------------------------
 def do_jobs_for_test_systems(branch, testConfigs)
 {
-    // downstream jobs create theses system packages and finally we also pack
-    // all the packages into a single package
-    def SYSTEM_PACKAGE = 'system-package.tar.bz2'
+    // all downstream job packages are packed into this single package
     def SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
     def summary = manager.createSummary("orange-square.png")
@@ -675,7 +673,6 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 // strange recursion when transforming the maps/lists
                 test_ctx:     test_ctx,
                 platform:     platform,
-                system_pkg:   SYSTEM_PACKAGE,
                 stash_name:   pkg_name,
                 closure:      null,   // set below
                 build:        null    // set in closure
