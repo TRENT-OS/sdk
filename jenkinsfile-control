@@ -657,16 +657,16 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
         def systemName = test_ctx.systemName
 
-        test_ctx.platforms.each { platform ->
+        if (!test_ctx.testSystem)
+        {
+            // Test system is initialized to 'null' in the constructor if a
+            // non-default repo is specified for an SDK demo, which is not
+            // supported.
+            error("SDK demo must use default repo: " + systemName)
+            continue // this is not a blocker for other tests
+        }
 
-            if (!test_ctx.testSystem)
-            {
-                // Test system is initialized to 'null' in the constructor if a
-                // non-default repo is specified for an SDK demo, which is not
-                // supported.
-                error("SDK demo " + systemName + " must not use a non-default repo. Check DEMO_LIST and SYSTEM_CONFIGS.")
-                return
-            }
+        test_ctx.platforms.each { platform ->
 
             def pkg_name = platform + '-' + systemName
 
