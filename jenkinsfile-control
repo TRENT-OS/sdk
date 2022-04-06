@@ -785,6 +785,8 @@ def do_checkout_demos(demo_list, test_configs, folder)
 //------------------------------------------------------------------------------
 def execute_build(ctx, stage_ctx)
 {
+    def flags = stage_ctx.getOrDefault('flags', 0)
+
     def jobBuild = build(
         job: 'generic_jobs/generic_pipeline_sandbox',
         wait: true,   // block call until finished
@@ -792,33 +794,31 @@ def execute_build(ctx, stage_ctx)
         parameters: [
             string(
                 name: 'PLATFORM',
-                value: stage_ctx.platform ?: ''
+                value: stage_ctx.getOrDefault('platform', '')
             ),
             string(
                 name:  'BRANCH_OR_COMMIT',
-                value: ctx.branch
+                value: ctx.branch ?: ''
             ),
             string(
                 name:  'FLAGS',
-                // NOTE: Flags need to be passed as String and converted back to
-                //       Integer in generic job.
-                value: stage_ctx.test_ctx.flags.toString()
+                value: flags as String // must be made a string
             ),
             string(
                 name:  'TEST_SYSTEM',
-                value: stage_ctx.test_ctx.testSystem
+                value: stage_ctx.getOrDefault('testSystem', '')
             ),
             string(
                 name:  'BUILD_PARAMS',
-                value: stage_ctx.test_ctx.buildParams ?: ''
+                value: stage_ctx.getOrDefault('buildParams', '')
             ),
             string(
                 name:  'TEST_SCRIPT',
-                value: stage_ctx.test_ctx.testScript ?: ''
+                value: stage_ctx.getOrDefault('testScript', '')
             ),
             string(
                 name:  'TEST_PARAMS',
-                value: stage_ctx.test_ctx.testParams ?: ''
+                value: stage_ctx.getOrDefault('testParams', '')
             ),
             string(
                 name:  'UPSTREAM_JOB_NAME',
@@ -835,17 +835,13 @@ def execute_build(ctx, stage_ctx)
     stage_ctx.build = jobBuild
     def result = jobBuild.getResult()
     def duration = jobBuild.getDurationString()
-    def cnt = ctx.jobStages.size()
 
     lock('job-post-processing')
     {
-        def num = cnt - (--ctx.running)
-
-        println(num + '/' + cnt + ': ' +
+        println((ctx.cnt - (--ctx.running)) + '/' + ctx.cnt + ': ' +
                 stage_ctx.test_ctx.systemName + ' system build/test stage took '
                 + duration + ', result: ' + result)
 
-        def flags = stage_ctx.test_ctx.flags
         def operations = []
         if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
         if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
@@ -882,7 +878,7 @@ def execute_build(ctx, stage_ctx)
             )
 
             do_stash(
-                stage_ctx.stash_name,
+                stage_ctx.name,
                 [
                     'system-package.tar.bz2',
                     'test_results.xml'
@@ -923,59 +919,51 @@ def do_jobs_for_test_systems(branch, testConfigs)
     def summary = manager.createSummary("orange-square.png")
     summary.appendText('<hr>')
 
-    def sub_jobs_ctx = [
-        summary:   summary,
-        branch:    branch,
-        jobStages: [:],
-        running:   0
-    ]
+    def jobStages = []
+    for (test_ctx in testConfigs) {
 
-    // if we use a loop "for (test_ctx in testConfigs) ..." then only one
-    // instance of the variable test_ctx exists. When the closures are invoked
-    // after the loop, they all see the last value that the loop variable. When
-    // a loop "testConfigs.each { test_ctx -> ..." is used, a closure with
-    // a separate variable is create for each iteration, which can be used in
-    // further closures then also independently.
+        def isBuild = (test_ctx.flags & SystemCtx.FLAG_BUILD)
+        def isTest = (test_ctx.flags & SystemCtx.FLAG_TEST)
 
-    testConfigs.each { test_ctx ->
+        // Currently, a test always requires a build. But in the future, testing
+        // an existing system might also be supported...
+        if (!isBuild) {
+            error("no built requested for " + test_ctx.systemName)
+            continue
+        }
 
-        def systemName = test_ctx.systemName
-
-        if (!test_ctx.testSystem)
-        {
+        if (!test_ctx.testSystem) {
             // Test system is initialized to 'null' in the constructor if a
             // non-default repo is specified for an SDK demo, which is not
             // supported.
-            error("SDK demo must use default repo: " + systemName)
+            error("SDK demo must use default repo: " + test_ctx.systemName)
             continue // this is not a blocker for other tests
         }
 
-        test_ctx.platforms.each { platform ->
 
-            def pkg_name = platform + '-' + systemName
+        for (plat in test_ctx.platforms) {
 
-            def job_stage_ctx = [
-                // do not try storing "sub_jobs_ctx" in here, this ends in a
-                // strange recursion when transforming the maps/lists
-                test_ctx:     test_ctx,
-                platform:     platform,
-                stash_name:   pkg_name,
-                closure:      null,   // set below
-                build:        null    // set in closure
-            ]
-
-            sub_jobs_ctx.jobStages[pkg_name] = job_stage_ctx
-
-            job_stage_ctx.closure = {
-                stage(pkg_name) {
-                    execute_build(sub_jobs_ctx, job_stage_ctx)
-                }
-            }
+            jobStages.add([
+                name:        plat + '-' + test_ctx.systemName,
+                test_ctx:    test_ctx,
+                platform:    plat,
+                flags:       test_ctx.flags,
+                testSystem:  test_ctx.testSystem,
+                buildParams: test_ctx.buildParams,
+                testScript:  isTest ? test_ctx.testScript : null,
+                testParams:  isTest ? test_ctx.testParams : null,
+                build:       null // will be set once there is a build
+            ])
         }
     }
 
+    def sub_jobs_ctx = [
+        summary:   summary,
+        branch:    branch,
+        cnt:       jobStages.size(),
+        running:   jobStages.size(),
+    ]
 
-    sub_jobs_ctx.running  = sub_jobs_ctx.jobStages.size()
     def build_start = new Date()
 
     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
@@ -989,7 +977,19 @@ def do_jobs_for_test_systems(branch, testConfigs)
         //      failFast: true|false // terminate all upon any one failing
 
         parallel(
-            sub_jobs_ctx.jobStages.collectEntries { k, v -> [(k): v.closure] }
+            // Create a map, where each key is an arbitrary name and the value
+            // is a closure with the code that will be executed in parallel
+            // (potentially distributed) jobs.
+            jobStages.collectEntries { stage_ctx ->
+                [
+                    ( stage_ctx.name ):
+                    { ->
+                        stage(stage_ctx.name) {
+                            execute_build(sub_jobs_ctx, stage_ctx)
+                        }
+                    }
+                ]
+            }
         )
     }
 
@@ -1001,7 +1001,6 @@ def do_jobs_for_test_systems(branch, testConfigs)
     // builds are done, now collect the results and artifacts. This needs a
     // workspace, so we have to allocate a node
 
-    def cnt = sub_jobs_ctx.jobStages.size()
     def was_build_error = false
 
     node {
@@ -1009,24 +1008,22 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             cleanWs()
 
-            sub_jobs_ctx.jobStages.eachWithIndex { e, idx ->
+            jobStages.eachWithIndex { stage_ctx, idx ->
 
-                def pkg_name = e.key
-                def job_stage_ctx = e.value
-
-                println('processing ' + (idx+1) + '/' + cnt + ': ' + pkg_name)
+                println('processing ' + (idx+1) + '/' + jobStages.size() + ': ' +
+                        stage_ctx.name)
 
                 // there might be no stash if something failed earlier
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                 {
-                    def pkg_dir = 'package-' + pkg_name
+                    def pkg_dir = 'package-' + stage_ctx.name
                     dir(pkg_dir)
                     {
-                        unstash(pkg_name)
+                        unstash(stage_ctx.name)
                     }
                 }
 
-                def pkg_build = job_stage_ctx.build
+                def pkg_build = stage_ctx.build
                 was_build_error |= (!pkg_build) ||
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
@@ -1035,7 +1032,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
             // there are no test systems enabled. We don't want to see things
             // fail with junit complaining about missing test files in this
             // case.
-            if (cnt > 0)
+            if (jobStages.size() > 0)
             {
                 // TODO: Support multiple platforms here, currently this will
                 //       see the same test case for each platform and it's
