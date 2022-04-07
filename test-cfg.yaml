@@ -38,6 +38,8 @@ demo_hello_world:
       addFlags: TEST
     zynqmp:
       addFlags: TEST
+    hifive:
+      addFlags: TEST
     spike64:
       addFlags: TEST
     rpi3:
@@ -116,6 +118,8 @@ test_timeserver:
       addFlags: TEST
     sabre:
       addFlags: TEST
+    hifive:
+      addFlags: TEST
     zynqmp: # test still fails
     rpi3:
     rpi4:
@@ -138,6 +142,8 @@ test_uart:
     sabre:
       addFlags: TEST
     zynqmp:
+      addFlags: TEST
+    hifive:
       addFlags: TEST
 
 test_chanmux:
@@ -167,6 +173,8 @@ test_crypto_api:
     zynq7000:
       addFlags: TEST
     zynqmp:
+      addFlags: TEST
+    hifive:
       addFlags: TEST
     spike64:
       addFlags: TEST
