@@ -45,6 +45,8 @@ demo_hello_world:
     rpi3:
     rpi4:
     nitrogen6sx:
+    hifive:
+      addFlags: [QEMU]
 
 
 #-------------------------------------------------------------------------------
@@ -144,6 +146,8 @@ test_timeserver:
       addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
+    hifive:
+      addFlags: [QEMU]
 
 test_certserver:
   platforms:
@@ -154,6 +158,8 @@ test_certserver:
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
     rpi3:
+    hifive:
+      addFlags: [QEMU]
 
 test_uart:
   platforms:
@@ -163,6 +169,8 @@ test_uart:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    hifive:
+      addFlags: [QEMU]
 
 test_chanmux:
   platforms:
@@ -170,6 +178,8 @@ test_chanmux:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_proxy_nvm:
   platforms:
@@ -177,6 +187,8 @@ test_proxy_nvm:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_certparser:
   platforms:
@@ -184,6 +196,8 @@ test_certparser:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_crypto_api:
   platforms:
@@ -192,6 +206,8 @@ test_crypto_api:
     zynqmp:
       addFlags: [QEMU]
     spike64:
+    hifive:
+      addFlags: [QEMU]
 
 test_cryptoserver:
   platforms:
@@ -199,6 +215,8 @@ test_cryptoserver:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_entropysource:
   platforms:
@@ -206,6 +224,8 @@ test_entropysource:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_storage_interface:
   testScript: test_storage_interface*.py
@@ -216,6 +236,8 @@ test_storage_interface:
       addFlags: [QEMU]
     rpi3:
     rpi4:
+    hifive:
+      addFlags: [QEMU]
 
 test_filesystem:
   platforms:
@@ -230,6 +252,8 @@ test_config_server:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_keystore:
   platforms:
@@ -237,6 +261,8 @@ test_keystore:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_logserver:
   platforms:
@@ -244,6 +270,8 @@ test_logserver:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    hifive:
+      addFlags: [QEMU]
 
 test_tls_api:
   platforms:
@@ -253,6 +281,8 @@ test_tls_api:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    hifive:
+      addFlags: [QEMU]
 
 test_tlsserver:
   platforms:
@@ -262,6 +292,8 @@ test_tlsserver:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    hifive:
+      addFlags: [QEMU]
 
 test_network_api_tcp_client_single_socket:
   testScript: test_network_api.py
