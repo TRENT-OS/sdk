@@ -42,6 +42,8 @@ demo_hello_world:
     spike64:
     spike32: # starting still fails
       addFlags: [NO_TEST]
+    polarfire:
+      addFlags: [QEMU]
     rpi3:
     rpi4:
     nitrogen6sx:
@@ -142,6 +144,8 @@ test_timeserver:
       addFlags: [QEMU]
     zynqmp: # ToDO: fix failing test
       addFlags: [QEMU, NO_TEST]
+    polarfire:
+      addFlags: [QEMU]
     rpi3:
     rpi4:
 
@@ -162,6 +166,8 @@ test_uart:
     zynq7000:
       addFlags: [QEMU]
     zynqmp:
+      addFlags: [QEMU]
+    polarfire:
       addFlags: [QEMU]
 
 test_chanmux:
