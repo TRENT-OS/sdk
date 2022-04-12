@@ -10,13 +10,48 @@
 def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 def SDK_PACKAGE = 'sdk-package.tar.bz2'
 
+
+//------------------------------------------------------------------------------
+def makeParamStr(Object... args)
+{
+    def paramList = []
+    for (arg in args) {
+        if (!arg) {
+            // ignore null elements
+        } else if (arg instanceof String) {
+            paramList.add(arg)
+        } else if (arg instanceof List) {
+            list = arg.flatten()
+            list.removeAll([null])
+            paramList.addAll(list)
+        } else {
+            error("Invalid parameter object: " + arg);
+            // ignore
+        }
+    }
+
+    return paramList.join(' ');
+}
+
+
+//------------------------------------------------------------------------------
+def buildTarget(String target)
+{
+    return '-D TEST_CONFIGURATION=' + target
+}
+
+
+//------------------------------------------------------------------------------
+def testTarget(String target)
+{
+    return '--tc=platform.test_configuration:' + target
+}
+
+
 //------------------------------------------------------------------------------
 // System context
 class SystemCtx {
 
-    // Demos to be included in the SDK package. CI will checkout the following
-    // demos from their default repo (e.g. 'ss/demo_hello_world'). At least the
-    // demo Hello World is required for the SDK package sanity check.
     static DEMO_LIST = [
         'demo_hello_world',
         'demo_iot_app',
@@ -28,125 +63,90 @@ class SystemCtx {
 
     static FLAG_BUILD      = 1 << 0
     static FLAG_TEST       = 1 << 1
+    // For demos included in the SDK package, CI will checkout them from their
+    // default repo or use that the SDK package contains at the given location.
     static FLAG_SDK_DEMO   = 1 << 2
 
     String      systemName   // Name of the system to build.
-    Integer     flags        // Flags
-    String      testSystem   // Location of the test system. Either a repo or
-                             // for SDK demos the relative path within the SDK
-                             // package.
-    ArrayList   platforms    // List of supported platforms.
-    String      testScript   // Test script to be executed.
-    String      buildParams  // Additional build parameters.
-    String      testParams   // Additional test parameters.
+    Map         platforms    // List of supported platforms.
+    Map         params       // Parameters
 
-    //--------------------------------------------------------------------------
-    // The system name has to be either a name from DEMO_LIST or the name of a
-    // test system in the format "systemName[@path/to/repo]".
-    // SDK demos will be directly used from the SDK package whereas test systems
-    // will be checked out from a repository.
-    // If no repository path is specified for a test system, "ss/<systemName>"
-    // will be used. The repository path does not include a ".git" extension
-    // (it will be added internally).
     public SystemCtx(
         String systemName,
-        Integer flags,
-        ArrayList platforms,
-        String testScript,
-        String buildParams,
-        String testParams)
+        Map platforms,
+        Map params = null)
     {
-        // Ensure SDK demo flag is not set.
-        flags &= ~SystemCtx.FLAG_SDK_DEMO
+        this.systemName  = systemName
+        this.platforms   = platforms
 
-        // Use ss/<systemName> as default repo.
-        def testSystem = 'ss/' + systemName
+        // make a copy of the params that can be modified
+        this.params = params ? params.clone() : [:]
 
-        // Split <systemName> to detect non-default repo.
-        def arr = systemName.split('@',2)
-        if (2 == arr.length)
-        {
-            // Use non-default repo.
-            systemName = arr[0]
-            testSystem = arr[1]
-        }
+        this.params.putIfAbsent('flags', 0)
 
-        // For demos in DEMO_LIST use SDK demo instead of repo.
-        if (DEMO_LIST.contains(systemName))
-        {
-            flags |= SystemCtx.FLAG_SDK_DEMO
-
-            // WARNING: The SDK build script puts the SDK demos into the folder
-            //          'demos' within the SDK package.
-            testSystem = 'demos/' + systemName
-
-            if (arr.length > 1)
-            {
-                // SDK demos are built against the SDK package so non-default
-                // repos are not supported. Init to 'null' and fail later (since
-                // failing with an error message here does not work).
-                testSystem = null
+        // SDK demos always use the code from the SDK, thus no custom repo can
+        // be specified here. If this happen, clear FLAG_BUILD so there is an
+        // error later
+        if (0 != (this.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+            assert(systemName in DEMO_LIST)
+            if (this.params.containsKey('testSystem')) {
+                error('custom test system location not supported for SDK demo ' + systemName)
+                this.params['flags'] &= ~SystemCtx.FLAG_BUILD
+            } else {
+                this.params['testSystem'] = 'demos/' + systemName
             }
         }
 
-        this.systemName  = systemName
-        this.flags       = flags
-        this.testSystem  = testSystem
-        this.platforms   = platforms
-        this.testScript  = testScript
-        this.buildParams = buildParams
-        this.testParams  = testParams
+        def useTest = this.params.getOrDefault('useTest', systemName)
+        this.params.putIfAbsent('testSystem', 'ss/' + useTest)
+        this.params.putIfAbsent('testScript', useTest + '.py')
+
     }
 }
 
 //------------------------------------------------------------------------------
-def BuildCtx(
-    String systemName,
-    ArrayList platforms = null,
-    String buildParams = null)
-{
-    return new SystemCtx(
-                    systemName,
-                    SystemCtx.FLAG_BUILD,
-                    platforms,
-                    null, // obviously, there is no testScript
-                    buildParams,
-                    null  // since there is no testScript, there are no testParams
-                    )
-}
-
-//------------------------------------------------------------------------------
-def TestCtx(
+def BaseFlagCtx(
         String systemName,
-        ArrayList platforms = null,
-        String testScript = null,  // use <systemName>.py if null
-        String buildParams = null,
-        String testParams = null
-        )
+        Integer baseFlags,
+        Map platforms = null,
+        Map params = null
+)
 {
-    return new SystemCtx(
-                    systemName,
-                    SystemCtx.FLAG_BUILD | SystemCtx.FLAG_TEST,
-                    platforms,
-                    testScript ?: systemName + '.py',
-                    buildParams,
-                    testParams)
+    def guarded_params = params ? params.clone() : [:]
+
+    if (!guarded_params.putIfAbsent('flags', baseFlags)) {
+        guarded_params['flags'] |= baseFlags
+    }
+
+    return new SystemCtx(systemName, platforms, guarded_params)
 }
 
 //------------------------------------------------------------------------------
-def buildTarget(
-    String target
+def BaseBuildCtx(
+        String systemName,
+        Map platforms = null,
+        Map params = null
 )
 {
-    return '-DTEST_CONFIGURATION=' + target
+    return BaseFlagCtx(
+                systemName,
+                SystemCtx.FLAG_BUILD,
+                platforms,
+                params)
 }
 
 //------------------------------------------------------------------------------
-def testTarget(
-    String target
+def BaseTestCtx(
+        String systemName,
+        Map platforms = null,
+        Map params = null
 )
 {
-    return '--tc=platform.test_configuration:' + target
+    return BaseFlagCtx(
+                systemName,
+                SystemCtx.FLAG_BUILD | SystemCtx.FLAG_TEST,
+                platforms,
+                params)
 }
 
 //------------------------------------------------------------------------------
@@ -155,27 +155,24 @@ def testTarget(
 def SYSTEM_CONFIGS = [
 
     //--------------------------------------------------------------------------
-    // Fundamental Demo Systems
+    // Fundamental Demo Systems, required for the SDK package sanity check.
     //--------------------------------------------------------------------------
 
-    TestCtx(
+    BaseBuildCtx(
         'demo_hello_world',
         [
-            'zynq7000',
-            'sabre',
-            'spike64'
+            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
+            'spike64':     [ addFlags: SystemCtx.FLAG_TEST ],
+            'rpi3':        null,
+            'rpi4':        null,
+            'nitrogen6sx': null,
+            'spike32':     null,
+            'zynqmp':      null,
         ],
-        'test_demo_hello_world.py'
-    ),
-
-    BuildCtx(
-        'demo_hello_world',
         [
-            'rpi3',
-            'rpi4',
-            'nitrogen6sx',
-            'spike32',
-            'zynqmp'
+            addFlags:    SystemCtx.FLAG_SDK_DEMO,
+            testScript: 'test_demo_hello_world.py'
         ]
     ),
 
@@ -183,73 +180,91 @@ def SYSTEM_CONFIGS = [
     // Additional Official Demo System
     //--------------------------------------------------------------------------
 
-    TestCtx(
+    BaseBuildCtx(
         'demo_iot_app',
-        ['zynq7000'],
-        'test_demo_iot_app.py'
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ],
+        [
+            addFlags:    SystemCtx.FLAG_SDK_DEMO,
+            testScript: 'test_demo_iot_app.py'
+        ]
     ),
 
-    BuildCtx(
-        'demo_iot_app',
-        ['zynqmp']
-    ),
-
-    BuildCtx(
+    BaseBuildCtx(
         'demo_iot_app_imx6',
         [
-            'sabre',
-            'nitrogen6sx'
-        ]
-    ),
-
-    BuildCtx(
-        'demo_iot_app_rpi3',
-        ['rpi3']
-    ),
-
-    TestCtx(
-        'demo_tls_api',
-        [
-            'zynq7000',
-            'sabre'
+            'sabre':       null,
+            'nitrogen6sx': null,
         ],
-        'test_demo_tls_api.py'
+        [
+            addFlags: SystemCtx.FLAG_SDK_DEMO,
+        ]
+
     ),
 
-    BuildCtx(
+    BaseBuildCtx(
+        'demo_iot_app_rpi3',
+        [
+            'rpi3': null,
+        ],
+        [
+            addFlags: SystemCtx.FLAG_SDK_DEMO,
+        ]
+
+    ),
+
+    BaseBuildCtx(
         'demo_tls_api',
         [
-            'nitrogen6sx',
-            'rpi3'
+            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
+            'nitrogen6sx': null,
+            'rpi3':        null
+        ],
+        [
+            addFlags:    SystemCtx.FLAG_SDK_DEMO,
+            testScript: 'test_demo_tls_api.py'
         ]
+
     ),
 
-    BuildCtx(
+    BaseBuildCtx(
         'demo_network_filter',
         [
-            'zynq7000',
-            'nitrogen6sx'
+            'zynq7000':    null,
+            'nitrogen6sx': null,
+        ],
+        [
+            addFlags: SystemCtx.FLAG_SDK_DEMO,
         ]
+
     ),
 
     //--------------------------------------------------------------------------
     // Unofficial Demo Systems
     //--------------------------------------------------------------------------
 
-    BuildCtx('demo_i2c',
-        ['sabre']
+    BaseBuildCtx(
+        'demo_i2c',
+        [
+            'sabre': null
+        ]
     ),
 
-    BuildCtx(
+    BaseBuildCtx(
         'demo_tls_server',
-        ['zynq7000']
+        [
+            'zynq7000': null
+        ]
     ),
 
     // This test was used during porting the RPi Ethernet driver only. The
     // RasPi3 Socket API of this test needs to be adapted to the recent changes.
     // But this test system is to be deleted anyway, once it's confirmed that
     // all relevant parts were integrated into test_network_api.
-    // BuildCtx('demo_raspi_ethernet', ['rpi3']),
+    // BaseBuildCtx('demo_raspi_ethernet', ['rpi3': null]),
 
     //--------------------------------------------------------------------------
     // Test Systems
@@ -258,238 +273,215 @@ def SYSTEM_CONFIGS = [
     // which contains the Xilinx QEMU.
     //--------------------------------------------------------------------------
 
-    TestCtx(
+    BaseBuildCtx(
         'test_timeserver',
         [
-            'zynq7000',
-            'sabre'
-        ]
-    ),
-    BuildCtx(
-        'test_timeserver',
-        [
-            'rpi3',
-            'rpi4',
-            'zynqmp'
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'rpi3':     null,
+            'rpi4':     null,
+            'zynqmp':   null,
         ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_certserver',
         [
-            'zynq7000',
-            'sabre'
-        ]
-    ),
-    BuildCtx(
-        'test_certserver',
-        [
-            'rpi3',
-            'zynqmp'
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'rpi3':     null,
+            'zynqmp':   null,
         ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_uart',
         [
-            'zynq7000',
-            'sabre'
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
         ]
     ),
-    BuildCtx(
-        'test_uart',
-        ['zynqmp']
-    ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_chanmux',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_chanmux',
-        ['zynqmp']
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_proxy_nvm',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_proxy_nvm',
-        ['zynqmp']
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_certparser',
-        ['zynq7000']
-        ),
-    BuildCtx(
-        'test_certparser',
-        ['zynqmp']
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
         'test_crypto_api',
-        ['zynq7000', 'spike64']),
-    BuildCtx(
-        'test_crypto_api',
-        ['zynqmp']),
-
-    TestCtx(
-        'test_cryptoserver',
-        ['zynq7000']),
-    BuildCtx(
-        'test_cryptoserver',
-        ['zynqmp']),
-
-    TestCtx(
-        'test_entropysource',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_entropysource',
-        ['zynqmp']
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'spike64':  [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
 
-    TestCtx(
+    BaseBuildCtx(
+        'test_cryptoserver',
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
+    ),
+
+    BaseBuildCtx(
+        'test_entropysource',
+        [
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
+    ),
+
+    BaseBuildCtx(
         'test_storage_interface',
         [
-            'zynq7000',
-            'sabre'
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'rpi3':     null,
+            'rpi4':     null,
         ],
-        'test_storage_interface*.py'
-    ),
-    BuildCtx(
-        'test_storage_interface',
         [
-            'rpi3',
-            'rpi4'
-        ])
-    ,
-
-    TestCtx(
-        'test_filesystem',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_filesystem',
-        ['zynqmp']
-    ),
-
-    TestCtx(
-        'test_config_server',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_config_server',
-        ['zynqmp']
-    ),
-
-    TestCtx(
-        'test_keystore',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_keystore',
-        ['zynqmp']
-    ),
-
-    TestCtx(
-        'test_logserver',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_logserver',
-        ['zynqmp']
-    ),
-
-    TestCtx(
-        'test_tls_api',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_tls_api',
-        [
-            'rpi3',
-            'sabre',
-            'nitrogen6sx'
+            testScript: 'test_storage_interface*.py'
         ]
     ),
 
-    TestCtx(
-        'test_tlsserver',
-        ['zynq7000']
-    ),
-    BuildCtx(
-        'test_tlsserver',
+    BaseBuildCtx(
+        'test_filesystem',
         [
-            'rpi3',
-            'sabre',
-            'nitrogen6sx'
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
         ]
     ),
 
-    // Parametrized Test Systems:
-    // - using verbose repo locations according to 'name@path/to/repo'
-    // - using build and test parameters
-    BuildCtx(
-        'test_network_api_tcp_server@ss/test_network_api',
+    BaseBuildCtx(
+        'test_config_server',
         [
-            'rpi3',
-            'nitrogen6sx'
-        ],
-        buildTarget('tcp_server')
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
 
-    TestCtx(
-        'test_network_api_tcp_client@ss/test_network_api',
+    BaseBuildCtx(
+        'test_keystore',
         [
-            'zynq7000',
-            'sabre'
-        ],
-        'test_network_api.py',
-        buildTarget('tcp_client_single_socket'),
-        testTarget('tcp_client_single_socket')
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
-    TestCtx(
-        'test_network_api_tcp_client_multiple_sockets@ss/test_network_api',
+
+    BaseBuildCtx(
+        'test_logserver',
         [
-            'zynq7000',
-            'sabre'
-        ],
-        'test_network_api.py',
-        buildTarget('tcp_client_multiple_sockets'),
-        testTarget('tcp_client_multiple_sockets')
+            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
+            'zynqmp':   null,
+        ]
     ),
-    TestCtx(
-        'test_network_api_tcp_client_multiple_clients@ss/test_network_api',
+
+    BaseBuildCtx(
+        'test_tls_api',
         [
-            'zynq7000',
-            'sabre'
-        ],
-        'test_network_api.py',
-        buildTarget('tcp_client_multiple_clients'),
-        testTarget('tcp_client_multiple_clients')
+            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':       null,
+            'nitrogen6sx': null,
+            'rpi3':        null,
+        ]
     ),
-    TestCtx(
-        'test_network_api_tcp_server@ss/test_network_api',
+
+    BaseBuildCtx(
+        'test_tlsserver',
         [
-            'zynq7000',
-            'sabre'
-        ],
-        'test_network_api.py',
-        buildTarget('tcp_server'),
-        testTarget('tcp_server')
+            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':       null,
+            'nitrogen6sx': null,
+            'rpi3':        null,
+        ]
     ),
-    TestCtx(
-        'test_network_api_udp_server@ss/test_network_api',
+
+    BaseTestCtx(
+        'test_network_api_tcp_client',
         [
-            'zynq7000',
-            'sabre'
+            'zynq7000': null,
+            'sabre':    null,
         ],
-        'test_network_api.py',
-        buildTarget('udp_server'),
-        testTarget('udp_server')
+        [
+            useTest:    'test_network_api',
+            buildParams: buildTarget('tcp_client_single_socket'),
+            testParams:  testTarget('tcp_client_single_socket'),
+        ]
+    ),
+
+    BaseTestCtx(
+        'test_network_api_tcp_client_multiple_sockets',
+        [
+            'zynq7000': null,
+            'sabre':    null,
+        ],
+        [
+            useTest:    'test_network_api',
+            buildParams: buildTarget('tcp_client_multiple_sockets'),
+            testParams:  testTarget('tcp_client_multiple_sockets'),
+        ]
+    ),
+
+    BaseTestCtx(
+        'test_network_api_tcp_client_multiple_clients',
+        [
+            'zynq7000': null,
+            'sabre':    null,
+        ],
+        [
+            useTest:    'test_network_api',
+            buildParams: buildTarget('tcp_client_multiple_clients'),
+            testParams:  testTarget('tcp_client_multiple_clients'),
+        ]
+    ),
+
+    BaseBuildCtx(
+        'test_network_api_tcp_server',
+        [
+            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
+            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
+            'nitrogen6sx': null,
+            'rpi3':        null,
+        ],
+        [
+            useTest:    'test_network_api',
+            buildParams: buildTarget('tcp_server'),
+            testParams:  testTarget('tcp_server'),
+        ]
+    ),
+
+    BaseTestCtx(
+        'test_network_api_udp_server',
+        [
+            'zynq7000': null,
+            'sabre':    null,
+        ],
+        [
+            useTest:    'test_network_api',
+            buildParams: buildTarget('udp_server'),
+            testParams:  testTarget('udp_server'),
+        ]
     )
 
 ]
@@ -922,17 +914,10 @@ def do_jobs_for_test_systems(branch, testConfigs)
     def jobStages = []
     for (test_ctx in testConfigs) {
 
-        def isBuild = (test_ctx.flags & SystemCtx.FLAG_BUILD)
-        def isTest = (test_ctx.flags & SystemCtx.FLAG_TEST)
+        def baseFlags = test_ctx.params?.get('flags') ?: 0
+        def testSystem = test_ctx.params?.get('testSystem')
 
-        // Currently, a test always requires a build. But in the future, testing
-        // an existing system might also be supported...
-        if (!isBuild) {
-            error("no built requested for " + test_ctx.systemName)
-            continue
-        }
-
-        if (!test_ctx.testSystem) {
+        if (!testSystem) {
             // Test system is initialized to 'null' in the constructor if a
             // non-default repo is specified for an SDK demo, which is not
             // supported.
@@ -940,18 +925,45 @@ def do_jobs_for_test_systems(branch, testConfigs)
             continue // this is not a blocker for other tests
         }
 
-
         for (plat in test_ctx.platforms) {
 
+            def platName = plat.key
+            def platParams = plat.value
+            def flags = baseFlags | (platParams?.get('addFlags') ?: 0)
+            def isBuild = (flags & SystemCtx.FLAG_BUILD)
+            def isTest = (flags & SystemCtx.FLAG_TEST)
+
+            // Currently, a test always requires a build. But in the future,
+            // testing an existing system might also be supported.
+            if (!isBuild) {
+                error("no built requested for " + test_ctx.systemName)
+                continue
+            }
+
             jobStages.add([
-                name:        plat + '-' + test_ctx.systemName,
+                name:        platName + '-' + test_ctx.systemName,
                 test_ctx:    test_ctx,
-                platform:    plat,
-                flags:       test_ctx.flags,
-                testSystem:  test_ctx.testSystem,
-                buildParams: test_ctx.buildParams,
-                testScript:  isTest ? test_ctx.testScript : null,
-                testParams:  isTest ? test_ctx.testParams : null,
+                platform:    platName,
+                flags:       flags,
+                testSystem:  testSystem,
+
+                // put platform params after test_ctx params
+                buildParams: makeParamStr(
+                                test_ctx.params?.get('buildParams'),
+                                platParams?.get('buildParams')),
+
+                // platform setting takes preference over test_ctx setting
+                testScript:  !isTest ? null :
+                             platParams?.get('testScript') ?:
+                             test_ctx.params?.get('testScript') ?:
+                             null,
+
+                // put platform params after test_ctx params
+                testParams:  !isTest ? null :
+                             makeParamStr(
+                                test_ctx.params?.get('testParams'),
+                                platParams?.get('testParams')),
+
                 build:       null // will be set once there is a build
             ])
         }
