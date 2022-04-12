@@ -236,10 +236,6 @@ def SYSTEM_CONFIGS = [
     // Unofficial Demo Systems
     //--------------------------------------------------------------------------
 
-    // Demo below Currently deactivated as it is not adapted to the Socket API
-    // rework.
-    // BuildCtx('demo_raspi_ethernet', ['rpi3']),
-
     BuildCtx('demo_i2c',
         ['sabre']
     ),
@@ -249,13 +245,17 @@ def SYSTEM_CONFIGS = [
         ['zynq7000']
     ),
 
+    // It test was used during porting the RPi Ethernet driver only. The RasPi3
+    // Socket API of this test needs to be adapted to the recent changes. But
+    // this test system is to be deleted anyway, once it's confirmed that all
+    // relevant parts were integrated into test_network_api.
+    // BuildCtx('demo_raspi_ethernet', ['rpi3']),
+
     //--------------------------------------------------------------------------
     // Test Systems
     //
-    // All supported systems are enabled as build-only for zynqmp because
-    // testing requires changing the test container to trentos_test:20210316
-    // which contains the xilinx QEMU. Also, if adding zynqmp builds results in
-    // a too long CI pipeline we can disable them again.
+    // Testing ZynqMP requires using the test container trentos_test:20210316
+    // which contains the Xilinx QEMU.
     //--------------------------------------------------------------------------
 
     TestCtx(
