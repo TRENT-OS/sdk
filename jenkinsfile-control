@@ -757,8 +757,7 @@ def do_checkout(
 
     if (!scmVars)
     {
-        echo 'checkout error'
-        return
+        error('checkout error for: ' + branch + '@' + repo)
     }
 }
 
