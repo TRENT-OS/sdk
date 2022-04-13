@@ -245,10 +245,10 @@ def SYSTEM_CONFIGS = [
         ['zynq7000']
     ),
 
-    // It test was used during porting the RPi Ethernet driver only. The RasPi3
-    // Socket API of this test needs to be adapted to the recent changes. But
-    // this test system is to be deleted anyway, once it's confirmed that all
-    // relevant parts were integrated into test_network_api.
+    // This test was used during porting the RPi Ethernet driver only. The
+    // RasPi3 Socket API of this test needs to be adapted to the recent changes.
+    // But this test system is to be deleted anyway, once it's confirmed that
+    // all relevant parts were integrated into test_network_api.
     // BuildCtx('demo_raspi_ethernet', ['rpi3']),
 
     //--------------------------------------------------------------------------
