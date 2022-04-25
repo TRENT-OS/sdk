@@ -290,6 +290,10 @@ function run_build()
         -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
         "${BUILD_ARGS[@]}"
         --warn-uninitialized
+        # ERROR, WARNING, NOTICE, STATUS (default), VERBOSE, DEBUG, TRACE
+        --log-level=TRACE
+        #--debug-output
+        #--trace
         --graphviz=${BUILD_TARGETS_GRAPH}.dot
         -G Ninja
         # Use absolute path of PROJECT_DIR, because we change the current working
