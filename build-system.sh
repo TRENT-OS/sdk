@@ -294,31 +294,30 @@ if [[ ! -d ${BUILD_DIR} ]]; then
         unset COMPILE_ONLYIR
     fi
 
-    # Create ${BUILD_DIR} and save the build parameters. Do this before even
-    # invoking CMake, so we have the parameters archived in any case.
+    # Create the build workspace manually, so configuration parameters can be
+    # stored there
     mkdir -p ${BUILD_DIR}
     echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
-
-    # Invoke CMake to set up the build environment. It creates the build output
-    # folder if it does not exist - but we've created it above already. The
-    # CMake command runs in a subshell that prints all the executed commands, so
-    # everything is shown in the logs.
     (
+        CMAKE_CFG_PARAMS=(
+            ${CMAKE_PARAMS[@]}
+            -S ${OS_SDK_PATH}
+            -B ${BUILD_DIR}
+        )
         set -x
-        cmake ${CMAKE_PARAMS[@]} -S ${OS_SDK_PATH} -B ${BUILD_DIR}
+        cmake ${CMAKE_CFG_PARAMS[@]}
     )
 
     # CMake must run twice, so the config settings propagate properly. The
     # first runs populates the cache and the second run will find the correct
     # settings in the cache to set up the build.
+    # Create a dependency graph with all build targets also. Since this creates
+    # many *.dot files, the re-run is invoked from a subfolder and just the
+    # final picture is placed in the root folder.
+    # root folder.
     echo "##------------------------------------------------------------------------------"
     echo "## re-run configure build ..."
     echo "##------------------------------------------------------------------------------"
-
-    cmake ${BUILD_DIR}
-
-    # create a visualization of the build targets
-    echo "create build target graph"
     BUILD_TARGETS_GRAPH=build-targets-graph
     mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
     (
