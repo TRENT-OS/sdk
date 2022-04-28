@@ -30,7 +30,7 @@ def makeParamStr(Object... args)
         }
     }
 
-    return paramList.join(' ');
+    return paramList.join(' ')
 }
 
 
@@ -768,7 +768,6 @@ def do_checkout_demos(demo_list, test_configs, folder)
         if (!test_configs.any {it.systemName == demo})
         {
             error("SDK demo " + demo + " must be included at least once in SYSTEM_CONFIGS.")
-            return
         }
     }
 }
