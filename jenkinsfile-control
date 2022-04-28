@@ -755,20 +755,17 @@ def do_checkout(
 
 
 //------------------------------------------------------------------------------
-def do_checkout_demos(demo_list, test_configs, folder)
+def do_checkout_demos(demo_list, branch, base_folder, test_configs)
 {
     for (demo in demo_list)
     {
-        do_checkout(
-            'ss/' + demo,
-            env.BRANCH_NAME,
-            folder + '/' + demo)
-
-        // Check if the SDK demo is also built and/or tested.
+        // Check if the SDK demo is also build and/or tested.
         if (!test_configs.any {it.systemName == demo})
         {
-            error("SDK demo " + demo + " must be included at least once in SYSTEM_CONFIGS.")
+            error("SDK demo is not build and/or tested: " + demo)
         }
+
+        do_checkout('ss/' + demo, branch, base_folder + '/' + demo)
     }
 }
 
@@ -1135,9 +1132,13 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        // WARNING: The CI job has to checkout the demos into a
-                        //          folder structure like the one of seos_tests.
-                        do_checkout_demos(SystemCtx.DEMO_LIST, SYSTEM_CONFIGS, 'src/demos')
+                        // demo must be checked out into a folder structure that
+                        // matched the one used by seos_tests.
+                        do_checkout_demos(
+                            SystemCtx.DEMO_LIST,
+                            env.BRANCH_NAME,
+                            'src/demos',
+                            SYSTEM_CONFIGS)
 
                         do_notify_bitbucket()
                     }
