@@ -7,8 +7,8 @@
 //------------------------------------------------------------------------------
 
 
-def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
-def SDK_PACKAGE = 'sdk-package.tar.bz2'
+def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
+def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
 
 //------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ def testTarget(String target)
 // System context
 class SystemCtx {
 
-    static DEMO_LIST = [
+    static final DEMO_LIST = [
         'demo_hello_world',
         'demo_iot_app',
         'demo_iot_app_imx6',
@@ -61,11 +61,11 @@ class SystemCtx {
         'demo_tls_api'
     ]
 
-    static FLAG_BUILD      = 1 << 0
-    static FLAG_TEST       = 1 << 1
+    static final FLAG_BUILD      = 1 << 0
+    static final FLAG_TEST       = 1 << 1
     // For demos included in the SDK package, CI will checkout them from their
     // default repo or use that the SDK package contains at the given location.
-    static FLAG_SDK_DEMO   = 1 << 2
+    static final FLAG_SDK_DEMO   = 1 << 2
 
     String      systemName   // Name of the system to build.
     Map         platforms    // List of supported platforms.
@@ -905,7 +905,7 @@ def execute_build(ctx, stage_ctx)
 def do_jobs_for_test_systems(branch, testConfigs)
 {
     // all downstream job packages are packed into this single package
-    def SYSTEM_PACKAGES = 'system-packages.tar.bz2'
+    def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
     def summary = manager.createSummary("orange-square.png")
     summary.appendText('<hr>')
