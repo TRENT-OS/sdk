@@ -1334,17 +1334,11 @@ pipeline {
 
         //----------------------------------------------------------------------
         stage('Test Systems') {
-            parallel {
-
-                //--------------------------------------------------------------
-                stage('create_system_tests') {
-                    steps {
-                        print_step_info env.STAGE_NAME
-                        do_jobs_for_test_systems(
-                            env.BRANCH_NAME,
-                            SYSTEM_CONFIGS)
-                    }
-                }
+            steps {
+                print_step_info env.STAGE_NAME
+                do_jobs_for_test_systems(
+                    env.BRANCH_NAME,
+                    SYSTEM_CONFIGS)
             }
         }
     }
