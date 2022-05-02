@@ -130,10 +130,11 @@ function collect_sdk_sandbox()
         ./build-sdk.sh
         ./publish_doc.sh
 
-        # remove jenkins files
+        # remove jenkins files and test confguration
         ./jenkinsfile
         ./jenkinsfile-control
         ./jenkinsfile-generic
+        ./test-cfg.yaml
 
         # remove axivion scripts
         ./scripts/axivion

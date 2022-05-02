@@ -10,6 +10,8 @@
 def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
+// will be read from the project
+SYSTEM_CONFIGS = []
 
 //------------------------------------------------------------------------------
 // Docker
@@ -51,20 +53,6 @@ def DOCKER_TEST_ENV  = [
 
 
 //------------------------------------------------------------------------------
-def buildTarget(String target)
-{
-    return '-D TEST_CONFIGURATION=' + target
-}
-
-
-//------------------------------------------------------------------------------
-def testTarget(String target)
-{
-    return '--tc=platform.test_configuration:' + target
-}
-
-
-//------------------------------------------------------------------------------
 // System context
 class SystemCtx {
     // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
@@ -88,420 +76,209 @@ class SystemCtx {
     Map         platforms    // List of supported platforms.
     Map         params       // Parameters
 
-    public SystemCtx(
-        String systemName,
-        Map platforms,
-        Map params = null)
+    //--------------------------------------------------------------------------
+    public SystemCtx(systemName, platforms, params)
     {
-        this.systemName  = systemName
-        this.platforms   = platforms
+        this.systemName = systemName
+        this.platforms = platforms
+        this.params = params ?: [:]
 
-        // make a copy of the params that can be modified
-        this.params = params ? params.clone() : [:]
-
+        // ensure proper defaults exists
         this.params.putIfAbsent('flags', 0)
+        this.params.putIfAbsent('testScript', systemName + '.py')
 
-        // SDK demos always use the code from the SDK, thus no custom repo can
-        // be specified here. If this happen, clear FLAG_BUILD so there is an
-        // error later
-        if (0 != (this.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+        // SDK demos always use the code from the SDK package, thus no custom
+        // repo can be specified here.
+        if (0 == (this.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+            this.params.putIfAbsent('testSystem', 'ss/' + systemName)
+        } else {
             assert(systemName in DEMO_LIST)
-            if (this.params.containsKey('testSystem')) {
-                error('custom test system location not supported for SDK demo ' + systemName)
-                this.params['flags'] &= ~SystemCtx.FLAG_BUILD
+            if (!this.params.containsKey('testSystem')) {
+                this.params.putAt('testSystem', 'demos/' + systemName)
             } else {
-                this.params['testSystem'] = 'demos/' + systemName
+                error('custom test system location not supported for SDK demo ' + systemName)
+            }
+        }
+    }
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_flags(arg)
+{
+    def flags = 0
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            flags |= yaml_parse_flags(e)
+        }
+
+    } else if (arg instanceof String) {
+        flags = [
+            'BUILD':    SystemCtx.FLAG_BUILD,
+            'TEST':     SystemCtx.FLAG_TEST,
+            'SDK_DEMO': SystemCtx.FLAG_SDK_DEMO,
+        ].get(arg.toUpperCase())
+        if (!flags) {
+            error('unknown flag: ' + arg)
+        }
+
+    } else {
+        error('unsupported flag argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return flags
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_params(arg)
+{
+    def params = []
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.addAll(yaml_parse_params(e))
+        }
+
+    } else if (arg instanceof String) {
+        params.add(arg)
+
+    } else {
+        error('unsupported parameter argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return params
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_platform_params(arg)
+{
+    def params = [:]
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.putAll(yaml_parse_platform_params(e))
+        }
+
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            switch(e.key) {
+                case 'addFlags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('unknown platform attribute: ' + e.key)
             }
         }
 
-        def useTest = this.params.getOrDefault('useTest', systemName)
-        this.params.putIfAbsent('testSystem', 'ss/' + useTest)
-        this.params.putIfAbsent('testScript', useTest + '.py')
-
-    }
-}
-
-//------------------------------------------------------------------------------
-def BaseFlagCtx(
-        String systemName,
-        Integer baseFlags,
-        Map platforms = null,
-        Map params = null
-)
-{
-    def guarded_params = params ? params.clone() : [:]
-
-    if (!guarded_params.putIfAbsent('flags', baseFlags)) {
-        guarded_params['flags'] |= baseFlags
+    } else {
+        error('unsupported platform parameter argument ' + arg.getClass() +
+              ': ' + arg)
     }
 
-    return new SystemCtx(systemName, platforms, guarded_params)
+    return params
 }
 
-//------------------------------------------------------------------------------
-def BaseBuildCtx(
-        String systemName,
-        Map platforms = null,
-        Map params = null
-)
+
+//--------------------------------------------------------------------------
+def yaml_parse_platforms(arg)
 {
-    return BaseFlagCtx(
-                systemName,
-                SystemCtx.FLAG_BUILD,
-                platforms,
-                params)
+    def platforms = [:]
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            platforms.putAll(yaml_parse_platforms(e))
+        }
+
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            platforms.putAt(e.key, yaml_parse_platform_params(e.value))
+        }
+
+    } else if (arg instanceof String) {
+        platforms.putAt(arg, null)
+
+    } else {
+        error('unsupported platform argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return platforms
 }
 
-//------------------------------------------------------------------------------
-def BaseTestCtx(
-        String systemName,
-        Map platforms = null,
-        Map params = null
-)
+
+//--------------------------------------------------------------------------
+def yaml_to_SystemCtx(systemName, yaml_data)
 {
-    return BaseFlagCtx(
-                systemName,
-                SystemCtx.FLAG_BUILD | SystemCtx.FLAG_TEST,
-                platforms,
-                params)
+    def platforms = [:]
+    def params = [flags: 0]
+
+    for (attr in yaml_data) {
+        for (e in attr) {
+            switch (e.key) {
+                case 'flags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'platforms':
+                    platforms = yaml_parse_platforms(e.value)
+                    break
+                case 'testSystem':
+                case 'testScript':
+                    assert e.value instanceof String
+                    params.putAt(e.key, e.value)
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('unknown system attribute: ' + e.key)
+            }
+        }
+    }
+
+    return new SystemCtx(systemName, platforms, params)
 }
 
+
 //------------------------------------------------------------------------------
-// Build/Test configurations to be executed in the generic pipeline.
-//
-def SYSTEM_CONFIGS = [
+def read_yaml_config(yaml_file)
+{
+    def cfg = readYaml([file: yaml_file])
+    def tests = []
+    for (system in cfg) {
+        assert 1 == system.size()
+        for (item in system) {
+            def systemName = item.key
+            if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
+               error('invalid test system name: ' + systemName)
+            }
+            if (tests.any { it.systemName == systemName }) {
+               error('duplicate test system: ' + systemName)
+            }
+            tests += yaml_to_SystemCtx(systemName, item.value)
+        }
+    }
 
-    //--------------------------------------------------------------------------
-    // Fundamental Demo Systems, required for the SDK package sanity check.
-    //--------------------------------------------------------------------------
-
-    BaseBuildCtx(
-        'demo_hello_world',
-        [
-            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
-            'spike64':     [ addFlags: SystemCtx.FLAG_TEST ],
-            'rpi3':        null,
-            'rpi4':        null,
-            'nitrogen6sx': null,
-            'spike32':     null,
-            'zynqmp':      null,
-        ],
-        [
-            addFlags:    SystemCtx.FLAG_SDK_DEMO,
-            testScript: 'test_demo_hello_world.py'
-        ]
-    ),
-
-    //--------------------------------------------------------------------------
-    // Additional Official Demo System
-    //--------------------------------------------------------------------------
-
-    BaseBuildCtx(
-        'demo_iot_app',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ],
-        [
-            addFlags:    SystemCtx.FLAG_SDK_DEMO,
-            testScript: 'test_demo_iot_app.py'
-        ]
-    ),
-
-    BaseBuildCtx(
-        'demo_iot_app_imx6',
-        [
-            'sabre':       null,
-            'nitrogen6sx': null,
-        ],
-        [
-            addFlags: SystemCtx.FLAG_SDK_DEMO,
-        ]
-
-    ),
-
-    BaseBuildCtx(
-        'demo_iot_app_rpi3',
-        [
-            'rpi3': null,
-        ],
-        [
-            addFlags: SystemCtx.FLAG_SDK_DEMO,
-        ]
-
-    ),
-
-    BaseBuildCtx(
-        'demo_tls_api',
-        [
-            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
-            'nitrogen6sx': null,
-            'rpi3':        null
-        ],
-        [
-            addFlags:    SystemCtx.FLAG_SDK_DEMO,
-            testScript: 'test_demo_tls_api.py'
-        ]
-
-    ),
-
-    BaseBuildCtx(
-        'demo_network_filter',
-        [
-            'zynq7000':    null,
-            'nitrogen6sx': null,
-        ],
-        [
-            addFlags: SystemCtx.FLAG_SDK_DEMO,
-        ]
-
-    ),
-
-    //--------------------------------------------------------------------------
-    // Unofficial Demo Systems
-    //--------------------------------------------------------------------------
-
-    BaseBuildCtx(
-        'demo_i2c',
-        [
-            'sabre': null
-        ]
-    ),
-
-    BaseBuildCtx(
-        'demo_tls_server',
-        [
-            'zynq7000': null
-        ]
-    ),
-
-    // This test was used during porting the RPi Ethernet driver only. The
-    // RasPi3 Socket API of this test needs to be adapted to the recent changes.
-    // But this test system is to be deleted anyway, once it's confirmed that
-    // all relevant parts were integrated into test_network_api.
-    // BaseBuildCtx('demo_raspi_ethernet', ['rpi3': null]),
-
-    //--------------------------------------------------------------------------
-    // Test Systems
-    //
-    // Testing ZynqMP requires using the test container trentos_test:20210316
-    // which contains the Xilinx QEMU.
-    //--------------------------------------------------------------------------
-
-    BaseBuildCtx(
-        'test_timeserver',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'rpi3':     null,
-            'rpi4':     null,
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_certserver',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'rpi3':     null,
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_uart',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_chanmux',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_proxy_nvm',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_certparser',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_crypto_api',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'spike64':  [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_cryptoserver',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_entropysource',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_storage_interface',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'rpi3':     null,
-            'rpi4':     null,
-        ],
-        [
-            testScript: 'test_storage_interface*.py'
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_filesystem',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_config_server',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_keystore',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_logserver',
-        [
-            'zynq7000': [ addFlags: SystemCtx.FLAG_TEST ],
-            'zynqmp':   null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_tls_api',
-        [
-            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':       null,
-            'nitrogen6sx': null,
-            'rpi3':        null,
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_tlsserver',
-        [
-            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':       null,
-            'nitrogen6sx': null,
-            'rpi3':        null,
-        ]
-    ),
-
-    BaseTestCtx(
-        'test_network_api_tcp_client',
-        [
-            'zynq7000': null,
-            'sabre':    null,
-        ],
-        [
-            useTest:    'test_network_api',
-            buildParams: buildTarget('tcp_client_single_socket'),
-            testParams:  testTarget('tcp_client_single_socket'),
-        ]
-    ),
-
-    BaseTestCtx(
-        'test_network_api_tcp_client_multiple_sockets',
-        [
-            'zynq7000': null,
-            'sabre':    null,
-        ],
-        [
-            useTest:    'test_network_api',
-            buildParams: buildTarget('tcp_client_multiple_sockets'),
-            testParams:  testTarget('tcp_client_multiple_sockets'),
-        ]
-    ),
-
-    BaseTestCtx(
-        'test_network_api_tcp_client_multiple_clients',
-        [
-            'zynq7000': null,
-            'sabre':    null,
-        ],
-        [
-            useTest:    'test_network_api',
-            buildParams: buildTarget('tcp_client_multiple_clients'),
-            testParams:  testTarget('tcp_client_multiple_clients'),
-        ]
-    ),
-
-    BaseBuildCtx(
-        'test_network_api_tcp_server',
-        [
-            'zynq7000':    [ addFlags: SystemCtx.FLAG_TEST ],
-            'sabre':       [ addFlags: SystemCtx.FLAG_TEST ],
-            'nitrogen6sx': null,
-            'rpi3':        null,
-        ],
-        [
-            useTest:    'test_network_api',
-            buildParams: buildTarget('tcp_server'),
-            testParams:  testTarget('tcp_server'),
-        ]
-    ),
-
-    BaseTestCtx(
-        'test_network_api_udp_server',
-        [
-            'zynq7000': null,
-            'sabre':    null,
-        ],
-        [
-            useTest:    'test_network_api',
-            buildParams: buildTarget('udp_server'),
-            testParams:  testTarget('udp_server'),
-        ]
-    )
-
-]
+    return tests
+}
 
 
 //------------------------------------------------------------------------------
@@ -1131,6 +908,10 @@ pipeline {
                             ],
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
+
+                        script {
+                            SYSTEM_CONFIGS = read_yaml_config('scm-src/test-cfg.yaml')
+                        }
 
                         // demo must be checked out into a folder structure that
                         // matched the one used by seos_tests.
