@@ -12,26 +12,42 @@ def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
 
 //------------------------------------------------------------------------------
-def makeParamStr(Object... args)
-{
-    def paramList = []
-    for (arg in args) {
-        if (!arg) {
-            // ignore null elements
-        } else if (arg instanceof String) {
-            paramList.add(arg)
-        } else if (arg instanceof List) {
-            list = arg.flatten()
-            list.removeAll([null])
-            paramList.addAll(list)
-        } else {
-            error("Invalid parameter object: " + arg);
-            // ignore
-        }
-    }
+// Docker
+//
+// Notes:
+// * bind the localtime to docker container to avoid problems of gaps between
+//   the localtime of the container and the host.
+// * add user to group "stack" (1001) in order to grant usage of Haskell stack
+//   in the docker image
+//
+// ToDo
+// * why are sudo right needed in the test container
+//
 
-    return paramList.join(' ')
-}
+def DOCKER_BASE = 'docker:5000'
+def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+
+def DOCKER_BUILD_ENV = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_build:20210503',
+    args:     ['-v /etc/localtime:/etc/localtime:ro',
+               '--group-add=stack',
+               '--group-add=sudo'
+              ].join(' ')
+]
+
+def DOCKER_TEST_ENV  = [
+    registry: DOCKER_REGISTRY,
+    image:    DOCKER_BASE + '/trentos_test:20211217',
+    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
+               '-v /etc/localtime:/etc/localtime:ro',
+               '--network=bridge',
+               '--cap-add=NET_ADMIN',
+               '--cap-add=NET_RAW',
+               '--device=/dev/net/tun',
+               '--group-add=sudo'
+              ].join(' ')
+]
 
 
 //------------------------------------------------------------------------------
@@ -488,46 +504,6 @@ def SYSTEM_CONFIGS = [
 
 
 //------------------------------------------------------------------------------
-// Docker
-//
-// Notes:
-// * bind the localtime to docker container to avoid problems of gaps between
-//   the localtime of the container and the host.
-// * add user to group "stack" (1001) in order to grant usage of Haskell stack
-//   in the docker image
-//
-// ToDo
-// * why are sudo right needed in the test container
-//
-
-def DOCKER_BASE = 'docker:5000'
-def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
-
-def DOCKER_BUILD_ENV = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_build:20210503',
-    args:     ['-v /etc/localtime:/etc/localtime:ro',
-               '--group-add=stack',
-               '--group-add=sudo'
-              ].join(' ')
-]
-
-def DOCKER_TEST_ENV  = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_test:20211217',
-    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
-               '-v /etc/localtime:/etc/localtime:ro',
-               '--network=bridge',
-               '--cap-add=NET_ADMIN',
-               '--cap-add=NET_RAW',
-               '--device=/dev/net/tun',
-               '--group-add=sudo'
-              ].join(' ')
-]
-
-
-
-//------------------------------------------------------------------------------
 def print_step_info(name)
 {
     println('######## ' + name)
@@ -767,6 +743,29 @@ def do_checkout_demos(demo_list, branch, base_folder, test_configs)
 
         do_checkout('ss/' + demo, branch, base_folder + '/' + demo)
     }
+}
+
+
+//------------------------------------------------------------------------------
+def makeParamStr(Object... args)
+{
+    def paramList = []
+    for (arg in args) {
+        if (!arg) {
+            // ignore null elements
+        } else if (arg instanceof String) {
+            paramList.add(arg)
+        } else if (arg instanceof List) {
+            list = arg.flatten()
+            list.removeAll([null])
+            paramList.addAll(list)
+        } else {
+            error("Invalid parameter object: " + arg);
+            // ignore
+        }
+    }
+
+    return paramList.join(' ')
 }
 
 
