@@ -1,0 +1,416 @@
+
+CONFIGS = []
+
+//------------------------------------------------------------------------------
+def makeParamStr(Object... args)
+{
+    def paramList = []
+    for (arg in args) {
+        if (!arg) {
+            // ignore null elements
+        } else if (arg instanceof String) {
+            paramList.add(arg)
+        } else if (arg instanceof List) {
+            list = arg.flatten()
+            list.removeAll([null])
+            paramList.addAll(list)
+        } else {
+            error("Invalid parameter object: " + arg);
+            // ignore
+        }
+    }
+
+    return paramList.join(' ')
+}
+
+
+//------------------------------------------------------------------------------
+// System context
+class SystemCtx {
+
+    static final DEMO_LIST = [
+        'demo_hello_world',
+        'demo_iot_app',
+        'demo_iot_app_imx6',
+        'demo_iot_app_rpi3',
+        'demo_network_filter',
+        'demo_tls_api'
+    ]
+
+    static final FLAG_BUILD      = 1 << 0
+    static final FLAG_TEST       = 1 << 1
+    // For demos included in the SDK package, CI will checkout them from their
+    // default repo or use that the SDK package contains at the given location.
+    static final FLAG_SDK_DEMO   = 1 << 2
+
+    String      systemName   // Name of the system to build.
+    Map         platforms    // List of supported platforms.
+    Map         params       // Parameters
+
+    //--------------------------------------------------------------------------
+    public SystemCtx(systemName, platforms, params)
+    {
+        this.systemName = systemName
+        this.platforms = platforms
+        this.params = params
+
+        // SDK demos always use the code from the SDK, thus no custom repo can
+        // be specified here. If this happen, clear FLAG_BUILD so there is an
+        // error later
+        if (0 != (this.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+            assert(systemName in DEMO_LIST)
+            if (this.params.containsKey('testSystem')) {
+                error('custom test system location not supported for SDK demo ' + systemName)
+                this.params['flags'] &= ~SystemCtx.FLAG_BUILD
+            } else {
+                this.params['testSystem'] = 'demos/' + systemName
+            }
+        }
+
+        this.params.putIfAbsent('testSystem', 'ss/' + systemName)
+        this.params.putIfAbsent('testScript', systemName + '.py')
+    }
+
+}
+
+//--------------------------------------------------------------------------
+def yaml_parse_flags(arg)
+{
+    if (null == arg) {
+        return 0
+    }
+
+    if (arg instanceof List) {
+        def flags = 0
+        for (e in arg) {
+            flags |= yaml_parse_flags(e)
+        }
+        return flags
+    }
+
+    assert arg instanceof String
+    def flag = [
+        'BUILD':    SystemCtx.FLAG_BUILD,
+        'TEST':     SystemCtx.FLAG_TEST,
+        'SDK_DEMO': SystemCtx.FLAG_SDK_DEMO,
+    ].get(arg)
+
+    if (!flag) {
+        error('invalid flag: '+ arg)
+    }
+
+    return flag
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_params(arg)
+{
+    def params = []
+    if (null == arg) {
+        // do nothing
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.addAll(yaml_parse_params(e))
+        }
+    } else if (arg instanceof String) {
+        params.add(arg)
+    } else {
+        error('unsupported parameter argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return params
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_platform_params(arg)
+{
+    def params = [:]
+    if (null == arg) {
+        // do nothing
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.putAll(yaml_parse_platform_params(e))
+        }
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            switch(e.key) {
+                case 'addFlags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('unknown platform attribute: ' + e.key)
+            }
+        }
+    } else {
+        error('unsupported platform parameter argument ' + arg.getClass() +
+              ': ' + arg)
+    }
+    return params
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_platforms(arg)
+{
+    def platforms = [:]
+    if (null == arg) {
+        // do nothing
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            platforms.putAll(yaml_parse_platforms(e))
+        }
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            platforms.putAt(e.key, yaml_parse_platform_params(e.value))
+        }
+    } else if (arg instanceof String) {
+        platforms.putAt(arg, null)
+    } else {
+        error('unsupported platform argument ' + arg.getClass() + ': ' + arg)
+    }
+    return platforms
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_to_SystemCtx(systemName, yaml_data)
+{
+    platforms = [:]
+    params = [flags: 0]
+
+    for (attr in yaml_data) {
+        for (e in attr) {
+            switch (e.key)
+            {
+                case 'flags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'platforms':
+                    platforms = yaml_parse_platforms(e.value)
+                    break
+                case 'testSystem':
+                case 'testScript':
+                    assert e.value instanceof String
+                    params.putAt(e.key, e.value)
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('  unknown system atttribute: ' + e.key)
+            }
+        }
+    }
+
+    return new SystemCtx(systemName, platforms, params)
+}
+
+//------------------------------------------------------------------------------
+def read_yaml_config(yaml_file)
+{
+    def cfg = readYaml([file: yaml_file])
+    def tests = []
+    for (system in cfg) {
+        assert 1 == system.size()
+        for (item in system) {
+            tests += yaml_to_SystemCtx(item.key, item.value)
+        }
+    }
+
+    return tests
+}
+
+//------------------------------------------------------------------------------
+def execute_build(ctx, stage_ctx)
+{
+    def flags = stage_ctx.getOrDefault('flags', 0)
+
+    def jobBuild = [
+        job: 'generic_jobs/generic_pipeline_sandbox',
+        wait: true,   // block call until finished
+        propagate: false, // don't throw exception on error
+        parameters: [
+            string(
+                name: 'PLATFORM',
+                value: stage_ctx.getOrDefault('platform', '')
+            ),
+            string(
+                name:  'BRANCH_OR_COMMIT',
+                value: ctx.branch ?: ''
+            ),
+            string(
+                name:  'FLAGS',
+                value: flags as String // must be made a string
+            ),
+            string(
+                name:  'TEST_SYSTEM',
+                value: stage_ctx.getOrDefault('testSystem', '')
+            ),
+            string(
+                name:  'BUILD_PARAMS',
+                value: stage_ctx.getOrDefault('buildParams', '')
+            ),
+            string(
+                name:  'TEST_SCRIPT',
+                value: stage_ctx.getOrDefault('testScript', '')
+            ),
+            string(
+                name:  'TEST_PARAMS',
+                value: stage_ctx.getOrDefault('testParams', '')
+            ),
+            string(
+                name:  'UPSTREAM_JOB_NAME',
+                value: currentBuild.fullProjectName
+            ),
+            string(
+                name:  'UPSTREAM_JOB_ID',
+                value: currentBuild.id
+            ),
+        ]
+    ]
+    print(jobBuild)
+
+}
+
+
+//------------------------------------------------------------------------------
+def do_jobs_for_test_systems(branch, configs)
+{
+    // all downstream job packages are packed into this single package
+    def SYSTEM_PACKAGES = 'system-packages.tar.bz2'
+
+    def jobStages = []
+    for (test_ctx in configs) {
+
+        def baseFlags = test_ctx.params?.get('flags') ?: 0
+        def testSystem = test_ctx.params?.get('testSystem')
+
+        if (!testSystem) {
+            // Test system is initialized to 'null' in the constructor if a
+            // non-default repo is specified for an SDK demo, which is not
+            // supported.
+            error("SDK demo must use default repo: " + test_ctx.systemName)
+            continue // this is not a blocker for other tests
+        }
+
+        for (plat in test_ctx.platforms) {
+
+            def platName = plat.key
+            def platParams = plat.value
+            def flags = baseFlags | (platParams?.get('addFlags') ?: 0)
+            def isBuild = (flags & SystemCtx.FLAG_BUILD)
+            def isTest = (flags & SystemCtx.FLAG_TEST)
+
+            // Currently, a test always requires a build. But in the future,
+            // testing an existing system might also be supported.
+            if (!isBuild) {
+                error("no built requested for " + test_ctx.systemName)
+                continue
+            }
+
+            jobStages.add([
+                name:        platName + '-' + test_ctx.systemName,
+                test_ctx:    test_ctx,
+                platform:    platName,
+                flags:       flags,
+                testSystem:  testSystem,
+
+                // put platform params after test_ctx params
+                buildParams: makeParamStr(
+                                test_ctx.params?.get('buildParams'),
+                                platParams?.get('buildParams')),
+
+                // platform setting takes preference over test_ctx setting
+                testScript:  !isTest ? null :
+                             platParams?.get('testScript') ?:
+                             test_ctx.params?.get('testScript') ?:
+                             null,
+
+                // put platform params after test_ctx params
+                testParams:  !isTest ? null :
+                             makeParamStr(
+                                test_ctx.params?.get('testParams'),
+                                platParams?.get('testParams')),
+
+                build:       null // will be set once there is a build
+            ])
+        }
+    }
+
+    def sub_jobs_ctx = [
+        branch:    branch,
+        cnt:       jobStages.size(),
+        running:   jobStages.size(),
+    ]
+
+    def build_start = new Date()
+
+    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+    {
+        // we don't need an executor to start the jobs and wait for them to
+        // finish
+        //
+        //  parallel
+        //      firstBranch:  { /* do something */ },
+        //      secondBranch: { /* do something */ },
+        //      failFast: true|false // terminate all upon any one failing
+
+        parallel(
+            // Create a map, where each key is an arbitrary name and the value
+            // is a closure with the code that will be executed in parallel
+            // (potentially distributed) jobs.
+            jobStages.collectEntries { stage_ctx ->
+                [
+                    ( stage_ctx.name ):
+                    { ->
+                        stage(stage_ctx.name) {
+                            execute_build(sub_jobs_ctx, stage_ctx)
+                        }
+                    }
+                ]
+            }
+        )
+    }
+
+    node {
+        stage('process_results') {
+            jobStages.eachWithIndex { stage_ctx, idx ->
+                println('processing ' + (idx+1) + '/' + jobStages.size() + ': ' +
+                        stage_ctx.name)
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+pipeline {
+    agent any
+    stages {
+        stage('init') {
+            steps {
+                script {
+                    // This is just a hack to test things, so the YAML file is
+                    // not in the job's workspace, but the global one that maps
+                    // the host's workspace mapped into the docker container.
+                    CONFIGS = read_yaml_config('/workspace/test-cfg.yaml')
+                }
+            }
+        }
+        //----------------------------------------------------------------------
+        stage('Test Systems') {
+            steps {
+                do_jobs_for_test_systems(env.BRANCH_NAME, CONFIGS)
+            }
+        }
+    }
+}
