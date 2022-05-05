@@ -299,15 +299,16 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
 
             # the CapDL Loader's build produces graph.dot with all the
             # components, create a SVG image from this.
+            get_target_property(BINARY_DIR ${target} BINARY_DIR)
+            set(OS_SYS_GRAPH "${BINARY_DIR}/graph.svg")
             add_custom_command(
-                TARGET ${target}
-                POST_BUILD
-                COMMAND dot -Tsvg graph.dot -o graph.svg
-                WORKING_DIRECTORY "$<TARGET_PROPERTY:${target},BINARY_DIR>"
+                OUTPUT "${OS_SYS_GRAPH}"
+                DEPENDS "${target}"
+                COMMAND dot -Tsvg "${BINARY_DIR}/graph.dot" -o "${OS_SYS_GRAPH}"
                 VERBATIM
-                COMMENT "create system picture"
+                COMMENT "create ${OS_SYS_GRAPH}"
             )
-
+            add_custom_target(${target}_graph ALL DEPENDS "${OS_SYS_GRAPH}")
         endif()
 
     endforeach()
