@@ -229,17 +229,19 @@ endmacro()
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-macro(get_all_targets_recursive targets dir)
+function(os_sdk_get_all_cmake_targets var_targets dir)
 
     get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    set(target_list "")
     foreach(subdir ${subdirectories})
-        get_all_targets_recursive(${targets} ${subdir})
+        os_sdk_get_all_cmake_targets(target_list ${subdir})
     endforeach()
 
     get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
-    list(APPEND ${targets} ${current_targets})
+    list(APPEND target_list ${current_targets})
+    set(${var_targets} "${target_list}" PARENT_SCOPE)
 
-endmacro()
+endfunction()
 
 
 #-------------------------------------------------------------------------------
@@ -272,8 +274,7 @@ function(DeclareAndCreateCamkESSystem camkes_system_file)
 
     GenerateCAmkESRootServer()
 
-    set(targets "")
-    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    os_sdk_get_all_cmake_targets(targets ${CMAKE_CURRENT_SOURCE_DIR})
     foreach(target ${targets})
 
         # each CAmkES component is in a *.instance.bin file.
@@ -429,8 +430,7 @@ macro(os_sdk_build system_project_dir)
 
     add_subdirectory("${system_project_dir}" "os_system")
 
-    set(targets "")
-    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    os_sdk_get_all_cmake_targets(targets ${CMAKE_CURRENT_SOURCE_DIR})
     foreach(target ${targets})
 
         if(target MATCHES "^(elfloader|kernel\.elf)$")
