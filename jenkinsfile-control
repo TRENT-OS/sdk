@@ -67,7 +67,8 @@ def testTarget(String target)
 //------------------------------------------------------------------------------
 // System context
 class SystemCtx {
-
+    // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
+    //          values are always in sync.
     static final DEMO_LIST = [
         'demo_hello_world',
         'demo_iot_app',
