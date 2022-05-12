@@ -134,10 +134,8 @@ endfunction()
 function(add_os_libs_subdirectories)
 
     if (SDK_USE_CAMKES)
-
         CAmkESAddCPPInclude(${OS_LIBS_DIR})
         CAmkESAddImportPath(${OS_LIBS_DIR})
-
     endif()
 
     # use all libs from 'libs/*' and 'libs/3rdParty/*' , exclude the 'test'
@@ -159,10 +157,8 @@ endfunction()
 function(include_os_components)
 
     if (SDK_USE_CAMKES)
-
         CAmkESAddCPPInclude(${OS_COMPONENTS_DIR})
         CAmkESAddImportPath(${OS_COMPONENTS_DIR})
-
     endif()
 
     os_sdk_get_subdirs(subdir_list "${OS_COMPONENTS_DIR}")
