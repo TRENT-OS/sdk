@@ -82,7 +82,7 @@ BUILD_PLATFORM=$2
 BUILD_DIR=$3
 shift 3
 # all remaining parameters will be passed to CMake
-BUILD_ARGS="$@"
+BUILD_ARGS=("$@")
 CMAKE_PARAMS_FILE=cmake_params.txt
 
 #-------------------------------------------------------------------------------
@@ -228,7 +228,7 @@ CMAKE_PARAMS+=(
     -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
     # seL4 build system settings
     -D PLATFORM=${BUILD_PLATFORM}
-    ${CMAKE_PARAMS_PLATFORM[@]}
+    "${CMAKE_PARAMS_PLATFORM[@]}"
     -D KernelVerificationBuild=OFF
     # SEL4_CACHE_DIR is a binary cache. There are some binaries (currently
     # musllibc and capDL-tool) that are project agnostic, so we don't have
@@ -238,7 +238,7 @@ CMAKE_PARAMS+=(
     # working directory, we have to ensure this is an absolute path.
     -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
     -G Ninja
-    ${BUILD_ARGS}
+    "${BUILD_ARGS[@]}"
 )
 
 
