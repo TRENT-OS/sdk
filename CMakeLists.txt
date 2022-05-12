@@ -163,12 +163,7 @@ function(include_os_components)
 
     os_sdk_get_subdirs(subdir_list "${OS_COMPONENTS_DIR}")
     foreach(subdir IN LISTS subdir_list)
-        # Components aren't CMake projects, their CMakeLists.txt files
-        # contain functions that must be called to create the actual
-        # component's CMake project. Thus we can't use add_subdirectory()
-        # here but must use include(). The included CMake files are executed
-        # in the same scope and thus can modify variables and add functions.
-        include("${OS_COMPONENTS_DIR}/${subdir}/CMakeLists.txt" OPTIONAL)
+        add_subdirectory("${OS_COMPONENTS_DIR}/${subdir}" "components/${subdir}")
     endforeach()
 
 endfunction()
