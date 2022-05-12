@@ -116,6 +116,21 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
+function(os_sdk_get_subdirs var_subdir_list dir)
+
+    file(GLOB children RELATIVE "${dir}" "${dir}/*")
+    set(subdir_list "")
+    foreach(child IN LISTS children)
+        if (IS_DIRECTORY "${dir}/${child}")
+            LIST(APPEND subdir_list "${child}")
+        endif()
+    endforeach()
+    set(${var_subdir_list} "${subdir_list}" PARENT_SCOPE)
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
 function(add_os_libs_subdirectories)
 
     if (SDK_USE_CAMKES)
@@ -125,25 +140,16 @@ function(add_os_libs_subdirectories)
 
     endif()
 
-    # Find every sub-folder in OS_LIBS_DIR and all sub-folders of "3rdParty".
-    file(
-        GLOB
-        OS_LIBS_SUBDIRS
-        RELATIVE "${OS_LIBS_DIR}"
-        "${OS_LIBS_DIR}/*"
-        "${OS_LIBS_DIR}/3rdParty/*"
-    )
-
-    # Remove the folders "3rdParty" and "test" from the list.
-    list(REMOVE_ITEM OS_LIBS_SUBDIRS "3rdParty" "test")
-
-    foreach(ITEM IN LISTS OS_LIBS_SUBDIRS)
-        set(SUBDIR "${OS_LIBS_DIR}/${ITEM}")
-        # The list can also contain files, e.g. ctag index files, but we only
-        # care about the folders.
-        if (IS_DIRECTORY "${SUBDIR}")
-            add_subdirectory("${SUBDIR}" "libs/${ITEM}")
-        endif()
+    # use all libs from 'libs/*' and 'libs/3rdParty/*' , exclude the 'test'
+    # folder.
+    os_sdk_get_subdirs(subdir_list "${OS_LIBS_DIR}")
+    list(REMOVE_ITEM subdir_list "3rdParty" "test")
+    os_sdk_get_subdirs(subdir_3rdparty_list "${OS_LIBS_DIR}/3rdParty")
+    foreach(subdir IN LISTS subdir_3rdparty_list)
+        list(APPEND subdir_list "3rdParty/${subdir}")
+    endforeach()
+    foreach(subdir IN LISTS subdir_list)
+        add_subdirectory("${OS_LIBS_DIR}/${subdir}" "libs/${subdir}")
     endforeach()
 
 endfunction()
@@ -159,20 +165,14 @@ function(include_os_components)
 
     endif()
 
-    # include every sub-folder in OS_COMPONENTS_DIR except 3rdParty
-    file(
-        GLOB
-        OS_COMPONENTS_SUBDIRS
-        RELATIVE "${OS_COMPONENTS_DIR}"
-        "${OS_COMPONENTS_DIR}/*")
-
-    foreach(ITEM IN LISTS OS_COMPONENTS_SUBDIRS)
+    os_sdk_get_subdirs(subdir_list "${OS_COMPONENTS_DIR}")
+    foreach(subdir IN LISTS subdir_list)
         # Components aren't CMake projects, their CMakeLists.txt files
         # contain functions that must be called to create the actual
         # component's CMake project. Thus we can't use add_subdirectory()
         # here but must use include(). The included CMake files are executed
         # in the same scope and thus can modify variables and add functions.
-        include("${OS_COMPONENTS_DIR}/${ITEM}/CMakeLists.txt" OPTIONAL)
+        include("${OS_COMPONENTS_DIR}/${subdir}/CMakeLists.txt" OPTIONAL)
     endforeach()
 
 endfunction()
@@ -231,14 +231,14 @@ endmacro()
 #-------------------------------------------------------------------------------
 function(os_sdk_get_all_cmake_targets var_targets dir)
 
-    get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
     set(target_list "")
-    foreach(subdir ${subdirectories})
-        os_sdk_get_all_cmake_targets(target_list ${subdir})
+    get_property(sub_dir_list DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    foreach(sub_dir ${sub_dir_list})
+        os_sdk_get_all_cmake_targets(sub_target_list ${sub_dir})
+        list(APPEND target_list "${sub_target_list}")
     endforeach()
-
-    get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
-    list(APPEND target_list ${current_targets})
+    get_property(dir_target_list DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
+    list(APPEND target_list "${dir_target_list}")
     set(${var_targets} "${target_list}" PARENT_SCOPE)
 
 endfunction()
