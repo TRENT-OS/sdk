@@ -237,8 +237,10 @@ CMAKE_PARAMS+=(
     # Location of the OS project to be built. Since we will change the current
     # working directory, we have to ensure this is an absolute path.
     -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
-    -G Ninja
     "${BUILD_ARGS[@]}"
+    -G Ninja
+    -S ${OS_SDK_PATH}
+    -B ${BUILD_DIR}
 )
 
 
@@ -299,13 +301,8 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     mkdir -p ${BUILD_DIR}
     echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
     (
-        CMAKE_CFG_PARAMS=(
-            ${CMAKE_PARAMS[@]}
-            -S ${OS_SDK_PATH}
-            -B ${BUILD_DIR}
-        )
         set -x
-        cmake ${CMAKE_CFG_PARAMS[@]}
+        cmake ${CMAKE_PARAMS[@]}
     )
 
     # CMake must run twice, so the config settings propagate properly. The
