@@ -151,6 +151,7 @@ function(add_os_libs_subdirectories)
         add_subdirectory(
             "${OS_LIBS_DIR}/${subdir}"
             "${OS_SDK_BUILD_DIR}/libs/${subdir}"
+            EXCLUDE_FROM_ALL
         )
     endforeach()
 
@@ -170,6 +171,7 @@ function(include_os_components)
         add_subdirectory(
             "${OS_COMPONENTS_DIR}/${subdir}"
             "${OS_SDK_BUILD_DIR}/components/${subdir}"
+            EXCLUDE_FROM_ALL
         )
     endforeach()
 
@@ -400,6 +402,7 @@ macro(os_sdk_build system_project_dir)
     add_subdirectory(
         "${OS_SDK_DIR}/os_core_api"
         "${OS_SDK_BUILD_DIR}/os_core_api"
+        EXCLUDE_FROM_ALL
     )
 
     add_os_libs_subdirectories()
