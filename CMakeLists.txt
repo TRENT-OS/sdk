@@ -18,6 +18,7 @@ elseif (
 endif()
 
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(OS_SDK_BUILD_DIR "os-sdk")
 
 set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
 set(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
@@ -147,7 +148,10 @@ function(add_os_libs_subdirectories)
         list(APPEND subdir_list "3rdParty/${subdir}")
     endforeach()
     foreach(subdir IN LISTS subdir_list)
-        add_subdirectory("${OS_LIBS_DIR}/${subdir}" "libs/${subdir}")
+        add_subdirectory(
+            "${OS_LIBS_DIR}/${subdir}"
+            "${OS_SDK_BUILD_DIR}/libs/${subdir}"
+        )
     endforeach()
 
 endfunction()
@@ -163,7 +167,10 @@ function(include_os_components)
 
     os_sdk_get_subdirs(subdir_list "${OS_COMPONENTS_DIR}")
     foreach(subdir IN LISTS subdir_list)
-        add_subdirectory("${OS_COMPONENTS_DIR}/${subdir}" "components/${subdir}")
+        add_subdirectory(
+            "${OS_COMPONENTS_DIR}/${subdir}"
+            "${OS_SDK_BUILD_DIR}/components/${subdir}"
+        )
     endforeach()
 
 endfunction()
@@ -390,7 +397,11 @@ macro(os_sdk_build system_project_dir)
         set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
-    add_subdirectory("${OS_SDK_DIR}/os_core_api" "os_core_api")
+    add_subdirectory(
+        "${OS_SDK_DIR}/os_core_api"
+        "${OS_SDK_BUILD_DIR}/os_core_api"
+    )
+
     add_os_libs_subdirectories()
 
     # We include the components even if CAmkES is not enabled, because they may
