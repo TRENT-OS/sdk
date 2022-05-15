@@ -57,15 +57,6 @@ def DOCKER_TEST_ENV  = [
 class SystemCtx {
     // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
     //          values are always in sync.
-    static final DEMO_LIST = [
-        'demo_hello_world',
-        'demo_iot_app',
-        'demo_iot_app_imx6',
-        'demo_iot_app_rpi3',
-        'demo_network_filter',
-        'demo_tls_api'
-    ]
-
     static final FLAG_BUILD      = 1 << 0
     static final FLAG_TEST       = 1 << 1
     // For demos included in the SDK package, CI will checkout them from their
@@ -86,19 +77,7 @@ class SystemCtx {
         // ensure proper defaults exists
         this.params.putIfAbsent('flags', 0)
         this.params.putIfAbsent('testScript', systemName + '.py')
-
-        // SDK demos always use the code from the SDK package, thus no custom
-        // repo can be specified here.
-        if (0 == (this.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
-            this.params.putIfAbsent('testSystem', 'ss/' + systemName)
-        } else {
-            assert(systemName in DEMO_LIST)
-            if (!this.params.containsKey('testSystem')) {
-                this.params.putAt('testSystem', 'demos/' + systemName)
-            } else {
-                error('custom test system location not supported for SDK demo ' + systemName)
-            }
-        }
+        this.params.putIfAbsent('testSystem', 'ss/' + systemName)
     }
 }
 
@@ -259,21 +238,46 @@ def yaml_to_SystemCtx(systemName, yaml_data)
 
 
 //------------------------------------------------------------------------------
-def read_yaml_config(yaml_file)
+def process_yaml_config(yaml_file, branch)
 {
     def cfg = readYaml([file: yaml_file])
     def tests = []
     for (system in cfg) {
         assert 1 == system.size()
         for (item in system) {
+
             def systemName = item.key
+
             if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
                error('invalid test system name: ' + systemName)
             }
+
             if (tests.any { it.systemName == systemName }) {
                error('duplicate test system: ' + systemName)
             }
-            tests += yaml_to_SystemCtx(systemName, item.value)
+
+            def systemCtx = yaml_to_SystemCtx(systemName, item.value)
+
+            if (0 != (systemCtx.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+                // Check against the well-known list. Adding new demos to the
+                // SDK package could have side effects that should be well
+                // unterstood.
+                assert systemName in [ 'demo_hello_world',
+                                       'demo_iot_app',
+                                       'demo_iot_app_imx6',
+                                       'demo_iot_app_rpi3',
+                                       'demo_network_filter',
+                                       'demo_tls_api' ]
+                // SDK demos are always build from the sources in SDK package,
+                // thus we check them out here already and then overwrite the
+                // 'testSystem' parameter with the location. The build job
+                // knows that for FLAG_SDK_DEMO it's a folder and not a repo.
+                def folder = 'demos/' + systemName
+                do_checkout(systemCtx.params['testSystem'], branch, 'src/'+folder)
+                systemCtx.params['testSystem'] = folder
+            }
+
+            tests.add(systemCtx)
         }
     }
 
@@ -504,22 +508,6 @@ def do_checkout(
     if (!scmVars)
     {
         error('checkout error for: ' + branch + '@' + repo)
-    }
-}
-
-
-//------------------------------------------------------------------------------
-def do_checkout_demos(demo_list, branch, base_folder, test_configs)
-{
-    for (demo in demo_list)
-    {
-        // Check if the SDK demo is also build and/or tested.
-        if (!test_configs.any {it.systemName == demo})
-        {
-            error("SDK demo is not build and/or tested: " + demo)
-        }
-
-        do_checkout('ss/' + demo, branch, base_folder + '/' + demo)
     }
 }
 
@@ -910,17 +898,11 @@ pipeline {
                         ])
 
                         script {
-                            SYSTEM_CONFIGS = read_yaml_config('scm-src/test-cfg.yaml')
+                            // this also checks out SDK demos
+                            SYSTEM_CONFIGS = process_yaml_config(
+                                                'scm-src/test-cfg.yaml',
+                                                env.BRANCH_NAME)
                         }
-
-                        // demo must be checked out into a folder structure that
-                        // matched the one used by seos_tests.
-                        do_checkout_demos(
-                            SystemCtx.DEMO_LIST,
-                            env.BRANCH_NAME,
-                            'src/demos',
-                            SYSTEM_CONFIGS)
-
                         do_notify_bitbucket()
                     }
                 }
