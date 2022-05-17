@@ -386,6 +386,34 @@ function(os_sdk_postprocess_targets)
         add_custom_target(${target}_graph ALL DEPENDS "${OS_SYS_GRAPH}")
     endif()
 
+    set(GRAPH "build-targets-graph")
+    add_custom_command(
+        OUTPUT "${GRAPH}"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${GRAPH}
+        COMMENT "create folder ${GRAPH}"
+    )
+    add_custom_command(
+        OUTPUT "${GRAPH}/${GRAPH}.dot"
+        DEPENDS "${GRAPH}"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${GRAPH}"
+        # unfortunately, this triggers a a rebuild.....
+        #COMMAND ${CMAKE_COMMAND} --graphviz=${GRAPH}.dot ..
+        COMMAND touch ${GRAPH}.dot
+        COMMENT "create ${GRAPH}/${GRAPH}.dot"
+    )
+    add_custom_command(
+        OUTPUT "${GRAPH}.svg"
+        DEPENDS "${GRAPH}/${GRAPH}.dot"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMAND dot -Ksfdp -Tsvg ${GRAPH}/${GRAPH}.dot -o ${GRAPH}.svg
+        COMMENT "create ${GRAPH}.svg"
+    )
+    add_custom_target(
+        ${GRAPH} ALL
+        DEPENDS "${GRAPH}.svg"
+    )
+
 endfunction()
 
 
@@ -514,5 +542,20 @@ if (NOT OS_SDK_PASSIVE_CMAKE)
     add_subdirectory("${OS_PROJECT_DIR}" "os_system")
 
     os_sdk_postprocess_targets()
+
+endmacro()
+
+
+#-------------------------------------------------------------------------------
+# build script
+#-------------------------------------------------------------------------------
+
+if (NOT OS_SDK_PASSIVE_CMAKE)
+
+    if (NOT OS_PROJECT_DIR)
+        message(FATAL_ERROR "please set OS_PROJECT_DIR")
+    endif()
+
+    os_sdk_build(${OS_PROJECT_DIR})
 
 endif()

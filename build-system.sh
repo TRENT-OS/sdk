@@ -362,13 +362,14 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     echo "##------------------------------------------------------------------------------"
     echo "## re-run configure build ..."
     echo "##------------------------------------------------------------------------------"
-    BUILD_TARGETS_GRAPH=build-targets-graph
-    mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
-    (
-        cd ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
-        cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot ..
-        dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
-    )
+    #BUILD_TARGETS_GRAPH=build-targets-graph
+    #mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
+    #(
+    #    cd ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
+    #    cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot ..
+    #    dot -Ksfdp -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
+    #)
+    cmake ${BUILD_DIR}
 
     echo "##------------------------------------------------------------------------------"
     echo "## start clean build ..."
@@ -386,8 +387,14 @@ if [[ ${TOOLCHAIN} == "axivion" ]]; then
     export COMPILE_ONLYIR=yes
 fi
 
-cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}
-
+#(
+#    GRAPH=ninja_graph
+#    FORMAT=png
+#    cd ${BUILD_DIR}
+#    ninja -t graph ${BUILD_TARGET} > ${GRAPH}.dot
+#    dot -v -Ksfdp -Goverlap=scale -T${FORMAT} ${GRAPH}.dot -o${GRAPH}.${FORMAT}
+#)
+cmake --build ${BUILD_DIR} --target ${BUILD_TARGET} -- -v
 
 echo "##------------------------------------------------------------------------------"
 echo "## build successful, output in ${BUILD_DIR}"
