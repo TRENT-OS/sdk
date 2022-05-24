@@ -125,7 +125,7 @@ fi
 # Check requested toolchain or if analysis is enabled by environment variable
 if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
     # Default to "gcc" if TOOLCHAIN is not set.
-    TOOLCHAIN=${TOOLCHAIN:-gcc}
+    TOOLCHAIN=${TOOLCHAIN:-clang}
 else
     # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
     TOOLCHAIN=${TOOLCHAIN:-axivion}
