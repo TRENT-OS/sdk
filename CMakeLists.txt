@@ -134,23 +134,26 @@ endfunction()
 #-------------------------------------------------------------------------------
 function(add_os_libs_subdirectories)
 
+    set(GROUP "libs")
+    set(GROUP_BASE_DIR "${OS_LIBS_DIR}")
+
     if (SDK_USE_CAMKES)
-        CAmkESAddCPPInclude(${OS_LIBS_DIR})
-        CAmkESAddImportPath(${OS_LIBS_DIR})
+        CAmkESAddCPPInclude(${GROUP_BASE_DIR})
+        CAmkESAddImportPath(${GROUP_BASE_DIR})
     endif()
 
     # use all libs from 'libs/*' and 'libs/3rdParty/*' , exclude the 'test'
     # folder.
-    os_sdk_get_subdirs(subdir_list "${OS_LIBS_DIR}")
+    os_sdk_get_subdirs(subdir_list "${GROUP_BASE_DIR}")
     list(REMOVE_ITEM subdir_list "3rdParty" "test")
-    os_sdk_get_subdirs(subdir_3rdparty_list "${OS_LIBS_DIR}/3rdParty")
+    os_sdk_get_subdirs(subdir_3rdparty_list "${GROUP_BASE_DIR}/3rdParty")
     foreach(subdir IN LISTS subdir_3rdparty_list)
         list(APPEND subdir_list "3rdParty/${subdir}")
     endforeach()
     foreach(subdir IN LISTS subdir_list)
         add_subdirectory(
-            "${OS_LIBS_DIR}/${subdir}"
-            "${OS_SDK_BUILD_DIR}/libs/${subdir}"
+            "${GROUP_BASE_DIR}/${subdir}"
+            "${OS_SDK_BUILD_DIR}/${GROUP}/${subdir}"
             EXCLUDE_FROM_ALL
         )
     endforeach()
@@ -161,16 +164,19 @@ endfunction()
 #-------------------------------------------------------------------------------
 function(include_os_components)
 
+    set(GROUP "components")
+    set(GROUP_BASE_DIR "${OS_COMPONENTS_DIR}")
+
     if (SDK_USE_CAMKES)
-        CAmkESAddCPPInclude(${OS_COMPONENTS_DIR})
-        CAmkESAddImportPath(${OS_COMPONENTS_DIR})
+        CAmkESAddCPPInclude(${GROUP_BASE_DIR})
+        CAmkESAddImportPath(${GROUP_BASE_DIR})
     endif()
 
-    os_sdk_get_subdirs(subdir_list "${OS_COMPONENTS_DIR}")
+    os_sdk_get_subdirs(subdir_list "${GROUP_BASE_DIR}")
     foreach(subdir IN LISTS subdir_list)
         add_subdirectory(
-            "${OS_COMPONENTS_DIR}/${subdir}"
-            "${OS_SDK_BUILD_DIR}/components/${subdir}"
+            "${GROUP_BASE_DIR}/${subdir}"
+            "${OS_SDK_BUILD_DIR}/${GROUP}/${subdir}"
             EXCLUDE_FROM_ALL
         )
     endforeach()
