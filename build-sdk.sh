@@ -355,10 +355,7 @@ function build_sdk_tool()
         all                         # build target
         ${SDK_SRC_DIR}/${SDK_TOOL}  # source folder with CMakeLists.txt
         # custom build params start here
-        # ensure SDK_SRC_DIR is an absolute path, so it can be found even if we
-        # change folders during the build process
-        -D OS_SDK_PATH:PATH=$(realpath ${SDK_SRC_DIR})
-
+        -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
         # SDK tools' build type is release with debugging info so that binaries
         # are at the same time optimized and debug-able, what might be useful
         # when analyzing tools related issues.
