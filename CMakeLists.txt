@@ -117,6 +117,29 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
+function(create_disassembly elf_file target_base)
+
+    set(LST_FILE "${elf_file}.lst")
+
+    add_custom_command(
+        OUTPUT "${LST_FILE}"
+        DEPENDS "${elf_file}"
+        COMMENT "create disassembly for ${elf_file}"
+        COMMAND "${OS_SDK_DIR}/scripts/elf-dump.sh"
+                -c "${CROSS_COMPILER_PREFIX}"
+                -i "${elf_file}"
+                -o "${LST_FILE}"
+    )
+
+    add_custom_target(
+        ${target_base}_disassemble ALL
+        DEPENDS "${LST_FILE}"
+    )
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
 function(os_sdk_get_subdirs var_subdir_list dir)
 
     file(GLOB children RELATIVE "${dir}" "${dir}/*")
@@ -127,6 +150,30 @@ function(os_sdk_get_subdirs var_subdir_list dir)
         endif()
     endforeach()
     set(${var_subdir_list} "${subdir_list}" PARENT_SCOPE)
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
+# This is a macro and not a function because variables will be set
+macro(os_sdk_import_sel4_camkes)
+
+    # Even if SDK_USE_CAMKES is set, this will not enable the global components
+    # by default. Any project that needs them must either cherry-pick things or
+    # call global_components_import_project().
+    include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
+
+endmacro()
+
+
+#-------------------------------------------------------------------------------
+function(os_sdk_import_core_api)
+
+    add_subdirectory(
+        "${OS_SDK_DIR}/os_core_api"
+        "${OS_SDK_BUILD_DIR}/os_core_api"
+        EXCLUDE_FROM_ALL
+    )
 
 endfunction()
 
@@ -185,6 +232,21 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
+function(DeclareAndCreateCamkESSystem camkes_system_file)
+
+    DeclareCAmkESRootserver(${camkes_system_file})
+    GenerateCAmkESRootServer()
+
+    # Use debug level INFO (3) for the CapDL Loader, because usually we are not
+    # interested in seeing all details of the cap setup during boot. This also
+    # makes the boot quite slow for large systems due to the amount of data that
+    # is printed.
+    target_compile_definitions("capdl-loader" PRIVATE ZF_LOG_LEVEL=3)
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
 # provide a way how libraries can create a documentation build target. Their
 # Doxyfile use DOXYGEN_OUTPUT_DIR env variable. The macro has two string
 # parameters that accept shell script snippets that will run a pre and post
@@ -231,10 +293,6 @@ endmacro()
 
 
 #-------------------------------------------------------------------------------
-# seL4 generic build system
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
 function(os_sdk_get_all_cmake_targets var_targets dir)
 
     set(target_list "")
@@ -251,79 +309,57 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(create_disassembly elf_file target_base)
-
-    set(LST_FILE "${elf_file}.lst")
-
-    add_custom_command(
-        OUTPUT "${LST_FILE}"
-        DEPENDS "${elf_file}"
-        COMMENT "create disassembly for ${elf_file}"
-        COMMAND "${OS_SDK_DIR}/scripts/elf-dump.sh"
-                -c "${CROSS_COMPILER_PREFIX}"
-                -i "${elf_file}"
-                -o "${LST_FILE}"
-    )
-
-    add_custom_target(
-        ${target_base}_disassemble ALL
-        DEPENDS "${LST_FILE}"
-    )
-
-endfunction()
-
-
-#-------------------------------------------------------------------------------
-function(DeclareAndCreateCamkESSystem camkes_system_file)
-
-    DeclareCAmkESRootserver(${camkes_system_file})
-
-    GenerateCAmkESRootServer()
+function(os_sdk_postprocess_targets)
 
     os_sdk_get_all_cmake_targets(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    # each CAmkES component is in a *.instance.bin file.
+    list(FILTER targets
+         INCLUDE REGEX "^.*\.instance\.bin|capdl-loader|kernel\.elf|elfloader$")
     foreach(target ${targets})
-
-        # each CAmkES component is in a *.instance.bin file.
-        if(target MATCHES "^(.*\.instance\.bin|capdl-loader)$")
-
-            get_target_property(BINARY_DIR ${target} BINARY_DIR)
-            create_disassembly("${BINARY_DIR}/${target}" ${target})
-
-        endif()
-
-        if(target STREQUAL "capdl-loader")
-
-            # Use debug level INFO (3) for the CapDL Loader, because usually we
-            # are not interested in seeing all details the cap setup during
-            # boot. This also makes the boot quite slow for large systems due
-            # to the amount of data that is printed.
-            target_compile_definitions(
-                ${target}
-                PRIVATE
-                    ZF_LOG_LEVEL=3
-            )
-
-            # the CapDL Loader's build produces graph.dot with all the
-            # components, create a SVG image from this.
-            get_target_property(BINARY_DIR ${target} BINARY_DIR)
-            set(OS_SYS_GRAPH "${BINARY_DIR}/graph.svg")
-            add_custom_command(
-                OUTPUT "${OS_SYS_GRAPH}"
-                DEPENDS "${target}"
-                COMMAND dot -Tsvg "${BINARY_DIR}/graph.dot" -o "${OS_SYS_GRAPH}"
-                VERBATIM
-                COMMENT "create ${OS_SYS_GRAPH}"
-            )
-            add_custom_target(${target}_graph ALL DEPENDS "${OS_SYS_GRAPH}")
-        endif()
-
+        get_target_property(BINARY_DIR ${target} BINARY_DIR)
+        create_disassembly("${BINARY_DIR}/${target}" ${target})
     endforeach()
+
+    set(target "rootserver_image")
+    if(TARGET "${target}")
+        get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
+        get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
+        # copy system image to generic file images/os_image.[bin|elf...]
+        set(OS_SYS_IMG "${IMAGE_DIR}/os_image.${ElfloaderImage}")
+        add_custom_command(
+            OUTPUT "${OS_SYS_IMG}"
+            DEPENDS "${IMAGE_NAME}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG}"
+            VERBATIM
+            COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG}"
+        )
+        add_custom_target(${target}_copy ALL DEPENDS "${OS_SYS_IMG}")
+        if("${ElfloaderImage}" STREQUAL "elf")
+            create_disassembly("${OS_SYS_IMG}" ${target})
+        endif()
+    endif()
+
+    set(target "capdl-loader")
+    if(TARGET "${target}")
+        # The CapDL Loader's build produces graph.dot with all the components,
+        # create a SVG image from this.
+        get_target_property(BINARY_DIR ${target} BINARY_DIR)
+        set(OS_SYS_GRAPH "${BINARY_DIR}/graph.svg")
+        add_custom_command(
+            OUTPUT "${OS_SYS_GRAPH}"
+            DEPENDS "${target}"
+            COMMAND dot -Tsvg "${BINARY_DIR}/graph.dot" -o "${OS_SYS_GRAPH}"
+            VERBATIM
+            COMMENT "create ${OS_SYS_GRAPH}"
+        )
+        add_custom_target(${target}_graph ALL DEPENDS "${OS_SYS_GRAPH}")
+    endif()
 
 endfunction()
 
 
 #-------------------------------------------------------------------------------
-macro(os_sdk_build system_project_dir)
+macro(os_sdk_set_defaults)
 
     #---------------------------------------------------------------------------
     # default settings for the SDK
@@ -368,16 +404,13 @@ macro(os_sdk_build system_project_dir)
     # use ZF_LOG_DEBUG (2) by default, apps and components can change this
     set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
 
+endmacro()
 
-    #---------------------------------------------------------------------------
-    # use the seL4/CAmkES build system
-    #---------------------------------------------------------------------------
 
-    # Even if SDK_USE_CAMKES is set, this will not enable the global components
-    # by default. Any project that needs them must either cherry-pick things or
-    # call global_components_import_project().
-    include("${SDK_SEL4_CAMKES_DIR}/helper.cmake")
+#-------------------------------------------------------------------------------
+macro(os_sdk_setup)
 
+    os_sdk_import_sel4_camkes()
 
     #---------------------------------------------------------------------------
     # SDK specific build process
@@ -406,80 +439,11 @@ macro(os_sdk_build system_project_dir)
         set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
-    add_subdirectory(
-        "${OS_SDK_DIR}/os_core_api"
-        "${OS_SDK_BUILD_DIR}/os_core_api"
-        EXCLUDE_FROM_ALL
-    )
-
+    os_sdk_import_core_api()
     add_os_libs_subdirectories()
-
-    # We include the components even if CAmkES is not enabled, because they may
-    # provide library code that native systems can use.
+    # The components are included even if SDK_USE_CAMKES is not enabled, because
+    # they contain library code that native systems can use.
     include_os_components()
-
-
-    #---------------------------------------------------------------------------
-    # add the actual system project
-    #---------------------------------------------------------------------------
-
-    if (NOT EXISTS "${system_project_dir}")
-        message(FATAL_ERROR "project folder not found: ${system_project_dir}")
-    endif()
-
-    if (SDK_USE_CAMKES)
-
-        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
-        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
-        # top level system platform selector, which enables the portability of
-        # the applications.
-        CAmkESAddCPPInclude(
-            ${system_project_dir}
-            ${system_project_dir}/plat/${PLATFORM}
-        )
-
-    endif()
-
-    add_subdirectory("${system_project_dir}" "os_system")
-
-    os_sdk_get_all_cmake_targets(targets ${CMAKE_CURRENT_SOURCE_DIR})
-    foreach(target ${targets})
-
-        if(target MATCHES "^(elfloader|kernel\.elf)$")
-
-            get_target_property(BINARY_DIR ${target} BINARY_DIR)
-            create_disassembly("${BINARY_DIR}/${target}" ${target})
-
-        endif()
-
-        if(target STREQUAL "rootserver_image")
-
-            get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
-            get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
-
-            # copy system image to generic file images/os_image.[bin|elf...]
-            set(OS_SYS_IMG "${IMAGE_DIR}/os_image.${ElfloaderImage}")
-            add_custom_command(
-                OUTPUT "${OS_SYS_IMG}"
-                DEPENDS "${IMAGE_NAME}"
-                COMMAND ${CMAKE_COMMAND} -E copy "${IMAGE_NAME}" "${OS_SYS_IMG}"
-                VERBATIM
-                COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG}"
-            )
-            add_custom_target(
-                ${target}_copy ALL
-                DEPENDS "${OS_SYS_IMG}"
-            )
-
-            if("${ElfloaderImage}" STREQUAL "elf")
-
-                create_disassembly("${OS_SYS_IMG}" ${target})
-
-            endif()
-
-        endif()
-
-    endforeach()
 
 endmacro()
 
@@ -491,9 +455,33 @@ endmacro()
 if (NOT OS_SDK_PASSIVE_CMAKE)
 
     if (NOT OS_PROJECT_DIR)
-        message(FATAL_ERROR "please set OS_PROJECT_DIR")
+        message(FATAL_ERROR "Missing OS_PROJECT_DIR")
+    elseif(NOT EXISTS "${OS_PROJECT_DIR}")
+        message(FATAL_ERROR "OS_PROJECT_DIR not found: ${OS_PROJECT_DIR}")
     endif()
 
-    os_sdk_build(${OS_PROJECT_DIR})
+    os_sdk_set_defaults()
+
+    # allows project to overwrite defaults
+    if(EXISTS "${OS_PROJECT_DIR}/os-sdk-config.cmake")
+        include("${OS_PROJECT_DIR}/os-sdk-config.cmake")
+    endif()
+
+    os_sdk_setup()
+
+    if (SDK_USE_CAMKES)
+        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
+        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
+        # top level system platform selector, which enables the portability of
+        # the applications.
+        CAmkESAddCPPInclude(
+            "${OS_PROJECT_DIR}"
+            "${OS_PROJECT_DIR}/plat/${PLATFORM}"
+        )
+    endif()
+
+    add_subdirectory("${OS_PROJECT_DIR}" "os_system")
+
+    os_sdk_postprocess_targets()
 
 endif()
