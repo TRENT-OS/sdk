@@ -1,67 +1,35 @@
 #
 # SDK Build System
 #
-# Copyright (C) 2019-2021, HENSOLDT Cyber GmbH
+# Copyright (C) 2019-2022, HENSOLDT Cyber GmbH
 #
 
 cmake_minimum_required(VERSION 3.17)
 
-project(system)
-
-if (NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
     message(FATAL_ERROR "No build type selected!")
 elseif (
     NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
-
-    message(
-        FATAL_ERROR "The build type '${CMAKE_BUILD_TYPE}' is not supported.")
+    message(FATAL_ERROR "build type not supported: '${CMAKE_BUILD_TYPE}'")
 endif()
 
 set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 set(OS_SDK_BUILD_DIR "os-sdk")
 
 set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
-set(OS_LIBS_DIR "${OS_SDK_DIR}/libs")
-set(OS_COMPONENTS_DIR "${OS_SDK_DIR}/components")
+set(OS_SDK_LIBS_DIR "${OS_SDK_DIR}/libs")
+set(OS_SDK_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 
 #-------------------------------------------------------------------------------
-# Set the system configuration
-#
-# Parameters:
-#
-#  <cfg_file>
-#    required, config file name.
-#
-#  CREATE_CONFIG_PROJECT
-#    optional, create config project with base name of file, ie if <cfg_file>
-#    is "configs/system_config.h", the project's name will be "system_config".
-#    The project creates an interface library that provides the config file's
-#    include path. This allows including the config file easily in other files
-#    then.
-#
-#  CONFIG_PROJECT_NAME <name>
-#    optional, allows customizing the config project's name. This parameters
-#    implicitly enables CREATE_CONFIG_PROJECT, so it must not be specified
-#    explicitly.
-#
-function(os_set_config_file cfg_file)
-
-    cmake_parse_arguments(
-        PARSE_ARGV
-        1
-        CFG
-        "CREATE_CONFIG_PROJECT" # option arguments
-        "CONFIG_PROJECT_NAME" # optional single value arguments
-        "" # optional multi value arguments
-    )
+function(os_sdk_create_config_project cfg_prj_name cfg_file)
 
     # ensure the file name with absolute path is used, so include files can be
     # used from projects in arbitrary directories.
     get_filename_component(CFG_FILE_ABS ${cfg_file} ABSOLUTE)
 
     if (NOT EXISTS "${CFG_FILE_ABS}")
-         message(FATAL_ERROR "system config file not found: ${CFG_FILE_ABS}")
+         message(FATAL_ERROR "OK SDK config file not found: ${CFG_FILE_ABS}")
     endif()
 
     # set the variables, but do not overwrite anything in the cache. This has
@@ -75,49 +43,18 @@ function(os_set_config_file cfg_file)
     set(MEMORY_CONFIG_H_FILE            "${CFG_FILE_ABS}" CACHE STRING "")
     set(OS_Logger_CONFIG_H_FILE         "${CFG_FILE_ABS}" CACHE STRING "")
 
-    #-----------------------------------------------
-    if (CFG_CONFIG_PROJECT_NAME)
-        set(CFG_CREATE_CONFIG_PROJECT TRUE)
-    endif()
-
-    if (CFG_CREATE_CONFIG_PROJECT)
-
-        if (NOT CFG_CONFIG_PROJECT_NAME)
-
-            get_filename_component(
-                CFG_CONFIG_PROJECT_NAME
-                ${CFG_FILE_ABS}
-                NAME_WE
-            )
-        endif()
-
-        message("creating config file project: ${CFG_CONFIG_PROJECT_NAME}")
-
-        get_filename_component(CFG_FILE_DIR ${CFG_FILE_ABS} DIRECTORY)
-
-        # Define project that creates an interface library providing the config
-        # file include paths. This allows including the config file easily.
-        #
-        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
-        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
-        # top level system platform selector, which enables the portability of
-        # the applications.
-        project(${CFG_CONFIG_PROJECT_NAME} C)
-        add_library(${PROJECT_NAME} INTERFACE)
-        target_include_directories(
-            ${PROJECT_NAME}
-            INTERFACE
-                ${CFG_FILE_DIR}
-                ${CFG_FILE_DIR}/plat/${PLATFORM}
-        )
-
-    endif()
+    # Define project that creates an interface library providing the config
+    # file include paths. This allows including the config file easily.
+    get_filename_component(CFG_FILE_DIR ${CFG_FILE_ABS} DIRECTORY)
+    project(${cfg_prj_name} C)
+    add_library(${cfg_prj_name} INTERFACE)
+    target_include_directories(${cfg_prj_name} INTERFACE ${CFG_FILE_DIR})
 
 endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(create_disassembly elf_file target_base)
+function(os_sdk_create_disassembly elf_file target_base)
 
     set(LST_FILE "${elf_file}.lst")
 
@@ -179,10 +116,10 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(add_os_libs_subdirectories)
+function(os_sdk_import_libs)
 
     set(GROUP "libs")
-    set(GROUP_BASE_DIR "${OS_LIBS_DIR}")
+    set(GROUP_BASE_DIR "${OS_SDK_LIBS_DIR}")
 
     if (SDK_USE_CAMKES)
         CAmkESAddCPPInclude(${GROUP_BASE_DIR})
@@ -209,10 +146,10 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
-function(include_os_components)
+function(os_sdk_import_components)
 
     set(GROUP "components")
-    set(GROUP_BASE_DIR "${OS_COMPONENTS_DIR}")
+    set(GROUP_BASE_DIR "${OS_SDK_COMPONENTS_DIR}")
 
     if (SDK_USE_CAMKES)
         CAmkESAddCPPInclude(${GROUP_BASE_DIR})
@@ -258,21 +195,6 @@ function(os_sdk_import_from_global_components)
             "global_components/${comp}"
         )
     endforeach()
-
-endfunction()
-
-
-#-------------------------------------------------------------------------------
-function(DeclareAndCreateCamkESSystem camkes_system_file)
-
-    DeclareCAmkESRootserver(${camkes_system_file})
-    GenerateCAmkESRootServer()
-
-    # Use debug level INFO (3) for the CapDL Loader, because usually we are not
-    # interested in seeing all details of the cap setup during boot. This also
-    # makes the boot quite slow for large systems due to the amount of data that
-    # is printed.
-    target_compile_definitions("capdl-loader" PRIVATE ZF_LOG_LEVEL=3)
 
 endfunction()
 
@@ -348,7 +270,7 @@ function(os_sdk_postprocess_targets)
          INCLUDE REGEX "^.*\.instance\.bin|capdl-loader|kernel\.elf|elfloader$")
     foreach(target ${targets})
         get_target_property(BINARY_DIR ${target} BINARY_DIR)
-        create_disassembly("${BINARY_DIR}/${target}" ${target})
+        os_sdk_create_disassembly("${BINARY_DIR}/${target}" ${target})
     endforeach()
 
     set(target "rootserver_image")
@@ -366,7 +288,7 @@ function(os_sdk_postprocess_targets)
         )
         add_custom_target(${target}_copy ALL DEPENDS "${OS_SYS_IMG}")
         if("${ElfloaderImage}" STREQUAL "elf")
-            create_disassembly("${OS_SYS_IMG}" ${target})
+            os_sdk_create_disassembly("${OS_SYS_IMG}" ${target})
         endif()
     endif()
 
@@ -432,20 +354,36 @@ macro(os_sdk_set_defaults)
 
     endif()
 
-    # use ZF_LOG_DEBUG (2) by default, apps and components can change this
+    # default to ZF_LOG_DEBUG (2), because ZF_LOG_INFO (3) is sometimes not
+    # verbose enough. Apps and components can use ZF_LOG_LEVEL=n to tailor this
+    # to their needs.
     set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
 
 endmacro()
 
 
 #-------------------------------------------------------------------------------
+# Parameters:
+#
+#  CONFIG_FILE <cfg_file>
+#    config file, required when using certain components
+#
+#  CONFIG_PROJECT_NAME <name>
+#    optional, create config project for config file. The project provides an
+#    interface library that provides the config file's include path, so the
+#    config file can be included in other files also.
+#
 macro(os_sdk_setup)
 
-    os_sdk_import_sel4_camkes()
+    cmake_parse_arguments(
+        "SETUP_PARAM" # variable prefix
+        "" # option arguments
+        "CONFIG_FILE;CONFIG_PROJECT" # optional single value arguments
+        "" # optional multi value arguments
+        ${ARGN}
+    )
 
-    #---------------------------------------------------------------------------
-    # SDK specific build process
-    #---------------------------------------------------------------------------
+    os_sdk_import_sel4_camkes()
 
     # Enable generation of CMAKE_BINARY_DIR/compile_commands.json that will
     # contain the exact compiler calls for all translation units of the project
@@ -470,49 +408,69 @@ macro(os_sdk_setup)
         set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR})
     endif()
 
+    if(SETUP_PARAM_CONFIG_FILE)
+        if(NOT SETUP_PARAM_CONFIG_PROJECT)
+            get_filename_component(
+                SETUP_PARAM_CONFIG_PROJECT
+                ${SETUP_PARAM_CONFIG_FILE}
+                NAME_WE
+            )
+            message("using config file project name: ${SETUP_PARAM_CONFIG_PROJECT}")
+        endif()
+        os_sdk_create_config_project(
+            ${SETUP_PARAM_CONFIG_PROJECT}
+            ${SETUP_PARAM_CONFIG_FILE}
+        )
+    endif()
+
     os_sdk_import_core_api()
-    add_os_libs_subdirectories()
+    os_sdk_import_libs()
     # The components are included even if SDK_USE_CAMKES is not enabled, because
     # they contain library code that native systems can use.
-    include_os_components()
+    os_sdk_import_components()
 
 endmacro()
 
 
 #-------------------------------------------------------------------------------
-# build script
+function(os_sdk_create_system system_file)
+
+    DeclareRootserver(${system_file})
+    GenerateSimulateScript()
+    os_sdk_postprocess_targets()
+
+endfunction()
+
+
 #-------------------------------------------------------------------------------
+function(os_sdk_create_CAmkES_system camkes_system_file)
 
-if (NOT OS_SDK_PASSIVE_CMAKE)
-
-    if (NOT OS_PROJECT_DIR)
-        message(FATAL_ERROR "Missing OS_PROJECT_DIR")
-    elseif(NOT EXISTS "${OS_PROJECT_DIR}")
-        message(FATAL_ERROR "OS_PROJECT_DIR not found: ${OS_PROJECT_DIR}")
+    # add the folder of the camkes system file to the search path, as it may
+    # contain additional files.
+    get_filename_component(camkes_system_root "${camkes_system_file}" DIRECTORY)
+    if("${camkes_system_root}" STREQUAL "")
+        set(camkes_system_root ".")
     endif()
+    CAmkESAddCPPInclude("${camkes_system_root}")
 
-    os_sdk_set_defaults()
+    DeclareCAmkESRootserver(${camkes_system_file})
+    GenerateCAmkESRootServer()
+    GenerateSimulateScript()
 
-    # allows project to overwrite defaults
-    if(EXISTS "${OS_PROJECT_DIR}/os-sdk-config.cmake")
-        include("${OS_PROJECT_DIR}/os-sdk-config.cmake")
-    endif()
-
-    os_sdk_setup()
-
-    if (SDK_USE_CAMKES)
-        # Note that parameter `PLATFORM` is not the same as `KernelPlatform` but
-        # can be the same as e.g. `KernelARMPlatform`. Nevertheless this is the
-        # top level system platform selector, which enables the portability of
-        # the applications.
-        CAmkESAddCPPInclude(
-            "${OS_PROJECT_DIR}"
-            "${OS_PROJECT_DIR}/plat/${PLATFORM}"
-        )
-    endif()
-
-    add_subdirectory("${OS_PROJECT_DIR}" "os_system")
+    # Use ZF_LOG_INFO (3) for the CapDL Loader, because usually we are not
+    # interested in seeing all details of the cap setup during boot. This also
+    # makes the boot quite slow for large systems due to the amount of data that
+    # is printed.
+    target_compile_definitions("capdl-loader" PRIVATE ZF_LOG_LEVEL=3)
 
     os_sdk_postprocess_targets()
 
-endif()
+endfunction()
+
+
+#-------------------------------------------------------------------------------
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+    os-sdk
+    OS_SDK_DIR
+    SDK_SEL4_CAMKES_DIR)

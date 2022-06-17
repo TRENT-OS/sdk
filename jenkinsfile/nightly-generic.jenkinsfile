@@ -389,7 +389,7 @@ pipeline {
                                 'build/kernel/gen_config/',
                                 'build/kernel/gen_headers/',
                                 'build/kernel/generated/',
-                                'build/os_system/',
+                                // ToDo: take all files from 'build/', but exclude subfolders
                                 'test-logs/'
                             ]
                         )

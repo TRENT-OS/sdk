@@ -2,7 +2,7 @@
 
 #-------------------------------------------------------------------------------
 #
-# SDK Build Script
+# Generic Build Script
 #
 # Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 #
@@ -11,7 +11,7 @@
 # This script must be invoked as
 #
 #     <SDK>/build-system.sh
-#             <OS_PROJECT_DIR>
+#             <PROJECT_DIR>
 #             <BUILD_PLATFORM>
 #             <BUILD_DIR>
 #             -D CMAKE_BUILD_TYPE=<Debug|Release|...>
@@ -22,7 +22,7 @@
 #    SDK
 #       is the path to the SDK.
 #
-#    OS_PROJECT_DIR
+#    PROJECT_DIR
 #       is the path to the OS project to build.
 #
 #    BUILD_PLATFORM
@@ -89,7 +89,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 OS_SDK_PATH="${SCRIPT_DIR}"
 
 # read parameters
-OS_PROJECT_DIR=$1
+PROJECT_DIR=$1
 BUILD_PLATFORM=$2
 BUILD_DIR=$3
 shift 3
@@ -123,7 +123,7 @@ BUILD_TARGET=${BUILD_TARGET:-all}
 
 echo ""
 echo "##=============================================================================="
-echo "## Project:   ${OS_PROJECT_DIR}"
+echo "## Project:   ${PROJECT_DIR}"
 echo "## Platform:  ${BUILD_PLATFORM}"
 echo "## Toolchain: ${TOOLCHAIN}"
 echo "## Output:    ${BUILD_DIR}"
@@ -281,12 +281,10 @@ CMAKE_PARAMS=(
     # musllibc and capDL-tool) that are project agnostic, so we don't have
     # to rebuild them every time. This reduces the build time a lot.
     -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
-    # Location of the OS project to be built. Since we will change the current
-    # working directory, we have to ensure this is an absolute path.
-    -D OS_PROJECT_DIR:PATH=$(realpath ${OS_PROJECT_DIR})
+    -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
     "${BUILD_ARGS[@]}"
     -G Ninja
-    -S ${OS_SDK_PATH}
+    -S ${PROJECT_DIR}
     -B ${BUILD_DIR}
 )
 

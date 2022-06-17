@@ -534,7 +534,7 @@ pipeline {
                             // use BUILD_DIR+'/' to get everything
                             [
                                 'images/os_image.elf',
-                                'os_system/graph.svg',
+                                'graph.svg',
                                 'compile_commands.json'
                             ].collect { BUILD_DIR + '/' + it } +
                             [
