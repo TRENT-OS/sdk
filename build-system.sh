@@ -141,7 +141,10 @@ case "${BUILD_PLATFORM}" in
         QEMU_VIRT_ARM_CPU=cortex-${BUILD_PLATFORM#qemu-arm-virt-}
         BUILD_PLATFORM=qemu-arm-virt
         BUILD_ARCH=aarch32
-        CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
+        CMAKE_PARAMS_PLATFORM+=(
+            -D ARM_CPU=${QEMU_VIRT_ARM_CPU}
+            -D ARM_HYP=TRUE
+        )
         ;;
     #-------------------------------------
     qemu-arm-virt-a53 | qemu-arm-virt-a57 | qemu-arm-virt-a72)
