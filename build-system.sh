@@ -60,25 +60,22 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# There is a race condition in the Jenkins docker agent plugin that in some
-# circumstances leads to the build script being executed before fixuid
-# finishes updating the runtime environment.
-# https://issues.jenkins.io/browse/JENKINS-54389
-
-# As a hard requirement for this script, it needs to be executed in a
-# container whose entrypoint script calls fixuid.
-
-# Wait until fixuid finished setting up the environment
-until [ -f /run/fixuid.ran ]
-do
-    echo "Waiting for fixuid to finish."
-    sleep 1
-done
-
-# In case the race condition happened, the shell this script runs in spawned
-# before fixuid could set up the environment variable(s). They have to be set
-# manually here.
-export HOME=/home/user
+# When this script is executed from Jenkins in a docker environment, a race
+# condition in the Jenkins docker agent plugin could make it run before the
+# container's entrypoint script has finished. This bug is tracked in
+# https://issues.jenkins.io/browse/JENKINS-54389 and other tickets. In our case,
+# this could mean the fixuid tool has not finished updating the runtime
+# environment. Thus, if the fixuid tool exists, we assume we are in a docker
+# container that runs it, and wait until it has finished.
+if [ -e "/usr/local/bin/fixuid" ]; then
+    until [ -f "/run/fixuid.ran" ]; do
+        echo "Waiting for fixuid to finish."
+        sleep 1
+    done
+    # In case the race condition happened, this shell this script runs spawned
+    # before fixuid could set up the environment variable(s). Do is manually.
+    export HOME=/home/user
+fi
 
 #-------------------------------------------------------------------------------
 
