@@ -232,6 +232,37 @@ endfunction()
 
 
 #-------------------------------------------------------------------------------
+# Add component(s) from global components
+#
+# Parameters:
+#
+#  [<COMPONENT_1> [<COMPONENT_2> ...]]
+#    The components
+#
+function(os_sdk_import_from_global_components)
+
+    if(NOT GLOBAL_COMPONENTS_DIR)
+        # GLOBAL_COMPONENTS_DIR is set by find_package("global-components"),
+        # which is done automatically when SDK_USE_CAMKES is enabled.
+        message(FATAL_ERROR "global-components package missing")
+    endif()
+
+    CAmkESAddImportPath(
+        "${GLOBAL_COMPONENTS_DIR}/components"
+        "${GLOBAL_COMPONENTS_DIR}/plat_components/${KernelPlatform}"
+    )
+
+    foreach(comp IN LISTS ARGV)
+        add_subdirectory(
+            "${GLOBAL_COMPONENTS_DIR}/${comp}"
+            "global_components/${comp}"
+        )
+    endforeach()
+
+endfunction()
+
+
+#-------------------------------------------------------------------------------
 function(DeclareAndCreateCamkESSystem camkes_system_file)
 
     DeclareCAmkESRootserver(${camkes_system_file})
