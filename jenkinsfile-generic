@@ -237,6 +237,15 @@ def do_git_checkout(
 
     try
     {
+        def scm_cfg = scm.userRemoteConfigs[0]
+
+        // use project URL to build repo URL
+        def m = (scm_cfg.url =~ '(.*)://([^/]*)(?:/(.*))?')
+        if (!m.matches()) {
+            throw new Exception('could not parse url: ' + url)
+        }
+        def repo_url = m.group(1) + '://' + m.group(2) + '/' + repo + '.git'
+
         def scmVars = checkout([
                     poll: false,
                     scm: [
@@ -267,8 +276,8 @@ def do_git_checkout(
                         ],
                         userRemoteConfigs: [
                             [
-                                credentialsId: scm.userRemoteConfigs[0].credentialsId,
-                                url: 'ssh://git@git-server:7999/' + repo + '.git'
+                                credentialsId: scm_cfg.credentialsId,
+                                url: repo_url
                             ]
                         ]
                     ]
