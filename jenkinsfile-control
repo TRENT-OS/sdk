@@ -878,7 +878,7 @@ pipeline {
                 //--------------------------------------------------------------
                 stage('checkout') {
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         cleanWs()
                         checkout([
                             $class: 'GitSCM',
@@ -923,7 +923,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         run_shell_script(
                             'scm-src/build-sdk.sh',
                             [
@@ -937,7 +937,7 @@ pipeline {
                 //--------------------------------------------------------------
                 stage('archive') {
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
 
                         do_archiveArtifacts(DEV_SDK_PACKAGE)
                         do_archiveArtifacts(SDK_PACKAGE)
@@ -973,7 +973,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         cleanWs()
                         unstash('stash_doc')
                         run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
@@ -983,7 +983,7 @@ pipeline {
                 //--------------------------------------------------------------
                 stage('cleanup') {
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         cleanWs()
                     }
                 }
@@ -1006,7 +1006,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
@@ -1041,7 +1041,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
@@ -1076,7 +1076,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
@@ -1103,7 +1103,7 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Test Systems') {
             steps {
-                print_step_info env.STAGE_NAME
+                print_step_info(env.STAGE_NAME)
                 do_jobs_for_test_systems(
                     env.BRANCH_NAME,
                     SYSTEM_CONFIGS)

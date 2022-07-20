@@ -19,7 +19,7 @@
 //    UPSTREAM_JOB_NAME
 //    UPSTREAM_JOB_ID
 
-params.each { println it.key + " = " + it.value }
+params.each { println(it.key + " = " + it.value) }
 
 // Flag used in the control pipeline to identify SDK demos.
 FLAG_SDK_DEMO = 1 << 2
@@ -249,7 +249,7 @@ def do_git_checkout(
     }
     catch (Exception e)
     {
-        println 'Exception: ' + e;
+        println('Exception: ' + e)
         return null
     }
 }
@@ -446,7 +446,7 @@ pipeline {
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
 
                         do_checkout(
                             'ta/seos_tests',
