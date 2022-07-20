@@ -396,15 +396,6 @@ pipeline {
 
     options {
         skipDefaultCheckout()
-
-        // unfortunately there is no way to have build discarding conditional
-        // for development branches only, so "master" and "integration" would
-        // keep their builds. The potential work around is having a conditional
-        // stage where "master" and "integration" push a package to an artifact
-        // server, which then preserves this.
-        // Building one sandbox branch currently generates ~75 jobs. 300 should
-        // allow for 4 branches to build at the same time.
-        buildDiscarder(logRotator(numToKeepStr: '300', daysToKeepStr: '5',))
     }
 
     stages {
