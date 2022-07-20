@@ -615,7 +615,7 @@ def execute_build(ctx, stage_ctx)
     // When CI is under heavy load, no free executor could be available to run
     // the artifact copy from the child job. In the worst case the child job
     // already got deleted. We could extend the time before the job is deleted,
-    // but this may overload CI also because the workspaces eat the disk space.
+    // but this may overload CI also, because the workspaces eat the disk space.
     // Better solution is running the copy job on a dedicated executor, which
     // exists on the master
     node('pipeline-control')
