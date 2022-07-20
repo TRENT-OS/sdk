@@ -6,12 +6,39 @@
 //
 //------------------------------------------------------------------------------
 
+// Global variables defined with 'def' cannot be accessed in methods due to
+// different scoping. Without 'def', they can be accessed - however, that is bad
+// practice. Using 'def' and the '@groovy.transform.Field' annotation is the
+// best option. For details see https://stackoverflow.com/questions/50571316
 
+@groovy.transform.Field
+def final NODE_LABEL_CONTROL = 'pipeline-control'
+
+@groovy.transform.Field
+def final NODE_LABEL_BUILD = 'build'
+
+@groovy.transform.Field
+def final NODE_LABEL_PUBLISH_DOC = 'publish_doc'
+
+@groovy.transform.Field
+def final STASH_SDK_PACKAGES = 'sdk_packages'
+
+@groovy.transform.Field
+def final STASH_SDK_DOC = 'sdk_doc'
+
+@groovy.transform.Field
 def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
+
+@groovy.transform.Field
 def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
-// will be read from the project
-SYSTEM_CONFIGS = []
+// package for downstream jobs
+@groovy.transform.Field
+def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
+
+// Test systems, list is read from config
+@groovy.transform.Field
+def SYSTEM_CONFIGS = []
 
 //------------------------------------------------------------------------------
 // Docker
@@ -26,10 +53,14 @@ SYSTEM_CONFIGS = []
 // * why are sudo right needed in the test container
 //
 
-def DOCKER_BASE = 'docker:5000'
-def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+@groovy.transform.Field
+def final DOCKER_BASE = 'docker:5000'
 
-def DOCKER_BUILD_ENV = [
+@groovy.transform.Field
+def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+
+@groovy.transform.Field
+def final DOCKER_BUILD_ENV = [
     registry: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_build:20210503',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
@@ -38,7 +69,8 @@ def DOCKER_BUILD_ENV = [
               ].join(' ')
 ]
 
-def DOCKER_TEST_ENV  = [
+@groovy.transform.Field
+def final DOCKER_TEST_ENV  = [
     registry: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_test:20211217',
     args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
@@ -241,7 +273,8 @@ def yaml_to_SystemCtx(systemName, yaml_data)
 def process_yaml_config(yaml_file, branch)
 {
     def cfg = readYaml([file: yaml_file])
-    def tests = []
+
+    SYSTEM_CONFIGS = []
     for (system in cfg) {
         assert 1 == system.size()
         for (item in system) {
@@ -252,7 +285,7 @@ def process_yaml_config(yaml_file, branch)
                error('invalid test system name: ' + systemName)
             }
 
-            if (tests.any { it.systemName == systemName }) {
+            if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
                error('duplicate test system: ' + systemName)
             }
 
@@ -277,11 +310,9 @@ def process_yaml_config(yaml_file, branch)
                 systemCtx.params['testSystem'] = folder
             }
 
-            tests.add(systemCtx)
+            SYSTEM_CONFIGS.add(systemCtx)
         }
     }
-
-    return tests
 }
 
 
@@ -310,7 +341,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node('pipeline-control') { notifyBitbucket() }
+        node(NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 
@@ -622,7 +653,7 @@ def execute_build(ctx, stage_ctx)
     // but this may overload CI also, because the workspaces eat the disk space.
     // Better solution is running the copy job on a dedicated executor, which
     // exists on the master
-    node('pipeline-control')
+    node(NODE_LABEL_CONTROL)
     {
         cleanWs()
 
@@ -670,9 +701,6 @@ def execute_build(ctx, stage_ctx)
 //------------------------------------------------------------------------------
 def do_jobs_for_test_systems(branch, testConfigs)
 {
-    // all downstream job packages are packed into this single package
-    def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
-
     def summary = manager.createSummary("orange-square.png")
     summary.appendText('<hr>')
 
@@ -871,7 +899,7 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Build SDK') {
 
-            agent { label "build" }
+            agent { label NODE_LABEL_BUILD }
 
             stages {
 
@@ -901,12 +929,11 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        script {
-                            // this also checks out SDK demos
-                            SYSTEM_CONFIGS = process_yaml_config(
-                                                'scm-src/test-cfg.yaml',
-                                                env.BRANCH_NAME)
-                        }
+                        // this also checks out SDK demos
+                        process_yaml_config(
+                            'scm-src/test-cfg.yaml',
+                            env.BRANCH_NAME)
+
                         do_notify_bitbucket()
                     }
                 }
@@ -944,7 +971,7 @@ pipeline {
                         do_archiveArtifacts('sdk-package/version.info')
 
                         do_stash(
-                            'stash_sdk_packages',
+                            STASH_SDK_PACKAGES,
                             [
                                 'scm-src/build-sdk.sh',
                                 DEV_SDK_PACKAGE,
@@ -953,7 +980,7 @@ pipeline {
                         )
 
                         do_stash(
-                            'stash_doc',
+                            STASH_SDK_DOC,
                             [
                                 'scm-src/publish_doc.sh',
                                 'sdk-package/pkg/doc/'
@@ -964,7 +991,7 @@ pipeline {
 
                 //--------------------------------------------------------------
                 stage('publish_docs') {
-                    agent { label "publish_doc" }
+                    agent { label NODE_LABEL_PUBLISH_DOC }
                     when {
                         beforeAgent true
                         anyOf {
@@ -975,7 +1002,7 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         cleanWs()
-                        unstash('stash_doc')
+                        unstash(STASH_SDK_DOC)
                         run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
                     }
                 }
@@ -1010,7 +1037,7 @@ pipeline {
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
-                        unstash('stash_sdk_packages')
+                        unstash(STASH_SDK_PACKAGES)
 
                         // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
                         // required by the SDK build script.
@@ -1045,7 +1072,7 @@ pipeline {
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
-                        unstash('stash_sdk_packages')
+                        unstash(STASH_SDK_PACKAGES)
 
                         // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
                         // required by the SDK build script.
@@ -1080,7 +1107,7 @@ pipeline {
 
                         // Ensure workspace is clean and unstash required files.
                         run_app('rm', ['*', '-rf'])
-                        unstash('stash_sdk_packages')
+                        unstash(STASH_SDK_PACKAGES)
 
                         // Extract the SDK_PACKAGE. The subfolder 'pkg' is
                         // required by the SDK build script.

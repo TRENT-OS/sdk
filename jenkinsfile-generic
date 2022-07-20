@@ -21,8 +21,47 @@
 
 params.each { println(it.key + " = " + it.value) }
 
+
+// Global variables defined with 'def' cannot be accessed in methods due to
+// different scoping. Without 'def', they can be accessed - however, that is bad
+// practice. Using 'def' and the '@groovy.transform.Field' annotation is the
+// best option. For details see https://stackoverflow.com/questions/50571316
+
+@groovy.transform.Field
+def final NODE_LABEL_CONTROL = 'pipeline-control'
+
+@groovy.transform.Field
+def final NODE_LABEL_BUILD = 'build'
+
+@groovy.transform.Field
+def final NODE_LABEL_TEST = 'test'
+
 // Flag used in the control pipeline to identify SDK demos.
-FLAG_SDK_DEMO = 1 << 2
+@groovy.transform.Field
+def final FLAG_SDK_DEMO = 1 << 2
+
+@groovy.transform.Field
+def final SDK_PACKAGE = 'sdk-package.tar.bz2'
+
+@groovy.transform.Field
+def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
+
+@groovy.transform.Field
+def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
+
+@groovy.transform.Field
+def final SDK_DIR = 'src/sdk'
+
+@groovy.transform.Field
+def final TESTS_DIR = 'src/tests'
+
+@groovy.transform.Field
+def final TEST_COMMON_DIR = 'src/test-common'
+
+@groovy.transform.Field
+def final STASH_TEST_PACKAGE = 'test_package'
+
+
 
 // SYSTEM_DIR holds the path to the current system under test:
 // - For SDK demos - with the SDK demo flag set - TEST_SYSTEM specifies the demo
@@ -30,15 +69,8 @@ FLAG_SDK_DEMO = 1 << 2
 //   'get_sdk_and_system()'.
 // - Otherwise TEST_SYSTEM specifies a repo that will be checked out into the
 //   default path of SYSTEM_DIR in 'get_sdk_and_system()'.
-SYSTEM_DIR = 'src/system'
-
-def SDK_PACKAGE = 'sdk-package.tar.bz2'
-def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
-def SYSTEM_PACKAGE = 'system-package.tar.bz2'
-
-def SDK_DIR = 'src/sdk'
-def TESTS_DIR = 'src/tests'
-def TEST_COMMON_DIR = 'src/test-common'
+@groovy.transform.Field
+def SYSTEM_DIR = ''
 
 
 //------------------------------------------------------------------------------
@@ -127,7 +159,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node('pipeline-control') { notifyBitbucket() }
+        node(NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 
@@ -281,8 +313,7 @@ def do_checkout(
 
 //------------------------------------------------------------------------------
 def get_sdk(
-    package_name,
-    dir = '.'
+    package_name
 ) {
 
     // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
@@ -293,30 +324,28 @@ def get_sdk(
         filter: package_name,
     )
 
-    run_app('mkdir', ['-p', dir])
-    run_app('tar', ['-xf ' + package_name, '-C ' + dir])
+    run_app('mkdir', ['-p', SDK_DIR])
+    run_app('tar', ['-xf ' + package_name, '-C ' + SDK_DIR])
 }
 
 
 //------------------------------------------------------------------------------
-def get_sdk_and_system(
-    sdk_package_name,
-    dev_sdk_package_name,
-    sdk_dir = '.'
-)
+def get_sdk_and_system()
 {
     if (FLAGS.toInteger() & FLAG_SDK_DEMO)
     {
         // Build against SDK package
-        get_sdk(sdk_package_name, sdk_dir)
+        get_sdk(SDK_PACKAGE)
 
         // Build from SDK package
-        SYSTEM_DIR = sdk_dir + '/' + TEST_SYSTEM
+        SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
     }
     else
     {
         // Build against dev SDK package
-        get_sdk(dev_sdk_package_name, sdk_dir)
+        get_sdk(DEV_SDK_PACKAGE)
+
+        SYSTEM_DIR = 'src/system'
 
         // Build from repo
         do_checkout(
@@ -390,7 +419,7 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Build Stage') {
 
-            agent { label "build" }
+            agent { label NODE_LABEL_BUILD }
 
             stages {
 
@@ -401,7 +430,7 @@ pipeline {
 
                         cleanWs()
 
-                        get_sdk_and_system(SDK_PACKAGE, DEV_SDK_PACKAGE, SDK_DIR)
+                        get_sdk_and_system()
 
                         do_notify_bitbucket()
                     }
@@ -516,7 +545,7 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         stash(
-                            name: 'test_package',
+                            name: STASH_TEST_PACKAGE,
                             includes: [
                                 SYSTEM_PACKAGE,
                                 SYSTEM_DIR+'/'
@@ -544,7 +573,7 @@ pipeline {
                 expression { TEST_SCRIPT != '' }
             }
 
-            agent { label "test" }
+            agent { label NODE_LABEL_TEST }
 
             stages {
 
@@ -555,10 +584,10 @@ pipeline {
 
                         cleanWs()
 
-                        unstash('test_package')
+                        unstash(STASH_TEST_PACKAGE)
                         run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
 
-                        get_sdk(DEV_SDK_PACKAGE, SDK_DIR)
+                        get_sdk(DEV_SDK_PACKAGE)
 
                         do_checkout(
                             'ta/common',
