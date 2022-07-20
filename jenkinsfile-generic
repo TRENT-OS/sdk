@@ -87,7 +87,7 @@ def SYSTEM_DIR = ''
 // * why are sudo right needed in the test container
 //
 
-def DOCKER_BASE = 'docker:5000'
+def DOCKER_BASE = 'hc-docker:5000'
 def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
 
 def DOCKER_BUILD_ENV = [

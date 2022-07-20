@@ -57,7 +57,7 @@ def SYSTEM_CONFIGS = []
 //
 
 @groovy.transform.Field
-def final DOCKER_BASE = 'docker:5000'
+def final DOCKER_BASE = 'hc-docker:5000'
 
 @groovy.transform.Field
 def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
