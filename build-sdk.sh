@@ -132,8 +132,6 @@ function collect_sdk_sandbox()
 
         # remove jenkins files and test confguration
         ./jenkinsfile
-        ./jenkinsfile-control
-        ./jenkinsfile-generic
         ./test-cfg.yaml
 
         # remove axivion scripts
