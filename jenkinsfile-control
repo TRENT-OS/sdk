@@ -444,7 +444,15 @@ def run_app(
         cmdLine += ' ' + param_array.join(' ')
     }
 
-    sh(cmdLine)
+    try
+    {
+        sh(cmdLine)
+    }
+    catch (Exception e)
+    {
+        println('Exception running command: ' + e)
+        throw e
+    }
 }
 
 
