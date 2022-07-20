@@ -418,11 +418,8 @@ pipeline {
                 stage('checkout') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         cleanWs()
-
                         get_sdk_and_system()
-
                         do_notify_bitbucket()
                     }
                 }

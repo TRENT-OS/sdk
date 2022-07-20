@@ -888,10 +888,7 @@ pipeline {
     agent none
 
     options {
-
         skipDefaultCheckout()
-
-        // disableConcurrentBuilds()
     }
 
     stages {
