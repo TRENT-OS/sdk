@@ -1038,40 +1038,20 @@ pipeline {
 
         //----------------------------------------------------------------------
         stage('Test SDK') {
-            parallel {
 
+            agent { label NODE_LABEL_BUILD }
+
+            stages {
                 //--------------------------------------------------------------
-                stage('unit_test') {
-                    agent {
-                        docker {
-                            label NODE_LABEL_BUILD
-                            alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
-                            image DOCKER_TEST_ENV.image
-                            args DOCKER_TEST_ENV.args
-                        }
-                    }
+                stage('prepare') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        // Ensure workspace is clean and unstash required files.
-                        run_app('rm', ['*', '-rf'])
+                        cleanWs()
                         unstash(STASH_SDK_PACKAGES)
-
-                        // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
-                        // required by the SDK build script.
-                        run_app('mkdir', ['-p', 'unit_test_sdk/pkg'])
-                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C unit_test_sdk/pkg'])
-
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            run_shell_script(
-                                'scm-src/build-sdk.sh',
-                                [
-                                    'run-unit-tests', // mode
-                                    'unit_test_sdk' // base dir
-                                ]
-                            )
-                        }
+                        // Extract the DEV_SDK_PACKAGE into the subfolder 'pkg',
+                        // the name is hard-coded in the SDK build script.
+                        run_app('mkdir', ['-p', 'pkg'])
+                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C pkg'])
                     }
                 }
 
@@ -1079,7 +1059,7 @@ pipeline {
                 stage('astyle') {
                     agent {
                         docker {
-                            label NODE_LABEL_BUILD
+                            reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
@@ -1088,21 +1068,36 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        // Ensure workspace is clean and unstash required files.
-                        run_app('rm', ['*', '-rf'])
-                        unstash(STASH_SDK_PACKAGES)
-
-                        // Extract the DEV_SDK_PACKAGE. The subfolder 'pkg' is
-                        // required by the SDK build script.
-                        run_app('mkdir', ['-p', 'astyle_sdk/pkg'])
-                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C astyle_sdk/pkg'])
-
                         // Continue with the SDK package build even on style
                         // errors, but mark the stage and the build as failed
                         // already.
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            run_shell_script('astyle_sdk/pkg/astyle_check_sdk.sh')
+                            run_shell_script('pkg/astyle_check_sdk.sh')
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('unit_test') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script(
+                                'scm-src/build-sdk.sh',
+                                [
+                                    'run-unit-tests', // mode
+                                    '.' // base dir
+                                ]
+                            )
                         }
                     }
                 }
@@ -1114,7 +1109,7 @@ pipeline {
                     // time consuming builds and tests of all systems are done.
                     agent {
                         docker {
-                            label NODE_LABEL_BUILD
+                            reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
@@ -1123,26 +1118,24 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        // Ensure workspace is clean and unstash required files.
-                        run_app('rm', ['*', '-rf'])
-                        unstash(STASH_SDK_PACKAGES)
-
-                        // Extract the SDK_PACKAGE. The subfolder 'pkg' is
-                        // required by the SDK build script.
-                        run_app('mkdir', ['-p', 'sanity_check_sdk/pkg'])
-                        run_app('tar', ['-xf ' + SDK_PACKAGE, '-C sanity_check_sdk/pkg'])
-
-                        // Build demo Hello World.
                         run_shell_script(
                             'scm-src/build-sdk.sh',
                             [
                                 'sanity-check', // mode
-                                'sanity_check_sdk' // base dir
+                                '.' // base dir
                             ]
                         )
                     }
                 }
+
+                //--------------------------------------------------------------
+                stage('cleanup') {
+                    steps {
+                        print_step_info env.STAGE_NAME
+                        cleanWs()
+                    }
+                }
+
             }
         }
 
