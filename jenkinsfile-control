@@ -36,6 +36,9 @@ def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 @groovy.transform.Field
 def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
+@groovy.transform.Field
+def final GENERIC_PROJECT_BUILDER_JOB = 'generic_jobs/generic_pipeline_sandbox'
+
 // Test systems, list is read from config
 @groovy.transform.Field
 def SYSTEM_CONFIGS = []
@@ -585,7 +588,7 @@ def execute_build(ctx, stage_ctx)
     def flags = stage_ctx.getOrDefault('flags', 0)
 
     def jobBuild = build(
-        job: 'generic_jobs/generic_pipeline_sandbox',
+        job: GENERIC_PROJECT_BUILDER_JOB,
         wait: true,   // block call until finished
         propagate: false, // don't throw exception on error
         parameters: [
@@ -898,6 +901,8 @@ pipeline {
 
     options {
         skipDefaultCheckout()
+        // must prefix with '/' explicitly to make this an 'absolute' name
+        copyArtifactPermission('/' + GENERIC_PROJECT_BUILDER_JOB);
     }
 
     stages {
