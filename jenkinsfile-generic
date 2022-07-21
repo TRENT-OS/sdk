@@ -159,7 +159,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node(NODE_LABEL_CONTROL) { notifyBitbucket() }
+        node(label: NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 

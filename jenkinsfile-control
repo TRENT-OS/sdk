@@ -341,7 +341,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node(NODE_LABEL_CONTROL) { notifyBitbucket() }
+        node(label: NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 
@@ -653,7 +653,7 @@ def execute_build(ctx, stage_ctx)
     // but this may overload CI also, because the workspaces eat the disk space.
     // Better solution is running the copy job on a dedicated executor, which
     // exists on the master
-    node(NODE_LABEL_CONTROL)
+    node(label: NODE_LABEL_CONTROL)
     {
         cleanWs()
 
@@ -815,7 +815,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
     // Jenkins master container) and we don't support docker-in-docker yet, we
     // have to use a build slave here. Actually, maything that needs tools
     // should run in a docker container (may busybox?) also.
-    node(NODE_LABEL_BUILD) {
+    node(label: NODE_LABEL_BUILD) {
         stage('process_results') {
 
             cleanWs()
