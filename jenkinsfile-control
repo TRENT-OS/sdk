@@ -808,7 +808,14 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
     def was_build_error = false
 
-    node {
+    // Actually, this is a pipeline control an data management job that should
+    // run on NODE_LABEL_CONTROL. However, we can't do the work purely with
+    // Jenkins plugin, shell commands are needed to to create a bz2 archive.
+    // Since there is no guarantee any shell tools exist (especially not in the
+    // Jenkins master container) and we don't support docker-in-docker yet, we
+    // have to use a build slave here. Actually, maything that needs tools
+    // should run in a docker container (may busybox?) also.
+    node(NODE_LABEL_BUILD) {
         stage('process_results') {
 
             cleanWs()
@@ -1025,7 +1032,7 @@ pipeline {
                 stage('unit_test') {
                     agent {
                         docker {
-                            reuseNode true
+                            label NODE_LABEL_BUILD
                             alwaysPull true
                             registryUrl DOCKER_TEST_ENV.registry
                             image DOCKER_TEST_ENV.image
@@ -1060,7 +1067,7 @@ pipeline {
                 stage('astyle') {
                     agent {
                         docker {
-                            reuseNode true
+                            label NODE_LABEL_BUILD
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
@@ -1095,7 +1102,7 @@ pipeline {
                     // time consuming builds and tests of all systems are done.
                     agent {
                         docker {
-                            reuseNode true
+                            label NODE_LABEL_BUILD
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
