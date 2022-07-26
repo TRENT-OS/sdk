@@ -72,9 +72,13 @@ if [ -e "/usr/local/bin/fixuid" ]; then
         echo "Waiting for fixuid to finish."
         sleep 1
     done
-    # In case the race condition happened, this shell this script runs spawned
-    # before fixuid could set up the environment variable(s). Do is manually.
-    export HOME=/home/user
+    # In case the race condition happened, this shell script runs spawned before
+    # fixuid could set up the environment variable(s). Do is manually.
+    DOCKER_USER_HOME="/home/$(whoami)"
+    if [ "${HOME}" != "${DOCKER_USER_HOME}" ]; then
+        echo "fix env var HOME: '${HOME}' -> '${DOCKER_USER_HOME}'"
+        export HOME=${DOCKER_USER_HOME}
+    fi
 fi
 
 #-------------------------------------------------------------------------------
