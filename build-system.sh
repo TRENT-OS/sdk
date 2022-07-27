@@ -78,6 +78,8 @@ if [ -e "/usr/local/bin/fixuid" ]; then
     if [ "${HOME}" != "${DOCKER_USER_HOME}" ]; then
         echo "fix env var HOME: '${HOME}' -> '${DOCKER_USER_HOME}'"
         export HOME=${DOCKER_USER_HOME}
+        # hack to see if we have this case
+        exit 1
     fi
 fi
 
