@@ -84,8 +84,8 @@ export HOME=/home/user
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 
-# this script is located in the SDK folder
-export OS_SDK_PATH="${SCRIPT_DIR}"
+# By definition, this script is located in the SDK root folder.
+OS_SDK_PATH="${SCRIPT_DIR}"
 
 # read parameters
 OS_PROJECT_DIR=$1
@@ -253,7 +253,10 @@ case "${TOOLCHAIN}" in
 
     axivion)
         TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
-        CMAKE_PARAMS_PLATFORM+=( -D CROSS_COMPILER_PREFIX=${TRIPLE}- )
+        CMAKE_PARAMS_PLATFORM+=(
+            -D PARENT_TOOLCHAIN_FILE:FILEPATH="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
+            -D CROSS_COMPILER_PREFIX=${TRIPLE}
+        )
         ;;
 
     *)
