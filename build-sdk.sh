@@ -519,6 +519,9 @@ function package_sdk()
         -j
         --sort=name             # ensure files are sorted
         --mtime="${TIMESTAMP}"  # ensure all files have the same timestamp.
+        --numeric-owner         # don't expose local user/group strings
+        --owner=0               # no owner (current user will be used when extracting)
+        --group=0               # no group (current user's primary group will be used when extracting)
         -C ${SDK_PACKAGE_SRC}
         .
     )
