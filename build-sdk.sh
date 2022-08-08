@@ -515,7 +515,7 @@ function package_sdk()
     # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
     local TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
 
-    print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}':"
+    print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}'"
     du -sh ${SDK_PACKAGE_SRC}
 
     #---------------------------------------------------------------------------
@@ -524,7 +524,7 @@ function package_sdk()
     # applied based on the sandbox and demo repositories during the collection.
     #---------------------------------------------------------------------------
 
-    print_info "Create development SDK package ${DEV_SDK_PACKAGE}:"
+    echo "Creating development SDK package ${DEV_SDK_PACKAGE} ..."
 
     # - Apply timestamp to all files.
     tar \
@@ -542,7 +542,7 @@ function package_sdk()
     # a further filtering is applied to remove not-to-be-released files.
     #---------------------------------------------------------------------------
 
-    print_info "Create SDK package ${SDK_PACKAGE}:"
+    echo "Creating release SDK package ${SDK_PACKAGE} ..."
 
     local SDK_PACKAGE_EXCLUDES=(
         # remove astyle scripts
