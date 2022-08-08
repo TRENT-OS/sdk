@@ -514,7 +514,14 @@ function package_sdk()
     # To enforce a specific timestamp for official releases the variable should
     # be hard-coded on the release branch, e.g. to "UTC 2021-02-19 18:00:00".
     local TIMESTAMP="UTC $(date --utc +'%Y-%m-%d %H:%M:%S')"
-
+    COMMON_TAR_PARAMS=(
+        -c
+        -j
+        --sort=name             # ensure files are sorted
+        --mtime="${TIMESTAMP}"  # ensure all files have the same timestamp.
+        -C ${SDK_PACKAGE_SRC}
+        .
+    )
     print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}'"
     du -sh ${SDK_PACKAGE_SRC}
 
@@ -525,15 +532,7 @@ function package_sdk()
     #---------------------------------------------------------------------------
 
     echo "Creating development SDK package ${DEV_SDK_PACKAGE} ..."
-
-    # - Apply timestamp to all files.
-    tar \
-        -cjf ${DEV_SDK_PACKAGE} \
-        --sort=name \
-        --mtime="${TIMESTAMP}" \
-        -C ${SDK_PACKAGE_SRC} \
-        .
-
+    tar -f ${DEV_SDK_PACKAGE} "${COMMON_TAR_PARAMS[@]}"
     du -sh ${DEV_SDK_PACKAGE}
 
     #---------------------------------------------------------------------------
@@ -571,16 +570,11 @@ function package_sdk()
         ./libs/*/test
     )
 
-    # - Apply timestamp to all files.
-    # - Prefix excludes with "--exclude ".
-    tar \
-        -cjf ${SDK_PACKAGE} \
+    # Prefix all excludes with "--exclude=".
+    tar -f ${SDK_PACKAGE} \
         --no-wildcards-match-slash \
-        --sort=name \
-        --mtime="${TIMESTAMP}" \
-        -C ${SDK_PACKAGE_SRC} \
-        ${SDK_PACKAGE_EXCLUDES[@]/#/--exclude } \
-        .
+        "${SDK_PACKAGE_EXCLUDES[@]/#/--exclude=}" \
+        "${COMMON_TAR_PARAMS[@]}"
 
     du -sh ${SDK_PACKAGE}
 }
