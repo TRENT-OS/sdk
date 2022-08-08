@@ -544,8 +544,6 @@ function package_sdk()
 
     print_info "Create SDK package ${SDK_PACKAGE}:"
 
-    du -sh ${SDK_PACKAGE_SRC}
-
     local SDK_PACKAGE_EXCLUDES=(
         # remove astyle scripts
         ./astyle_check_sdk.sh
