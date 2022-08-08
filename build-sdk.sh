@@ -528,57 +528,39 @@ function package_sdk()
     print_info "Start creating packages from ${SDK_PACKAGE_SRC} with timestamp '${TIMESTAMP}'"
     du -sh ${SDK_PACKAGE_SRC}
 
-    #---------------------------------------------------------------------------
-    # Create development SDK package.
-    # This package is used for internal testing. Only a basic filtering has been
-    # applied based on the sandbox and demo repositories during the collection.
-    #---------------------------------------------------------------------------
-
+    # Create an internal development SDK package, no filtering is applied here.
     echo "Creating development SDK package ${DEV_SDK_PACKAGE} ..."
     tar -f ${DEV_SDK_PACKAGE} "${COMMON_TAR_PARAMS[@]}"
     du -sh ${DEV_SDK_PACKAGE}
 
-    #---------------------------------------------------------------------------
-    # Create SDK package.
-    # This package is used for releases. Compared to the development SDK package
-    # a further filtering is applied to remove not-to-be-released files.
-    #---------------------------------------------------------------------------
-
+    # Create the release SDK package where certain files are filtered out
     echo "Creating release SDK package ${SDK_PACKAGE} ..."
-
     local SDK_PACKAGE_EXCLUDES=(
         # remove astyle scripts
         ./astyle_check_sdk.sh
         ./astyle_check_submodule.sh
         ./astyle_options_default
         astyle_prepare_submodule.sh
-
         # remove development components
         ./components/SysLogger
-
         # remove files from documentation
         ./doc/pdf/README.md
-
         # remove prepare_test.sh from demos
         prepare_test.sh
-
         # remove files used by doxygen
         ./Doxyfile
         ./os_core_api/README.md
-
         # remove unit-tests
         ./libs/CMakeLists.txt
         ./libs/test
         ./libs/*/mocks
         ./libs/*/test
     )
-
     # Prefix all excludes with "--exclude=".
     tar -f ${SDK_PACKAGE} \
         --no-wildcards-match-slash \
         "${SDK_PACKAGE_EXCLUDES[@]/#/--exclude=}" \
         "${COMMON_TAR_PARAMS[@]}"
-
     du -sh ${SDK_PACKAGE}
 }
 
