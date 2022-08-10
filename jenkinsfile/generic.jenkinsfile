@@ -679,10 +679,12 @@ pipeline {
                                     [
                                         // pytest options
                                         '-p', 'no:cacheprovider',
-                                        '-v',
-                                        // '--capture=no', // show printf() from python scripts in console
+                                        '-v', // verbose output
+                                        '-o log_cli=True', // write logs to console
+                                        '--capture=no', // show printf() from python scripts in console
+                                        '--tb=short', // control traceback (long, short, line, native, no)
                                         // test framework options
-                                        // '--print_logs', // print system logs in console
+                                        '--print_logs', // print system logs in console
                                         '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
                                         '--target=' + PLATFORM,
                                         '--system_image=../build/images/os_image.elf',
