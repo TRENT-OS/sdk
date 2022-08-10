@@ -677,9 +677,11 @@ pipeline {
                                     ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
                                     'pytest',
                                     [
+                                        // pytest options
                                         '-p', 'no:cacheprovider',
                                         '-v',
                                         // '--capture=no', // show printf() from python scripts in console
+                                        // test framework options
                                         // '--print_logs', // print system logs in console
                                         '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
                                         '--target=' + PLATFORM,
