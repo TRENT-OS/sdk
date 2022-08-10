@@ -17,8 +17,6 @@ set(OS_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}")
 set(OS_SDK_BUILD_DIR "os-sdk")
 
 set(SDK_SEL4_CAMKES_DIR "${OS_SDK_DIR}/sdk-sel4-camkes")
-set(OS_SDK_LIBS_DIR "${OS_SDK_DIR}/libs")
-set(OS_SDK_COMPONENTS_DIR "${OS_SDK_DIR}/components")
 
 
 #-------------------------------------------------------------------------------
@@ -119,7 +117,7 @@ endfunction()
 function(os_sdk_import_libs)
 
     set(GROUP "libs")
-    set(GROUP_BASE_DIR "${OS_SDK_LIBS_DIR}")
+    set(GROUP_BASE_DIR "${OS_SDK_DIR}/${GROUP}")
 
     if (SDK_USE_CAMKES)
         CAmkESAddCPPInclude(${GROUP_BASE_DIR})
@@ -149,7 +147,7 @@ endfunction()
 function(os_sdk_import_components)
 
     set(GROUP "components")
-    set(GROUP_BASE_DIR "${OS_SDK_COMPONENTS_DIR}")
+    set(GROUP_BASE_DIR "${OS_SDK_DIR}/${GROUP}")
 
     if (SDK_USE_CAMKES)
         CAmkESAddCPPInclude(${GROUP_BASE_DIR})
