@@ -472,6 +472,7 @@ def do_git_checkout(
 
         def scmVars = checkout([
                     poll: false,
+                    changelog: false,
                     scm: [
                         $class: 'GitSCM',
                         branches: [
