@@ -644,6 +644,7 @@ def execute_build(ctx, stage_ctx)
     def result = jobBuild.getResult()
     def duration = jobBuild.getDurationString()
 
+    // Print some nice messages in the logs, ensure they are serialized.
     lock('job-post-processing')
     {
         println((ctx.cnt - (--ctx.running)) + '/' + ctx.cnt + ': ' +
@@ -681,7 +682,7 @@ def execute_build(ctx, stage_ctx)
         {
             copyArtifacts(
                 projectName: jobBuild.getFullProjectName(),
-                // need to ensure this is a string
+                // need to ensure selector is a string
                 selector: specific("${jobBuild.getNumber()}")
             )
 

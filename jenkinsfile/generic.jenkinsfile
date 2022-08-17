@@ -333,8 +333,8 @@ def get_sdk(
     package_name
 ) {
 
-    // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
-
+    // This only works in production mode if the job did also call
+    // copyArtifactPermission() to give us the permission to copy artifacts.
     copyArtifacts(
         projectName: UPSTREAM_JOB_NAME,
         selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
