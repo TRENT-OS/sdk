@@ -53,6 +53,9 @@ def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
 def final SDK_DIR = 'src/sdk'
 
 @groovy.transform.Field
+def final BUILD_DIR = 'build'
+
+@groovy.transform.Field
 def final TESTS_DIR = 'src/tests'
 
 @groovy.transform.Field
@@ -461,7 +464,7 @@ pipeline {
                             [
                                 SYSTEM_DIR,
                                 PLATFORM,
-                                'build', // build output
+                                BUILD_DIR,
                                 '-D CMAKE_BUILD_TYPE=Debug',
                                 BUILD_PARAMS
                             ]
@@ -495,7 +498,7 @@ pipeline {
                             run_shell_script(
                                 TESTS_DIR+'/cppcheck/check_static_analyzer.sh',
                                 [
-                                    'build/compile_commands.json',
+                                    BUILD_DIR+'/compile_commands.json',
                                     SDK_DIR
                                 ]
                             )
@@ -513,16 +516,11 @@ pipeline {
                         run_app('tar', [
                             '--ignore-failed-read',
                             '-cjf ' + SYSTEM_PACKAGE,
-
-                            // NOTE: Uncomment the following line in case the
-                            //       whole build folder should be stored.
-                            // 'build/*',
-
-                            // Store the following artifacts. The image will be
-                            // required in the test stage (if tests enabled).
-                            'build/images/os_image.elf',
-                            'build/os_system/graph.svg',
-                            'build/compile_commands.json',
+                            // explicitly select artifacts to store in test
+                            // package instead of taking all via BUILD_DIR+'/*'
+                            BUILD_DIR+'/images/os_image.elf',
+                            BUILD_DIR+'/os_system/graph.svg',
+                            BUILD_DIR+'/compile_commands.json',
                             'build.log'
                         ])
                     }
@@ -688,7 +686,7 @@ pipeline {
                                         '--print_logs', // print system logs in console
                                         '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
                                         '--target=' + PLATFORM,
-                                        '--system_image=../build/images/os_image.elf',
+                                        '--system_image=../'+BUILD_DIR+'/images/os_image.elf',
                                         '--resource_dir=../'+SDK_DIR+'/resources',
                                         '--junitxml=../test_results.xml',
                                         '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
@@ -715,7 +713,7 @@ pipeline {
                             [
                                 '--ignore-failed-read',
                                 '-cjf ' + SYSTEM_PACKAGE,
-                                'build/',
+                                BUILD_DIR+'/',
                                 'build_and_test.log',
                                 'test-doc/',
                                 'test-logs/'
