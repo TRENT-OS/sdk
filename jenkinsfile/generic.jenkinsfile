@@ -16,8 +16,7 @@
 //    BUILD_PARAMS
 //    TEST_SCRIPT
 //    TEST_PARAMS
-//    UPSTREAM_JOB_NAME
-//    UPSTREAM_JOB_ID
+//    SDK_SOURCE
 
 params.each { println(it.key + " = " + it.value) }
 
@@ -342,12 +341,23 @@ def do_checkout(
 def get_sdk(
     package_name
 ) {
+    def m = (SDK_SOURCE =~ 'job://(.*):(.*)')
+    if (!m.matches()) {
+        throw new Exception('unsupported SDK source: ' + SDK_SOURCE)
+        // ToDo: if the parameter is left empty, we could add a convenience
+        //       feature that currentBuild.getBuildCauses() is checked. If it is
+        //       a BuildUpstreamCause then the fields 'upstreamProject' and
+        //       'upstreamBuild' could be used.
+    }
+
+    def job_name = m.group(1)
+    def job_id = Integer.parseInt(m.group(2))
 
     // This only works in production mode if the job did also call
     // copyArtifactPermission() to give us the permission to copy artifacts.
     copyArtifacts(
-        projectName: UPSTREAM_JOB_NAME,
-        selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
+        projectName: job_name,
+        selector: specific("${job_id}"), // need to ensure this is a string
         filter: package_name,
     )
 

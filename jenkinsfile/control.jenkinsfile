@@ -615,12 +615,8 @@ def execute_build(ctx, stage_ctx)
                 value: stage_ctx.getOrDefault('testParams', '')
             ),
             string(
-                name:  'UPSTREAM_JOB_NAME',
-                value: currentBuild.fullProjectName
-            ),
-            string(
-                name:  'UPSTREAM_JOB_ID',
-                value: currentBuild.id
+                name:  'SDK_SOURCE',
+                value: "job://${currentBuild.fullProjectName}:${currentBuild.id}"
             ),
         ]
     )
