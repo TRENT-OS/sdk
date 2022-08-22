@@ -209,6 +209,29 @@ def run_shell_script(
 
 
 //------------------------------------------------------------------------------
+def archive_as_tar_bz2(name, files = null)
+{
+    def params = [
+        '-c',
+        '-j',
+        '-f ' + name,
+        '--ignore-failed-read',
+        '--sort=name',
+        '--numeric-owner',
+        '--owner=0',
+        '--group=0',
+    ]
+
+    if (files) {
+        params += files
+    }
+
+    run_app('tar', params)
+    archiveArtifacts(artifacts: name, fingerprint: true)
+}
+
+
+//------------------------------------------------------------------------------
 def run_python_package(
     python_params,
     python_paths,
@@ -520,20 +543,18 @@ pipeline {
 
                         save_current_job_log('build.log')
 
-                        run_app('tar', [
-                            '--ignore-failed-read',
-                            '-cjf ' + SYSTEM_PACKAGE,
-                            // explicitly select artifacts to store in test
-                            // package instead of taking all via BUILD_DIR+'/*'
-                            BUILD_DIR+'/images/os_image.elf',
-                            BUILD_DIR+'/os_system/graph.svg',
-                            BUILD_DIR+'/compile_commands.json',
-                            'build.log'
-                        ])
-
-                        archiveArtifacts(
-                            artifacts: SYSTEM_PACKAGE,
-                            fingerprint: true
+                        archive_as_tar_bz2(
+                            SYSTEM_PACKAGE,
+                            // Keep the build artifacts minimal and don't
+                            // use BUILD_DIR+'/' to get everything
+                            [
+                                'images/os_image.elf',
+                                'os_system/graph.svg',
+                                'compile_commands.json'
+                            ].collect { BUILD_DIR + '/' + it } +
+                            [
+                                'build.log'
+                            ]
                         )
                     }
                 }
@@ -681,21 +702,16 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         save_current_job_log('build_and_test.log')
-                        run_app(
-                            'tar',
+                        archive_as_tar_bz2(
+                            TEST_RESULT_PACKAGE,
                             [
-                                '--ignore-failed-read',
-                                '-cjf ' + TEST_RESULT_PACKAGE,
                                 'build_and_test.log',
                                 'test_results.xml',
                                 'test-doc/',
                                 'test-logs/'
                             ]
                         )
-                        archiveArtifacts(
-                            artifacts: TEST_RESULT_PACKAGE,
-                            fingerprint: true
-                        )
+
                         cleanWs()
                     }
                 }

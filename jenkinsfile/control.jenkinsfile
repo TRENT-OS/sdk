@@ -454,6 +454,29 @@ def run_shell_script(
 
 
 //------------------------------------------------------------------------------
+def archive_as_tar_bz2(name, files = null)
+{
+    def params = [
+        '-c',
+        '-j',
+        '-f ' + name,
+        '--ignore-failed-read',
+        '--sort=name',
+        '--numeric-owner',
+        '--owner=0',
+        '--group=0',
+    ]
+
+    if (files) {
+        params += files
+    }
+
+    run_app('tar', params)
+    archiveArtifacts(artifacts: name, fingerprint: true)
+}
+
+
+//------------------------------------------------------------------------------
 def do_git_checkout(
     repo,
     branch,
@@ -870,20 +893,8 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             save_current_job_log('build.log')
 
-            // Create a package of all files, so the next stage can process
-            // them. Ensure we never fail here if a file is missing, because
-            // there is not much we can do anyway. The next stage is supposed
-            // to handle this.
-            run_app(
-                'tar',
-                [
-                    '--ignore-failed-read',
-                    '-cjf ' + SYSTEM_PACKAGES,
-                    'build.log'
-                ] + tar_list
-            )
-
-            archiveArtifacts([artifacts: SYSTEM_PACKAGES, fingerprint: true])
+            // Create a package of all files and make is available as artifact.
+            archive_as_tar_bz2(SYSTEM_PACKAGES, ['build.log'] + tar_list)
 
             cleanWs()
 
