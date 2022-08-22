@@ -69,11 +69,11 @@ def final STASH_TEST_PACKAGE = 'test_package'
 // SYSTEM_DIR holds the path to the current system under test:
 // - For SDK demos - with the SDK demo flag set - TEST_SYSTEM specifies the demo
 //   path relative within SDK_DIR and SYSTEM_DIR will be updated accordingly in
-//   'get_sdk_and_system()'.
+//   'get_system()'.
 // - Otherwise TEST_SYSTEM specifies a repo that will be checked out into the
-//   default path of SYSTEM_DIR in 'get_sdk_and_system()'.
+//   default path of SYSTEM_DIR in 'get_system()'.
 @groovy.transform.Field
-def SYSTEM_DIR = ''
+def SYSTEM_DIR = 'src/system'
 
 
 //------------------------------------------------------------------------------
@@ -357,28 +357,18 @@ def get_sdk(
 
 
 //------------------------------------------------------------------------------
-def get_sdk_and_system()
+def get_system()
 {
+    // Actually, any system should be checked out from the repo and get built
+    // against the SDK package. Just demos that come with the SDK package get
+    // built from this package to ensure they work as expected.
     if (is_demo())
     {
-        // Build against SDK package
-        get_sdk(SDK_PACKAGE)
-
-        // Build from SDK package
         SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
     }
     else
     {
-        // Build against dev SDK package
-        get_sdk(DEV_SDK_PACKAGE)
-
-        SYSTEM_DIR = 'src/system'
-
-        // Build from repo
-        do_checkout(
-            TEST_SYSTEM,
-            BRANCH_OR_COMMIT,
-            SYSTEM_DIR)
+        do_checkout(TEST_SYSTEM, BRANCH_OR_COMMIT, SYSTEM_DIR)
     }
 }
 
@@ -446,7 +436,11 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         cleanWs()
-                        get_sdk_and_system()
+                        // Demos must build with the released SDK package,
+                        // systems use the dev SDK package which may contain
+                        // experimental things.
+                        get_sdk(is_demo() ? SDK_PACKAGE : DEV_SDK_PACKAGE)
+                        get_system()
                         do_notify_bitbucket()
                     }
                 }
@@ -597,6 +591,8 @@ pipeline {
                         unstash(STASH_TEST_PACKAGE)
                         run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
 
+                        // The release SDK package lack some files needed for
+                        // our tests, thus there is a special dev package.
                         get_sdk(DEV_SDK_PACKAGE)
 
                         do_checkout(
