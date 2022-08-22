@@ -687,12 +687,13 @@ pipeline {
                                 '--ignore-failed-read',
                                 '-cjf ' + TEST_RESULT_PACKAGE,
                                 'build_and_test.log',
+                                'test_results.xml',
                                 'test-doc/',
                                 'test-logs/'
                             ]
                         )
                         archiveArtifacts(
-                            artifacts: TEST_RESULT_PACKAGE + ', test_results.xml',
+                            artifacts: TEST_RESULT_PACKAGE,
                             fingerprint: true
                         )
                         cleanWs()

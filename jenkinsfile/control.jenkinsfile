@@ -685,8 +685,7 @@ def execute_build(ctx, stage_ctx)
                 selector: specific("${jobBuild.getNumber()}"),
                 filter: [
                     SYSTEM_PACKAGE,
-                    TEST_RESULT_PACKAGE,
-                    'test_results.xml'
+                    TEST_RESULT_PACKAGE
                 ].join(',')
             )
         }
@@ -695,8 +694,7 @@ def execute_build(ctx, stage_ctx)
             stage_ctx.name,
             [
                 SYSTEM_PACKAGE,
-                TEST_RESULT_PACKAGE,
-                'test_results.xml'
+                TEST_RESULT_PACKAGE
             ]
         )
 
@@ -829,36 +827,45 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             cleanWs()
 
+            def tar_list = []
+
             jobStages.eachWithIndex { stage_ctx, idx ->
 
                 println('processing ' + (idx+1) + '/' + jobStages.size() + ': ' +
                         stage_ctx.name)
 
-                // there might be no stash if something failed earlier
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                dir(stage_ctx.name)
                 {
-                    def pkg_dir = 'package-' + stage_ctx.name
-                    dir(pkg_dir)
+                    // there might be no stash if something failed earlier
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                     {
                         unstash(stage_ctx.name)
+                    }
+
+                    if (fileExists(SYSTEM_PACKAGE)) {
+                        dir('system') {
+                            run_app('tar', ['-xf ../' + SYSTEM_PACKAGE])
+                        }
+                        tar_list.add(stage_ctx.name + '/system/')
+                    }
+                    if (fileExists(TEST_RESULT_PACKAGE)) {
+                        dir('test-result') {
+                            run_app('tar', ['-xf ../' + TEST_RESULT_PACKAGE])
+                            if (fileExists('test_results.xml')) {
+                                // TODO: Support different platforms in junit
+                                //       result processing. Currently seeing
+                                //       the same test cases multiple times is
+                                //       likely messing up the analysis.
+                                junit('test_results.xml')
+                            }
+                        }
+                        tar_list.add(stage_ctx.name + '/test-result/')
                     }
                 }
 
                 def pkg_build = stage_ctx.build
                 was_build_error |= (!pkg_build) ||
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
-            }
-
-            // Sometimes this job runs just to test the SDK generation, so
-            // there are no test systems enabled. We don't want to see things
-            // fail with junit complaining about missing test files in this
-            // case.
-            if (jobStages.size() > 0)
-            {
-                // TODO: Support multiple platforms here, currently this will
-                //       see the same test case for each platform and it's
-                //       likely messing up the analysis.
-                junit('package-*/test_results.xml')
             }
 
             save_current_job_log('build.log')
@@ -872,9 +879,8 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 [
                     '--ignore-failed-read',
                     '-cjf ' + SYSTEM_PACKAGES,
-                    'build.log',
-                    'package-*/'
-                ]
+                    'build.log'
+                ] + tar_list
             )
 
             archiveArtifacts([artifacts: SYSTEM_PACKAGES, fingerprint: true])
