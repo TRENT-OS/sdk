@@ -32,7 +32,9 @@ def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 @groovy.transform.Field
 def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
-// package for downstream jobs
+@groovy.transform.Field
+def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
+
 @groovy.transform.Field
 def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
@@ -680,13 +682,17 @@ def execute_build(ctx, stage_ctx)
             copyArtifacts(
                 projectName: jobBuild.getFullProjectName(),
                 // need to ensure selector is a string
-                selector: specific("${jobBuild.getNumber()}")
+                selector: specific("${jobBuild.getNumber()}"),
+                filter: [
+                    SYSTEM_PACKAGE,
+                    'test_results.xml'
+                ].join(',')
             )
 
             do_stash(
                 stage_ctx.name,
                 [
-                    'system-package.tar.bz2',
+                    SYSTEM_PACKAGE,
                     'test_results.xml'
                 ]
             )
