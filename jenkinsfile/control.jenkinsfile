@@ -36,6 +36,9 @@ def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
 
 @groovy.transform.Field
+def final TEST_RESULT_PACKAGE = 'test-result-package.tar.bz2'
+
+@groovy.transform.Field
 def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
 @groovy.transform.Field
@@ -682,6 +685,7 @@ def execute_build(ctx, stage_ctx)
                 selector: specific("${jobBuild.getNumber()}"),
                 filter: [
                     SYSTEM_PACKAGE,
+                    TEST_RESULT_PACKAGE,
                     'test_results.xml'
                 ].join(',')
             )
@@ -691,6 +695,7 @@ def execute_build(ctx, stage_ctx)
             stage_ctx.name,
             [
                 SYSTEM_PACKAGE,
+                TEST_RESULT_PACKAGE,
                 'test_results.xml'
             ]
         )

@@ -49,6 +49,9 @@ def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
 
 @groovy.transform.Field
+def final TEST_RESULT_PACKAGE = 'test-result-package.tar.bz2'
+
+@groovy.transform.Field
 def final SDK_DIR = 'src/sdk'
 
 @groovy.transform.Field
@@ -511,7 +514,7 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('package_build_result') {
+                stage('archive_build') {
                     steps {
                         print_step_info(env.STAGE_NAME)
 
@@ -527,16 +530,7 @@ pipeline {
                             BUILD_DIR+'/compile_commands.json',
                             'build.log'
                         ])
-                    }
-                }
 
-                //--------------------------------------------------------------
-                stage('archive_build') {
-                    // If we are building only, but not testing, we are done in
-                    // the pipeline here. Publish the build package.
-                    when { expression { TEST_SCRIPT == '' } }
-                    steps {
-                        print_step_info(env.STAGE_NAME)
                         archiveArtifacts(
                             artifacts: SYSTEM_PACKAGE,
                             fingerprint: true
@@ -696,7 +690,7 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('archive_build_and_tests') {
+                stage('archive_test_results') {
 
                     steps {
                         print_step_info(env.STAGE_NAME)
@@ -705,15 +699,14 @@ pipeline {
                             'tar',
                             [
                                 '--ignore-failed-read',
-                                '-cjf ' + SYSTEM_PACKAGE,
-                                BUILD_DIR+'/',
+                                '-cjf ' + TEST_RESULT_PACKAGE,
                                 'build_and_test.log',
                                 'test-doc/',
                                 'test-logs/'
                             ]
                         )
                         archiveArtifacts(
-                            artifacts: SYSTEM_PACKAGE + ', test_results.xml',
+                            artifacts: TEST_RESULT_PACKAGE + ', test_results.xml',
                             fingerprint: true
                         )
                         cleanWs()
