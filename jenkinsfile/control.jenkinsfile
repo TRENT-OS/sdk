@@ -357,6 +357,7 @@ def do_stash(name, file_list)
     println('stashing to ' + name)
     stash([
         name: name,
+        allowEmpty: true,
         includes: file_list.join(',')
     ])
 }
@@ -688,15 +689,15 @@ def execute_build(ctx, stage_ctx)
                     'test_results.xml'
                 ].join(',')
             )
-
-            do_stash(
-                stage_ctx.name,
-                [
-                    SYSTEM_PACKAGE,
-                    'test_results.xml'
-                ]
-            )
         }
+
+        do_stash(
+            stage_ctx.name,
+            [
+                SYSTEM_PACKAGE,
+                'test_results.xml'
+            ]
+        )
 
         cleanWs()
     }
