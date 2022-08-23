@@ -622,34 +622,48 @@ def execute_build(ctx, stage_ctx)
         ]
     )
 
-    // if we arrive here, the job has finished
+    // If we arrive here, the job has finished. Since propagate=false is set,
+    // unsuccessful builds don't throw an exception and we can deal with this
+    // manually. Even failed builds may have produced artifacts we want to save.
     stage_ctx.build = jobBuild
+    def idx = ctx.cnt - ctx.running.decrementAndGet()
     def result = jobBuild.getResult()
     def duration = jobBuild.getDurationString()
 
-    // Print some nice messages in the logs, ensure they are serialized.
-    lock('job-post-processing')
-    {
-        println((ctx.cnt - (--ctx.running)) + '/' + ctx.cnt + ': ' +
-                stage_ctx.test_ctx.systemName + ' system build/test stage took '
-                + duration + ', result: ' + result)
+    def operations = []
+    if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
+    if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
+    if (flags & SystemCtx.FLAG_SDK_DEMO) { operations += ['demo'] }
+    def op_str = operations ? operations.join(', ') : ''
 
-        def operations = []
-        if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
-        if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
-        if (flags & SystemCtx.FLAG_SDK_DEMO) { operations += ['demo'] }
-
-        ctx.summary.appendText(
-            stage_ctx.platform + ', ' + stage_ctx.test_ctx.systemName + ':' +
-            ' <a href="' + get_build_relative_url(jobBuild) + '">' +
-                '#' + jobBuild.getNumber() +
-            '</a>' +
-            ' <img src="' + get_result_ball_img_url(result) + '">' +
-            (operations ? (' ' + operations.join(', ')) : '') +
-            ' (' + duration + ')' +
-            '<br>',
-            false)
+    // propagate the result to the current state and build result, but catch the
+    // exception so we can continue
+    def msg = 'job ' + idx + '/' + ctx.cnt + ': ' + result + ' for ' +
+              stage_ctx.test_ctx.systemName + ', ' +
+              stage_ctx.platform + ', ' +
+              duration + ' [' + op_str + ']'
+    if ('SUCCESS' == result) {
+        println(msg)
+    } else if ('UNSTABLE' == result) {
+        unstable(msg) // will also set buildResult to UNSTABLE
+    } else { // anything else (FAILURE, ABORTED ...) is considered an error
+        catchError(
+            buildResult: 'UNSTABLE',
+            stageResult: result // propagate sub-job result
+        ) {
+            error(msg)
+        }
     }
+
+    ctx.summary.appendText(
+        stage_ctx.test_ctx.systemName + ', ' + stage_ctx.platform +
+        ' <a href="' + get_build_relative_url(jobBuild) + '">' +
+            '#' + jobBuild.getNumber() +
+        '</a>' +
+        ' <img src="' + get_result_ball_img_url(result) + '">' +
+        duration + ' [' + op_str + ']' +
+        '<br>',
+        false)
 
     // When CI is under heavy load, no free executor could be available to run
     // the artifact copy from the child job. In the worst case the child job
@@ -681,24 +695,6 @@ def execute_build(ctx, stage_ctx)
         cleanWs()
     }
 
-    // We have set propagate=false above, so we have to deal with the failures
-    // here. Since all this runs in block wrapped by catchError(), we can't
-    // really fail the build here, but we can ensure a message is logged and
-    // the state is set properly.
-    if ('SUCCESS' != result)
-    {
-        def msg = 'test ' + result + ' for ' + stage_ctx.platform + ', ' +
-                  stage_ctx.test_ctx.systemName
-
-        if ('UNSTABLE' == result) {
-            // propagate unstable
-            unstable(msg)
-        }
-        else {
-            // 'FAILURE', 'ABORTED' is fatal
-            error(msg)
-        }
-    }
 }
 
 
@@ -766,11 +762,12 @@ def do_jobs_for_test_systems(branch, testConfigs)
         }
     }
 
+    def num_jobs = jobStages.size()
     def sub_jobs_ctx = [
         summary:   summary,
         branch:    branch,
-        cnt:       jobStages.size(),
-        running:   jobStages.size(),
+        cnt:       num_jobs,
+        running:   new java.util.concurrent.atomic.AtomicInteger(num_jobs),
     ]
 
     def build_start = new Date()
