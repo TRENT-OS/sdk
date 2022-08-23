@@ -539,24 +539,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('stash') {
-                    // If we are testing the build artifacts now, stash it
-                    // together with the system sources, so the test node can
-                    // retrieve it.
-                    when { expression { TEST_SCRIPT != '' } }
-                    steps {
-                        print_step_info(env.STAGE_NAME)
-                        stash(
-                            name: STASH_TEST_PACKAGE,
-                            includes: [
-                                SYSTEM_PACKAGE,
-                                SYSTEM_DIR+'/'
-                            ].join(',')
-                        )
-                    }
-                }
-
-                //--------------------------------------------------------------
                 stage('cleanup') {
                     steps {
                         print_step_info(env.STAGE_NAME)
@@ -584,7 +566,11 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         cleanWs()
-                        unstash(STASH_TEST_PACKAGE)
+                        copyArtifacts(
+                            projectName: JOB_NAME,
+                            selector: specific("${BUILD_NUMBER}"), // must be a string
+                            filter: SYSTEM_PACKAGE
+                        )
                         run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
                         // The release SDK package lack some files needed for
                         // our tests, thus there is a special dev package.
