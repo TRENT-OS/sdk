@@ -410,29 +410,6 @@ def get_system()
 
 
 //------------------------------------------------------------------------------
-def save_current_job_log(
-    name
-) {
-    // Get the current job's log up to now. One day we should find a nicer way
-    // for this than downloading it, because that requires read access for
-    // anonymous users to the Jenkins GUI. Accessing the log though the builds's
-    // RunWrapper object is not possible, because nothing is exposed there. The
-    // only option would be via rawBuild(), but this method must be whitelisted
-    // for usage in groovy pipelines then.
-
-    run_app(
-        'wget',
-        [
-            '-q',
-            '--no-check-certificate',
-            '-O ' + name, // make wget overwrite file if it already exists
-            BUILD_URL + 'consoleText'
-        ]
-    )
-}
-
-
-//------------------------------------------------------------------------------
 def print_step_info(
     name
 ) {
@@ -494,16 +471,19 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
-                        run_shell_script(
-                            SDK_DIR+'/build-system.sh',
-                            [
-                                SYSTEM_DIR,
-                                PLATFORM,
-                                BUILD_DIR,
-                                '-D CMAKE_BUILD_TYPE=Debug',
-                                BUILD_PARAMS
-                            ]
-                        )
+                        tee('log-build.txt')
+                        {
+                            run_shell_script(
+                                SDK_DIR+'/build-system.sh',
+                                [
+                                    SYSTEM_DIR,
+                                    PLATFORM,
+                                    BUILD_DIR,
+                                    '-D CMAKE_BUILD_TYPE=Debug',
+                                    BUILD_PARAMS
+                                ]
+                            )
+                        }
                     }
                 }
 
@@ -521,17 +501,21 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
-                        // Continue with the test run even on static analyzer
-                        // errors, but mark the stage and the build as failed
-                        // even if the tests are successful.
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            run_shell_script(
-                                TESTS_DIR+'/cppcheck/check_static_analyzer.sh',
-                                [
-                                    BUILD_DIR+'/compile_commands.json',
-                                    SDK_DIR
-                                ]
-                            )
+                        tee('log-analyzer.txt')
+                        {
+                            // Continue with the test run even on static analyzer
+                            // errors, but mark the stage and the build as failed
+                            // even if the tests are successful.
+                            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE')
+                            {
+                                run_shell_script(
+                                    TESTS_DIR+'/cppcheck/check_static_analyzer.sh',
+                                    [
+                                        BUILD_DIR+'/compile_commands.json',
+                                        SDK_DIR
+                                    ]
+                                )
+                            }
                         }
                     }
                 }
@@ -540,8 +524,6 @@ pipeline {
                 stage('archive_build') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        save_current_job_log('build.log')
 
                         archive_as_tar_bz2(
                             SYSTEM_PACKAGE,
@@ -553,7 +535,8 @@ pipeline {
                                 'compile_commands.json'
                             ].collect { BUILD_DIR + '/' + it } +
                             [
-                                'build.log'
+                                'log-build.txt',
+                                'log-analyzer.txt'
                             ]
                         )
                     }
@@ -613,15 +596,19 @@ pipeline {
                         }
                     }
                     steps {
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                        tee('log-test-doc.txt')
                         {
                             dir('test-doc')
                             {
-                                run_python_package(
-                                    ['-B',],
-                                    ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
-                                    'pydoc',
-                                    ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT] )
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                                {
+                                    run_python_package(
+                                        ['-B',],
+                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        'pydoc',
+                                        ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT]
+                                    )
+                                }
                             }
                         }
                     }
@@ -652,45 +639,48 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
 
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                        tee('log-test-run.txt')
                         {
                             dir('test-logs')
                             {
-                                script
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                                 {
-                                    def prepareTestSystem = '../'+SYSTEM_DIR+'/prepare_test.sh'
-                                    if (fileExists(prepareTestSystem))
+                                    script
                                     {
-                                        run_shell_script(
-                                            prepareTestSystem,
-                                            ['../'+SDK_DIR])
+                                        def prepareTestSystem = '../'+SYSTEM_DIR+'/prepare_test.sh'
+                                        if (fileExists(prepareTestSystem))
+                                        {
+                                            run_shell_script(
+                                                prepareTestSystem,
+                                                ['../'+SDK_DIR])
+                                        }
                                     }
-                                }
 
-                                run_python_package(
-                                    ['-B',],
-                                    ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
-                                    'pytest',
-                                    [
-                                        // pytest options
-                                        '-p', 'no:cacheprovider',
-                                        '-v', // verbose output
-                                        '-o log_cli=True', // write logs to console
-                                        '--capture=no', // show printf() from python scripts in console
-                                        '--tb=short', // control traceback (long, short, line, native, no)
-                                        // test framework options
-                                        '--print_logs', // print system logs in console
-                                        '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
-                                        '--target=' + PLATFORM,
-                                        '--system_image=../'+BUILD_DIR+'/images/os_image.elf',
-                                        '--resource_dir=../'+SDK_DIR+'/resources',
-                                        '--junitxml=../test_results.xml',
-                                        '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
-                                        '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
-                                        TEST_PARAMS,
-                                        '../'+TESTS_DIR+'/'+TEST_SCRIPT
-                                    ]
-                                )
+                                    run_python_package(
+                                        ['-B',],
+                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        'pytest',
+                                        [
+                                            // pytest options
+                                            '-p', 'no:cacheprovider',
+                                            '-v', // verbose output
+                                            '-o log_cli=True', // write logs to console
+                                            '--capture=no', // show printf() from python scripts in console
+                                            '--tb=short', // control traceback (long, short, line, native, no)
+                                            // test framework options
+                                            '--print_logs', // print system logs in console
+                                            '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
+                                            '--target=' + PLATFORM,
+                                            '--system_image=../'+BUILD_DIR+'/images/os_image.elf',
+                                            '--resource_dir=../'+SDK_DIR+'/resources',
+                                            '--junitxml=../test_results.xml',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                            TEST_PARAMS,
+                                            '../'+TESTS_DIR+'/'+TEST_SCRIPT
+                                        ]
+                                    )
+                                }
                             }
                         }
                     }
@@ -701,14 +691,15 @@ pipeline {
 
                     steps {
                         print_step_info(env.STAGE_NAME)
-                        save_current_job_log('build_and_test.log')
+
                         archive_as_tar_bz2(
                             TEST_RESULT_PACKAGE,
                             [
-                                'build_and_test.log',
                                 'test_results.xml',
                                 'test-doc/',
-                                'test-logs/'
+                                'test-logs/',
+                                'log-test-doc.txt',
+                                'log-test-run.txt'
                             ]
                         )
 
