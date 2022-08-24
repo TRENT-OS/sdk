@@ -642,7 +642,7 @@ pipeline {
                         // so far was 310 seconds for test_uart, so double of
                         // that looks like a good value to use for now.
                         timeout(time: 620, unit: 'SECONDS')
-                   }
+                    }
 
                     agent {
                         docker {
