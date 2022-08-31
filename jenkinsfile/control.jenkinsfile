@@ -21,7 +21,7 @@ def final NODE_LABEL_BUILD = 'build'
 def final NODE_LABEL_PUBLISH_DOC = 'publish_doc'
 
 @groovy.transform.Field
-def final STASH_SDK_PACKAGES = 'sdk_packages'
+def final STASH_SDK_SCRIPT = 'sdk_script'
 
 @groovy.transform.Field
 def final STASH_SDK_DOC = 'sdk_doc'
@@ -983,14 +983,7 @@ pipeline {
                             fingerprint: true
                         ])
 
-                        do_stash(
-                            STASH_SDK_PACKAGES,
-                            [
-                                'scm-src/build-sdk.sh',
-                                DEV_SDK_PACKAGE,
-                                SDK_PACKAGE
-                            ]
-                        )
+                        do_stash(STASH_SDK_SCRIPT, ['scm-src/build-sdk.sh'])
 
                         do_stash(
                             STASH_SDK_DOC,
@@ -1041,7 +1034,12 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         cleanWs()
-                        unstash(STASH_SDK_PACKAGES)
+                        unstash(STASH_SDK_SCRIPT)
+                        copyArtifacts(
+                            projectName: JOB_NAME,
+                            selector: specific("${BUILD_NUMBER}"), // must be a string
+                            filter: DEV_SDK_PACKAGE
+                        )
                         // Extract the DEV_SDK_PACKAGE into the subfolder 'pkg',
                         // the name is hard-coded in the SDK build script.
                         run_app('mkdir', ['-p', 'pkg'])
