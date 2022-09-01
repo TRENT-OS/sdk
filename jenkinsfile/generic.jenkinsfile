@@ -115,6 +115,12 @@ def DOCKER_TEST_ENV  = [
               ].join(' ')
 ]
 
+//------------------------------------------------------------------------------
+def is_demo()
+{
+    return (FLAGS.toInteger() & FLAG_SDK_DEMO)
+}
+
 
 //------------------------------------------------------------------------------
 def set_build_info()
@@ -124,7 +130,7 @@ def set_build_info()
                                PLATFORM +
                                ' [build' +
                                (TEST_SCRIPT ? '+test' : '') +
-                               ((FLAGS.toInteger() & FLAG_SDK_DEMO) ? '+demo' : '') +
+                               (is_demo() ? '+demo' : '') +
                                ']'
 
     manager.createSummary("text.gif").appendText(
@@ -353,7 +359,7 @@ def get_sdk(
 //------------------------------------------------------------------------------
 def get_sdk_and_system()
 {
-    if (FLAGS.toInteger() & FLAG_SDK_DEMO)
+    if (is_demo())
     {
         // Build against SDK package
         get_sdk(SDK_PACKAGE)
