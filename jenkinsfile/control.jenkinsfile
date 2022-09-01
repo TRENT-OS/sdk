@@ -424,6 +424,21 @@ def print_step_info(name)
 
 
 //------------------------------------------------------------------------------
+def str_tag(tag, arg)
+{
+    if (arg instanceof List) {
+        ret = ''
+        for (e in arg) {
+            ret += str_tag(tag, e)
+        }
+        return ret
+    }
+
+    return '<'+tag+'>'+arg+'</'+tag+'>'
+}
+
+
+//------------------------------------------------------------------------------
 def do_notify_bitbucket()
 {
     // the StashNotifier requires to run in a node block, which should not be
@@ -747,11 +762,19 @@ def execute_build(ctx, stage_ctx)
     }
 
     ctx.summary.appendText(
-        "${stage_ctx.test_ctx.systemName}, ${stage_ctx.platform}" +
-        " <a href=\"${get_build_relative_url(jobBuild)}\">#${jobBuild.getNumber()}</a>" +
-        " <img src=\"${get_result_ball_img_url(result)}\">" +
-        "${duration}${flag_str}<br>",
-        false)
+        str_tag('tr',
+            str_tag('td', [
+                '<a href="' + get_build_relative_url(jobBuild) + '">' +
+                    '#' + jobBuild.getNumber() + '</a>' +
+                    ' <img src="' + get_result_ball_img_url(result) + '">',
+                stage_ctx.test_ctx.systemName,
+                stage_ctx.platform,
+                duration,
+                {flag_str}
+            ])
+        ),
+        false
+    )
 
     // When CI is under heavy load, no free executor could be available to run
     // the artifact copy from the child job. In the worst case the child job
@@ -794,7 +817,14 @@ def execute_build(ctx, stage_ctx)
 def do_jobs_for_test_systems(branch, testConfigs)
 {
     def summary = manager.createSummary("orange-square.png")
-    summary.appendText('<hr>')
+    summary.appendText(
+        '<hr>'+
+        // table border as single line without using CSS
+        '<table border=1 cellspacing=0 cellpadding=4>'+
+        str_tag('tr',
+            str_tag('th', ['Job', 'System', 'Platform', 'Duration', ' Notes'])
+        )
+    )
 
     def jobStages = []
     for (test_ctx in testConfigs) {
@@ -892,7 +922,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
     duration = groovy.time.TimeCategory.minus(new Date(), build_start)
     def duration_msg = "all system build/test stages took ${duration}"
     println(duration_msg)
-    summary.appendText("<hr>${duration_msg}", false)
+    summary.appendText("</table>${duration_msg}<hr>", false)
 
     // builds are done, now collect the results and artifacts. This needs a
     // workspace, so we have to allocate a node
