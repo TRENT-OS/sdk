@@ -488,39 +488,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('static_analyzer') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info(env.STAGE_NAME)
-                        do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
-                        tee('log-analyzer.txt')
-                        {
-                            // Continue with the test run even on static analyzer
-                            // errors, but mark the stage and the build as failed
-                            // even if the tests are successful.
-                            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE')
-                            {
-                                run_shell_script(
-                                    TESTS_DIR+'/cppcheck/check_static_analyzer.sh',
-                                    [
-                                        BUILD_DIR+'/compile_commands.json',
-                                        SDK_DIR
-                                    ]
-                                )
-                            }
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
                 stage('archive_build') {
                     steps {
                         print_step_info(env.STAGE_NAME)
@@ -585,36 +552,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('test_doc') {
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
-                            image DOCKER_TEST_ENV.image
-                            args DOCKER_TEST_ENV.args
-                        }
-                    }
-                    steps {
-                        tee('log-test-doc.txt')
-                        {
-                            dir('test-doc')
-                            {
-                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
-                                {
-                                    run_python_package(
-                                        ['-B',],
-                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
-                                        'pydoc',
-                                        ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT]
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------
                 stage('test') {
                     options {
                         // Limit the time the test can run. This also catches
@@ -647,6 +584,9 @@ pipeline {
                                 {
                                     script
                                     {
+                                        sh('pwd')
+                                        sh('ls -la')
+                                        sh('ls -la ../'+SYSTEM_DIR)
                                         def prepareTestSystem = '../'+SYSTEM_DIR+'/prepare_test.sh'
                                         if (fileExists(prepareTestSystem))
                                         {
