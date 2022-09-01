@@ -458,7 +458,6 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         run_shell_script(
                             SDK_DIR+'/build-system.sh',
                             [
@@ -485,12 +484,7 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
-
-                        do_checkout(
-                            'ta/seos_tests',
-                            BRANCH_OR_COMMIT,
-                            TESTS_DIR)
-
+                        do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
                         // Continue with the test run even on static analyzer
                         // errors, but mark the stage and the build as failed
                         // even if the tests are successful.
@@ -585,25 +579,14 @@ pipeline {
                 stage('checkout') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         cleanWs()
-
                         unstash(STASH_TEST_PACKAGE)
                         run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
-
                         // The release SDK package lack some files needed for
                         // our tests, thus there is a special dev package.
                         get_sdk(DEV_SDK_PACKAGE)
-
-                        do_checkout(
-                            'ta/common',
-                            BRANCH_OR_COMMIT,
-                            TEST_COMMON_DIR)
-
-                        do_checkout(
-                            'ta/seos_tests',
-                            BRANCH_OR_COMMIT,
-                            TESTS_DIR)
+                        do_checkout('ta/common', BRANCH_OR_COMMIT, TEST_COMMON_DIR)
+                        do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
                     }
                 }
 
@@ -707,9 +690,7 @@ pipeline {
 
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         save_current_job_log('build_and_test.log')
-
                         run_app(
                             'tar',
                             [
@@ -721,12 +702,10 @@ pipeline {
                                 'test-logs/'
                             ]
                         )
-
                         archiveArtifacts(
                             artifacts: SYSTEM_PACKAGE + ', test_results.xml',
                             fingerprint: true
                         )
-
                         cleanWs()
                     }
                 }
