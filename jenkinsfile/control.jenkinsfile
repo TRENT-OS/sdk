@@ -555,26 +555,25 @@ def do_checkout(
     branch,
     dir = '.'
 ) {
-    def summary = manager.createSummary("document.png")
-    summary.appendText('<hr>Repo: <code><strong>' + repo + '</strong></code>')
-
-    def scmVars = do_git_checkout(repo, branch, dir)
-
-    // if this is a custom branch, then fall back to integration
-    if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
-    {
-        def fallback_branch = 'integration'
-        summary.appendText(
-            ' (using <code><strong>' + fallback_branch + '</strong></code>, '+
-            'no branch <code><strong>' + branch + '</strong></code>)'
-        )
-        scmVars = do_git_checkout(repo, fallback_branch, dir)
+    // if there is no branch with the give name, the fallback is 'integration'
+    // and then 'master'.
+    def branches = [branch]
+    if ('master' != branch) {
+        if ('integration' != branch) {
+            branches.add('integration')
+        }
+        branches.add('master')
     }
 
-    if (!scmVars)
+    for (try_branch in branches)
     {
-        error('checkout error for: ' + branch + '@' + repo)
+        if (do_git_checkout(repo, try_branch, dir))
+        {
+            return
+        }
     }
+
+    error('checkout error for ' + repo + ', no branches: ' + branches.join(', '))
 }
 
 
