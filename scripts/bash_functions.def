@@ -129,6 +129,8 @@ open_trentos_test_env()
     parse_command_line_arguments "$@"
 
     local DOCKER_PARAMS_TEST=(
+        # allow sudo
+        --group-add=sudo
         # make the container run in a separate network namespace
         --network=bridge
         # allow the container to manage its interfaces, needed for TAP creation
