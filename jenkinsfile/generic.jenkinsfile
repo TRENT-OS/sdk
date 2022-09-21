@@ -100,7 +100,6 @@ def DOCKER_BUILD_ENV = [
     image:    DOCKER_BASE + '/trentos_build:20210503',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
                '--group-add=stack',
-               '--group-add=sudo'
               ].join(' ')
 ]
 
