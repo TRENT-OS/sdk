@@ -48,6 +48,7 @@
       - addFlags: TEST
     - rpi3
     - rpi4
+    - odroidc2
     - nitrogen6sx
     - spike32
     - zynqmp
@@ -125,6 +126,7 @@
       - addFlags: TEST
     - rpi3
     - rpi4
+    - odroidc2
     - zynqmp
 
 - test_certserver:
@@ -144,6 +146,7 @@
       - addFlags: TEST
     - sabre:
       - addFlags: TEST
+    - odroidc2
     - zynqmp
 
 - test_chanmux:
@@ -175,6 +178,7 @@
     - spike64:
       - addFlags: TEST
     - zynqmp
+    - odroidc2
 
 - test_cryptoserver:
   - flags: [BUILD]
