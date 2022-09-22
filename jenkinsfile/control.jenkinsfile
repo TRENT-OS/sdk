@@ -249,6 +249,12 @@ def yaml_to_SystemCtx(systemName, yaml_data)
     def params = [flags: 0]
 
     for (attr in yaml_data) {
+        if (!(attr instanceof Map)) {
+            // Currently all items are maps, if we see a String here this likely
+            // indicates a wrong indention. Any other type indicates something
+            // is really broken.
+            error('system ' + systemName + ' with invalid attribute: ' + attr)
+        }
         for (e in attr) {
             switch (e.key) {
                 case 'flags':
@@ -267,7 +273,7 @@ def yaml_to_SystemCtx(systemName, yaml_data)
                     params.putAt(e.key, yaml_parse_params(e.value))
                     break
                 default:
-                    error('unknown system attribute: ' + e.key)
+                    error('system ' + systemName + ' with unsupported attribute: ' + attr)
             }
         }
     }
