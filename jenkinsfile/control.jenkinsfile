@@ -70,7 +70,7 @@ def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
 @groovy.transform.Field
 def final DOCKER_BUILD_ENV = [
     registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_build:20210503',
+    image:    DOCKER_BASE + '/trentos_build:20220901',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
                '--group-add=stack',
               ].join(' ')
