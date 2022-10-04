@@ -347,7 +347,7 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
     (
         set -x
-        cmake ${CMAKE_PARAMS[@]}
+        cmake "${CMAKE_PARAMS[@]}"
     )
 
     # CMake must run twice, so the config settings propagate properly. The
