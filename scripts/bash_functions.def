@@ -90,7 +90,7 @@ do_run_docker()
         # set host name is container
         --hostname ${DOCKER_HOSTNAME}
         # set UID/GID of user in container to user on the host
-        -u $(id -u):$(id -g)
+        #-u $(id -u):$(id -g)
         # mount /etc/localtime in container as read only, so clock is valid
         -v /etc/localtime:/etc/localtime:ro
         # mount current working directory on host in container as /host

@@ -103,6 +103,8 @@ def final DOCKER_BUILD_ENV = makeDockerAgentCfg(
         'trentos_build:20220901',
         [
             '-v /etc/localtime:/etc/localtime:ro',
+            // Jenkins starts docker with a dedicated UID:GID, so we have
+            // to setup the required groups manually
             '--group-add=stack',
         ]
     )
@@ -119,6 +121,8 @@ def final DOCKER_TEST_ENV = makeDockerAgentCfg(
             '--cap-add=NET_ADMIN',
             '--cap-add=NET_RAW',
             '--device=/dev/net/tun',
+            // Jenkins starts docker with a dedicated UID:GID, so we have
+            // to setup the required groups manually
             '--group-add=sudo'
         ]
     )
