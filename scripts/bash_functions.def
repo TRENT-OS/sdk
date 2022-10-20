@@ -133,7 +133,7 @@ open_trentos_test_env()
     parse_command_line_arguments "$@"
 
     local DOCKER_PARAMS_TEST=(
-        # allow sudo
+        # allow sudo .... needed til container is fixed
         --group-add=sudo
         # allow access to tty devices (USB/UART adapters)
         --group-add=dialout
