@@ -95,6 +95,7 @@ do_run_docker()
         -v /etc/localtime:/etc/localtime:ro
         # mount current working directory on host in container as /host
         -v $(pwd):/host
+        -v /mnt/ramdisk:/ramdisk
         # set the current directory in the container to /host
         -w /host
         # caller's docker params
