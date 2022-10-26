@@ -293,6 +293,7 @@ echo "## Output:    ${BUILD_DIR}"
 
 # Set CMake parameters
 CMAKE_PARAMS=(
+    --warn-uninitialized
     # CMake settings
     -D CMAKE_TOOLCHAIN_FILE:FILEPATH=${TOOLCHAIN_FILE}
     # seL4 build system settings
