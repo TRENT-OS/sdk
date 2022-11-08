@@ -5,26 +5,42 @@
 // Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 //
 //------------------------------------------------------------------------------
-//
-// Job parameters (must be configured in the Jenkins job, otherwise we do not
-// see them here as global variables):
-//
-//    PLATFORM
-//    BRANCH_OR_COMMIT
-//    FLAGS (NOTE: Passed as String, convert to Integer for evaluation.)
-//    TEST_SYSTEM
-//    BUILD_PARAMS
-//    TEST_SCRIPT
-//    TEST_PARAMS
-//    SDK_SOURCE
-
-params.each { println(it.key + " = " + it.value) }
-
 
 // Global variables defined with 'def' cannot be accessed in methods due to
 // different scoping. Without 'def', they can be accessed - however, that is bad
 // practice. Using 'def' and the '@groovy.transform.Field' annotation is the
 // best option. For details see https://stackoverflow.com/questions/50571316
+
+//------------------------------------------------------------------------------
+// Build Parameters
+
+@groovy.transform.Field
+def PLATFORM = null
+
+@groovy.transform.Field
+def SDK_SOURCE = null
+
+@groovy.transform.Field
+def TEST_SYSTEM = null
+
+@groovy.transform.Field
+def BUILD_PARAMS = null
+
+@groovy.transform.Field
+def TEST_SCRIPT = null
+
+@groovy.transform.Field
+def TEST_PARAMS = null
+
+@groovy.transform.Field
+def SYSTEM_DIR = null  // internal parameter only
+
+@groovy.transform.Field
+def IS_DEMO = false  // internal parameter only
+
+
+//------------------------------------------------------------------------------
+// Constants
 
 @groovy.transform.Field
 def final NODE_LABEL_CONTROL = 'pipeline-control'
@@ -34,10 +50,6 @@ def final NODE_LABEL_BUILD = 'build'
 
 @groovy.transform.Field
 def final NODE_LABEL_TEST = 'test'
-
-// Flag used in the control pipeline to identify SDK demos.
-@groovy.transform.Field
-def final FLAG_SDK_DEMO = 1 << 2
 
 @groovy.transform.Field
 def final SDK_PACKAGE = 'sdk-package.tar.bz2'
@@ -65,17 +77,6 @@ def final TEST_COMMON_DIR = 'src/test-common'
 
 @groovy.transform.Field
 def final STASH_TEST_PACKAGE = 'test_package'
-
-
-
-// SYSTEM_DIR holds the path to the current system under test:
-// - For SDK demos - with the SDK demo flag set - TEST_SYSTEM specifies the demo
-//   path relative within SDK_DIR and SYSTEM_DIR will be updated accordingly in
-//   'get_system()'.
-// - Otherwise TEST_SYSTEM specifies a repo that will be checked out into the
-//   default path of SYSTEM_DIR in 'get_system()'.
-@groovy.transform.Field
-def SYSTEM_DIR = 'src/system'
 
 
 //------------------------------------------------------------------------------
@@ -117,21 +118,63 @@ def DOCKER_TEST_ENV  = [
 ]
 
 //------------------------------------------------------------------------------
-def is_demo()
-{
-    return (FLAGS.toInteger() & FLAG_SDK_DEMO)
-}
+def do_pipeline_init() {
 
+    // Jenkins provides a global variable "params" with all build parameters.
+    // BRANCH_OR_COMMIT must be dedicated a parameter, because the job's config
+    // uses this to determine where to get the jenkinsfile from. All other
+    // parameters are passed via PARAMS_JSON as JSON. This allows passing
+    // arbitrary parameters without having to make the jenkins job aware of any
+    // details.
 
-//------------------------------------------------------------------------------
-def set_build_info()
-{
+    // params.each { println(it.key + ' = ' + it.value) }
+
+    assert(BRANCH_OR_COMMIT)
+
+    def json_params = readJSON([
+        text: params.get('PARAMS_JSON'),
+        returnPojo: true])
+
+    // json_params.each { println('JSON: ' + it.key + ' = ' + it.value) }
+
+    PLATFORM = json_params.get('PLATFORM')
+    assert(PLATFORM instanceof String)
+
+    SDK_SOURCE = json_params.get('SDK_SOURCE')
+    assert(SDK_SOURCE instanceof String)
+
+    test_system_url = json_params.get('TEST_SYSTEM')
+    assert(test_system_url instanceof String)
+    def m = (test_system_url =~ '(.*)://(.*)')
+    assert(m.matches())
+    switch(m.group(1)) {
+        case 'pkg':
+            // a relative path within SDK_DIR
+            TEST_SYSTEM = m.group(2)
+            SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
+            IS_DEMO = true
+            break
+        case 'repo':
+            // a repo location to checkout from
+            TEST_SYSTEM = m.group(2)
+            SYSTEM_DIR = 'src/system'
+            IS_DEMO = false
+            break
+        default:
+            error('invalid parameter TEST_SYSTEM: ' + TEST_SYSTEM)
+    }
+
+    // these params are just empty if not set explicitly
+    TEST_SCRIPT = json_params.getOrDefault('TEST_SCRIPT','')
+    BUILD_PARAMS = json_params.getOrDefault('BUILD_PARAMS','')
+    TEST_PARAMS = json_params.getOrDefault('TEST_PARAMS','')
+
     currentBuild.displayName = BRANCH_OR_COMMIT + ', ' +
                                TEST_SYSTEM + ', ' +
                                PLATFORM +
                                ' [build' +
                                (TEST_SCRIPT ? '+test' : '') +
-                               (is_demo() ? '+demo' : '') +
+                               (IS_DEMO ? '+demo' : '') +
                                ']'
 
     manager.createSummary("text.gif").appendText(
@@ -396,23 +439,6 @@ def get_sdk(
 
 
 //------------------------------------------------------------------------------
-def get_system()
-{
-    // Actually, any system should be checked out from the repo and get built
-    // against the SDK package. Just demos that come with the SDK package get
-    // built from this package to ensure they work as expected.
-    if (is_demo())
-    {
-        SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
-    }
-    else
-    {
-        do_checkout(TEST_SYSTEM, BRANCH_OR_COMMIT, SYSTEM_DIR)
-    }
-}
-
-
-//------------------------------------------------------------------------------
 def print_step_info(
     name
 ) {
@@ -436,7 +462,7 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Init') {
             steps {
-                set_build_info()
+                do_pipeline_init()
             }
         }
 
@@ -452,11 +478,17 @@ pipeline {
                     steps {
                         print_step_info(env.STAGE_NAME)
                         cleanWs()
-                        // Demos must build with the released SDK package,
-                        // systems use the dev SDK package which may contain
-                        // experimental things.
-                        get_sdk(is_demo() ? SDK_PACKAGE : DEV_SDK_PACKAGE)
-                        get_system()
+                        script {
+                            if (IS_DEMO) {
+                                // The SDK demos must work out-of-the-box
+                                get_sdk(SDK_PACKAGE)
+                            } else {
+                                // systems use the dev SDK package, it contains
+                                // experimental things that don't get released.
+                                get_sdk(DEV_SDK_PACKAGE)
+                                do_checkout(TEST_SYSTEM, BRANCH_OR_COMMIT, SYSTEM_DIR)
+                            }
+                        }
                         do_notify_bitbucket()
                     }
                 }
@@ -561,7 +593,7 @@ pipeline {
 
             when {
                 beforeAgent true
-                expression { TEST_SCRIPT != '' }
+                expression { TEST_SCRIPT }
             }
 
             agent { label NODE_LABEL_TEST }

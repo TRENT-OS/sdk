@@ -617,36 +617,24 @@ def execute_build(ctx, stage_ctx)
         propagate: false, // don't throw exception on error
         parameters: [
             string(
-                name: 'PLATFORM',
-                value: stage_ctx.getOrDefault('platform', '')
-            ),
-            string(
                 name:  'BRANCH_OR_COMMIT',
                 value: ctx.branch ?: ''
             ),
             string(
-                name:  'FLAGS',
-                value: flags as String // must be made a string
-            ),
-            string(
-                name:  'TEST_SYSTEM',
-                value: stage_ctx.getOrDefault('testSystem', '')
-            ),
-            string(
-                name:  'BUILD_PARAMS',
-                value: stage_ctx.getOrDefault('buildParams', '')
-            ),
-            string(
-                name:  'TEST_SCRIPT',
-                value: stage_ctx.getOrDefault('testScript', '')
-            ),
-            string(
-                name:  'TEST_PARAMS',
-                value: stage_ctx.getOrDefault('testParams', '')
-            ),
-            string(
-                name:  'SDK_SOURCE',
-                value: "job://${currentBuild.fullProjectName}:${currentBuild.id}"
+                name: 'PARAMS_JSON',
+                value: writeJSON([
+                    returnText: true,
+                    json: [
+                        'PLATFORM': stage_ctx.get('platform'),
+                        'TEST_SYSTEM':
+                            ((flags & SystemCtx.FLAG_SDK_DEMO) ? 'pkg://' : 'repo://') +
+                            stage_ctx.get('testSystem'),
+                        'BUILD_PARAMS': stage_ctx.get('buildParams'),
+                        'TEST_SCRIPT': stage_ctx.get('testScript'),
+                        'TEST_PARAMS': stage_ctx.get('testParams'),
+                        'SDK_SOURCE': "job://${currentBuild.fullProjectName}:${currentBuild.id}",
+                    ].findAll{ !(it.value in [null, '']) }
+                ])
             ),
         ]
     )
