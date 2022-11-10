@@ -145,7 +145,7 @@ def do_pipeline_init() {
 
     test_system_url = json_params.get('TEST_SYSTEM')
     assert(test_system_url instanceof String)
-    def m = (test_system_url =~ '(.*)://(.*)')
+    def m = (test_system_url =~ '(.*?)://(.*)')
     assert(m.matches())
     switch(m.group(1)) {
         case 'pkg':
@@ -324,7 +324,7 @@ def do_git_checkout(
         def scm_cfg = scm.userRemoteConfigs[0]
 
         // use project URL to build repo URL
-        def m = (scm_cfg.url =~ '(.*)://([^/]*)(?:/(.*))?')
+        def m = (scm_cfg.url =~ '(.*?)://([^/]*)(?:/(.*))?')
         if (!m.matches()) {
             throw new Exception('could not parse url: ' + url)
         }
