@@ -633,6 +633,8 @@ def execute_build(ctx, stage_ctx)
                         'TEST_SCRIPT': stage_ctx.get('testScript'),
                         'TEST_PARAMS': stage_ctx.get('testParams'),
                         'SDK_SOURCE': "job://${currentBuild.fullProjectName}:${currentBuild.id}",
+                        'DOCKER_BUILD_ENV': DOCKER_BUILD_ENV,
+                        'DOCKER_TEST_ENV': DOCKER_TEST_ENV,
                     ].findAll{ !(it.value in [null, '']) }
                 ])
             ),

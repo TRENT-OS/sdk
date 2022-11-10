@@ -33,6 +33,12 @@ def TEST_SCRIPT = null
 def TEST_PARAMS = null
 
 @groovy.transform.Field
+def DOCKER_BUILD_ENV = null
+
+@groovy.transform.Field
+def DOCKER_TEST_ENV = null
+
+@groovy.transform.Field
 def SYSTEM_DIR = null  // internal parameter only
 
 @groovy.transform.Field
@@ -80,44 +86,6 @@ def final STASH_TEST_PACKAGE = 'test_package'
 
 
 //------------------------------------------------------------------------------
-// Docker
-//------------------------------------------------------------------------------
-//
-// Notes:
-// * bind the localtime to docker container to avoid problems of gaps between
-//   the localtime of the container and the host.
-// * add user to group "stack" (1001) in order to grant usage of Haskell stack
-//   in the docker image
-//
-// ToDo
-// * why are sudo right needed in the test container
-//
-
-def DOCKER_BASE = 'hc-docker:5000'
-def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
-
-def DOCKER_BUILD_ENV = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_build:20210503',
-    args:     ['-v /etc/localtime:/etc/localtime:ro',
-               '--group-add=stack',
-              ].join(' ')
-]
-
-def DOCKER_TEST_ENV  = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_test:20211217',
-    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
-               '-v /etc/localtime:/etc/localtime:ro',
-               '--network=bridge',
-               '--cap-add=NET_ADMIN',
-               '--cap-add=NET_RAW',
-               '--device=/dev/net/tun',
-               '--group-add=sudo'
-              ].join(' ')
-]
-
-//------------------------------------------------------------------------------
 def do_pipeline_init() {
 
     // Jenkins provides a global variable "params" with all build parameters.
@@ -163,6 +131,12 @@ def do_pipeline_init() {
         default:
             error('invalid parameter TEST_SYSTEM: ' + TEST_SYSTEM)
     }
+
+    DOCKER_BUILD_ENV = json_params.get('DOCKER_BUILD_ENV')
+    assert(DOCKER_BUILD_ENV instanceof Map)
+
+    DOCKER_TEST_ENV = json_params.get('DOCKER_TEST_ENV')
+    assert(DOCKER_TEST_ENV instanceof Map)
 
     // these params are just empty if not set explicitly
     TEST_SCRIPT = json_params.getOrDefault('TEST_SCRIPT','')
