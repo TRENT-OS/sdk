@@ -44,13 +44,14 @@
       - addFlags: TEST
     - sabre:
       - addFlags: TEST
+    - zynqmp:
+      - addFlags: TEST
     - spike64:
       - addFlags: TEST
     - rpi3
     - rpi4
     - nitrogen6sx
     - spike32
-    - zynqmp
 
 
 #-------------------------------------------------------------------------------
@@ -123,9 +124,9 @@
       - addFlags: TEST
     - sabre:
       - addFlags: TEST
+    - zynqmp # test still fails
     - rpi3
     - rpi4
-    - zynqmp
 
 - test_certserver:
   - flags: [BUILD]
@@ -144,7 +145,8 @@
       - addFlags: TEST
     - sabre:
       - addFlags: TEST
-    - zynqmp
+    - zynqmp:
+      - addFlags: TEST
 
 - test_chanmux:
   - flags: [BUILD]
@@ -172,9 +174,10 @@
   - platforms:
     - zynq7000:
       - addFlags: TEST
+    - zynqmp:
+      - addFlags: TEST
     - spike64:
       - addFlags: TEST
-    - zynqmp
 
 - test_cryptoserver:
   - flags: [BUILD]
