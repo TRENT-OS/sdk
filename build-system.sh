@@ -151,6 +151,21 @@ case "${BUILD_PLATFORM}" in
         CMAKE_PARAMS_PLATFORM+=( -D ARM_CPU=${QEMU_VIRT_ARM_CPU} )
         ;;
     #-------------------------------------
+    qemu-riscv-virt )
+        # seL4 build system defaults to rv64
+        BUILD_ARCH=riscv64
+        ;;
+    #-------------------------------------
+    qemu-riscv-virt32 )
+        BUILD_ARCH=riscv32
+        BUILD_PLATFORM=qemu-riscv-virt
+        ;;
+    #-------------------------------------
+    qemu-riscv-virt64 )
+        BUILD_ARCH=riscv64
+        BUILD_PLATFORM=qemu-riscv-virt
+        ;;
+    #-------------------------------------
     spike32 )
         BUILD_PLATFORM=spike
         BUILD_ARCH=riscv32
