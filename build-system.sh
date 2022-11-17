@@ -208,6 +208,11 @@ case "${BUILD_PLATFORM}" in
         BUILD_ARCH=aarch32
         ;;
     #-------------------------------------
+    rpi3-64 )
+        BUILD_PLATFORM=rpi3
+        BUILD_ARCH=aarch64
+        ;;
+    #-------------------------------------
     fvp |\
     imx8mq-evk | imx8mm-evk |\
     odroidc2 |\
