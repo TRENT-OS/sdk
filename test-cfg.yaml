@@ -53,8 +53,6 @@
     - qemu-arm-virt-a53:
       - addFlags: TEST
     - odroidc2
-    - jetson-tx1-dev-kit
-    - jetson-nano-2gb-dev-kit
 
 
 #-------------------------------------------------------------------------------
@@ -89,14 +87,6 @@
   - platforms:
     - zynqmp:
       - addFlags: TEST
-    - qemu-arm-virt-a53:
-      - addFlags: TEST
-    - odroidc2
-
-- demo-mavlink-testapp:
-  - flags: [BUILD]
-  - testScript: test_demo_mavlink-testapp.py
-  - platforms:
     - qemu-arm-virt-a53:
       - addFlags: TEST
     - odroidc2
