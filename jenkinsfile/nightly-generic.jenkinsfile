@@ -5,70 +5,161 @@
 // Copyright (C) 2020-2021, HENSOLDT Cyber GmbH
 //
 //------------------------------------------------------------------------------
-//
-// job parameters (must be configured in the Jenkins job, otherwise we do not
-// see them here as global variables)
-//
-//    PLATFORM
-//    BRANCH_OR_COMMIT
-//    RELEASE_TYPE
-//    TEST_SYSTEM
-//    BUILD_PARAMS
-//    TEST_SCRIPT
-//    UPSTREAM_JOB_NAME
-//    UPSTREAM_JOB_ID
 
-params.each { println it.key + " = " + it.value }
-
-def SYSTEM_PACKAGE = 'package.bz2'
-
-def testScript = 'src/test/tests/' + TEST_SCRIPT
+// Global variables defined with 'def' cannot be accessed in methods due to
+// different scoping. Without 'def', they can be accessed - however, that is bad
+// practice. Using 'def' and the '@groovy.transform.Field' annotation is the
+// best option. For details see https://stackoverflow.com/questions/50571316
 
 //------------------------------------------------------------------------------
-// Docker
-//------------------------------------------------------------------------------
-//
-// Notes:
-// * bind the localtime to docker container to avoid problems of gaps between
-//   the localtime of the container and the host.
-// * add user to group "stack" (1001) in order to grant usage of Haskell stack
-//   in the docker image
-//
-// ToDo
-// * why are sudo right needed in the test container
-//
+// Build Parameters
 
-def DOCKER_BASE = 'hc-docker:5000'
-def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+@groovy.transform.Field
+def PLATFORM = null
 
-def DOCKER_BUILD_ENV = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_build:20210503',
-    args:     ['-v /etc/localtime:/etc/localtime:ro',
-               '--group-add=stack',
-              ].join(' ')
-]
+@groovy.transform.Field
+def MODE = null
 
-def DOCKER_TEST_ENV  = [
-    registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_test:20211217',
-    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
-               '-v /etc/localtime:/etc/localtime:ro',
-               '--network=bridge',
-               '--cap-add=NET_ADMIN',
-               '--cap-add=NET_RAW',
-               '--device=/dev/net/tun',
-               '--group-add=sudo'
-              ].join(' ')
-]
+@groovy.transform.Field
+def DEBUG_LEVEL = null
+
+@groovy.transform.Field
+def SDK_SOURCE = null
+
+@groovy.transform.Field
+def TEST_SYSTEM = null
+
+@groovy.transform.Field
+def BUILD_PARAMS = null
+
+@groovy.transform.Field
+def TEST_SCRIPT = null
+
+@groovy.transform.Field
+def TEST_PARAMS = null
+
+@groovy.transform.Field
+def DOCKER_BUILD_ENV = null
+
+@groovy.transform.Field
+def DOCKER_TEST_ENV = null
+
+@groovy.transform.Field
+def SYSTEM_DIR = null  // internal parameter only
+
+@groovy.transform.Field
+def IS_DEMO = false  // internal parameter only
 
 
 //------------------------------------------------------------------------------
-def set_build_info()
-{
-    def build_name_str = BRANCH_OR_COMMIT + ', ' + TEST_SYSTEM + ', '+ PLATFORM +
-                         ', ' + RELEASE_TYPE
-    currentBuild.displayName = build_name_str
+// Constants
+
+@groovy.transform.Field
+def final NODE_LABEL_CONTROL = 'pipeline-control'
+
+@groovy.transform.Field
+def final NODE_LABEL_BUILD = 'build'
+
+@groovy.transform.Field
+def final NODE_LABEL_TEST = 'test'
+
+@groovy.transform.Field
+def final SDK_PACKAGE = 'sdk-package.tar.bz2'
+
+@groovy.transform.Field
+def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
+
+@groovy.transform.Field
+def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
+
+@groovy.transform.Field
+def final TEST_RESULT_PACKAGE = 'test-result-package.tar.bz2'
+
+@groovy.transform.Field
+def final SDK_DIR = 'src/sdk'
+
+@groovy.transform.Field
+def final BUILD_DIR = 'build'
+
+@groovy.transform.Field
+def final TESTS_DIR = 'src/tests'
+
+@groovy.transform.Field
+def final TEST_COMMON_DIR = 'src/test-common'
+
+@groovy.transform.Field
+def final STASH_TEST_PACKAGE = 'test_package'
+
+
+//------------------------------------------------------------------------------
+def do_pipeline_init() {
+
+    // Jenkins provides a global variable "params" with all build parameters.
+    // BRANCH_OR_COMMIT must be dedicated a parameter, because the job's config
+    // uses this to determine where to get the jenkinsfile from. All other
+    // parameters are passed via PARAMS_JSON as JSON. This allows passing
+    // arbitrary parameters without having to make the jenkins job aware of any
+    // details.
+
+    // params.each { println(it.key + ' = ' + it.value) }
+
+    assert(BRANCH_OR_COMMIT)
+
+    def json_params = readJSON([
+        text: params.get('PARAMS_JSON'),
+        returnPojo: true])
+
+    // json_params.each { println('JSON: ' + it.key + ' = ' + it.value) }
+
+    PLATFORM = json_params.get('PLATFORM')
+    assert(PLATFORM instanceof String)
+
+    SDK_SOURCE = json_params.get('SDK_SOURCE')
+    assert(SDK_SOURCE instanceof String)
+
+    test_system_url = json_params.get('TEST_SYSTEM')
+    assert(test_system_url instanceof String)
+    def m = (test_system_url =~ '(.*?)://(.*)')
+    assert(m.matches())
+    switch(m.group(1)) {
+        case 'pkg':
+            // a relative path within SDK_DIR
+            TEST_SYSTEM = m.group(2)
+            SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
+            IS_DEMO = true
+            break
+        case 'repo':
+            // a repo location to checkout from
+            TEST_SYSTEM = m.group(2)
+            SYSTEM_DIR = 'src/system'
+            IS_DEMO = false
+            break
+        default:
+            error('invalid parameter TEST_SYSTEM: ' + TEST_SYSTEM)
+    }
+
+    DOCKER_BUILD_ENV = json_params.get('DOCKER_BUILD_ENV')
+    assert(DOCKER_BUILD_ENV instanceof Map)
+
+    DOCKER_TEST_ENV = json_params.get('DOCKER_TEST_ENV')
+    assert(DOCKER_TEST_ENV instanceof Map)
+
+    // these params are just empty if not set explicitly
+    TEST_SCRIPT = json_params.getOrDefault('TEST_SCRIPT','')
+    BUILD_PARAMS = json_params.getOrDefault('BUILD_PARAMS','')
+
+
+    MODE = json_params.getOrDefault('MODE','Debug')
+    DEBUG_LEVEL = json_params.getOrDefault('DEBUG_LEVEL','WARNING')
+
+    currentBuild.displayName = BRANCH_OR_COMMIT + ', ' +
+                               TEST_SYSTEM + ', ' +
+                               PLATFORM + ', ' +
+                               RELEASE_TYPE
+                               ' [build' +
+                               (TEST_SCRIPT ? '+test' : '') +
+                               (IS_DEMO ? '+demo' : '') +
+                               ']'
 
     manager.createSummary("text.gif").appendText(
         '<table style="border: 1px solid black; border-collapse: collapse;">'+
@@ -96,7 +187,7 @@ def do_notify_bitbucket()
 
     if (env.NODE_NAME)
     {
-        notifyBitbucket();
+        notifyBitbucket()
     }
     else
     {
@@ -105,7 +196,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node('pipeline-control') { notifyBitbucket() }
+        node(label: NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 
@@ -121,13 +212,16 @@ def run_app(
     {
         cmdLine += ' ' + param_array.join(' ')
     }
-    // Don't exit shell if wget returned an error code.
-    if (application == 'wget')
-    {
-        cmdLine = 'set +e;'+cmdLine+';set -e;'
-    }
 
-    sh(cmdLine)
+    try
+    {
+        sh(cmdLine)
+    }
+    catch (Exception e)
+    {
+        println('Exception running command: ' + e)
+        throw e
+    }
 }
 
 
@@ -137,6 +231,63 @@ def run_shell_script(
     param_array = null
 ) {
     run_app(script, param_array)
+}
+
+
+//------------------------------------------------------------------------------
+def archive_as_tar_bz2(name, files = null)
+{
+    def params = [
+        '-c',
+        '-j',
+        '-f ' + name,
+        '--ignore-failed-read',
+        '--sort=name',
+        '--numeric-owner',
+        '--owner=0',
+        '--group=0',
+    ]
+
+    if (files) {
+        params += files
+    }
+
+    run_app('tar', params)
+    archiveArtifacts(artifacts: name, fingerprint: true)
+}
+
+
+//------------------------------------------------------------------------------
+def run_python_package(
+    python_params,
+    python_paths,
+    python_package, // can't use 'package', it's a reserved groovy keyword
+    package_params = []
+) {
+    def env = []
+    def params = []
+
+    if (python_paths)
+    {
+       env += ['PYTHONPATH=' + python_paths.join(':')]
+    }
+
+    if (python_params)
+    {
+        params += python_params
+    }
+
+    params += ['-m', python_package]
+
+    if (package_params)
+    {
+        params += package_params
+    }
+
+    withEnv(env)
+    {
+        run_app('python3', params)
+    }
 }
 
 
@@ -157,7 +308,7 @@ def do_git_checkout(
         def scm_cfg = scm.userRemoteConfigs[0]
 
         // use project URL to build repo URL
-        def m = (scm_cfg.url =~ '(.*)://([^/]*)(?:/(.*))?')
+        def m = (scm_cfg.url =~ '(.*?)://([^/]*)(?:/(.*))?')
         if (!m.matches()) {
             throw new Exception('could not parse url: ' + url)
         }
@@ -165,6 +316,7 @@ def do_git_checkout(
 
         def scmVars = checkout([
                     poll: false,
+                    changelog: false,
                     scm: [
                         $class: 'GitSCM',
                         branches: [
@@ -193,8 +345,8 @@ def do_git_checkout(
                         ],
                         userRemoteConfigs: [
                             [
-                                 credentialsId: scm_cfg.credentialsId,
-                                 url: repo_url
+                                credentialsId: scm_cfg.credentialsId,
+                                url: repo_url
                             ]
                         ]
                     ]
@@ -207,7 +359,7 @@ def do_git_checkout(
     }
     catch (Exception e)
     {
-        println 'Exception: ' + e;
+        println('Exception: ' + e)
         return null
     }
 }
@@ -219,60 +371,54 @@ def do_checkout(
     branch,
     dir = '.'
 ) {
-    manager.createSummary("text.gif").appendText('<hr>' + repo)
-
-    def scmVars = do_git_checkout(repo, branch, dir)
-
-    // if this is a custom branch, then fall back to integration
-    if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
-    {
-        manager.createSummary("text.gif").appendText('no branch: ' + branch)
-        scmVars = do_git_checkout(repo, 'integration', dir)
+    // if there is no branch with the given name, the fallback is 'integration'
+    // and then 'master'.
+    def branches = [branch]
+    if ('master' != branch) {
+        if ('integration' != branch) {
+            branches.add('integration')
+        }
+        branches.add('master')
     }
 
-    if (!scmVars)
+    for (try_branch in branches)
     {
-        echo 'error'
-        return
+        if (do_git_checkout(repo, try_branch, dir))
+        {
+            return
+        }
     }
+
+    error('checkout error for ' + repo + ', no branches: ' + branches.join(', '))
 }
 
 
 //------------------------------------------------------------------------------
 def get_sdk(
-    dir = '.'
+    package_name
 ) {
+    def m = (SDK_SOURCE =~ 'job://(.*):(.*)')
+    if (!m.matches()) {
+        throw new Exception('unsupported SDK source: ' + SDK_SOURCE)
+        // ToDo: if the parameter is left empty, we could add a convenience
+        //       feature that currentBuild.getBuildCauses() is checked. If it is
+        //       a BuildUpstreamCause then the fields 'upstreamProject' and
+        //       'upstreamBuild' could be used.
+    }
 
-    // instead of specific("${UPSTREAM_JOB_ID}") we could also use upstream()
+    def job_name = m.group(1)
+    def job_id = Integer.parseInt(m.group(2))
 
-    def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
-
+    // This only works in production mode if the job did also call
+    // copyArtifactPermission() to give us the permission to copy artifacts.
     copyArtifacts(
-        projectName: UPSTREAM_JOB_NAME,
-        selector: specific("${UPSTREAM_JOB_ID}"), // need to ensure this is a string
-        filter: DEV_SDK_PACKAGE,
+        projectName: job_name,
+        selector: specific("${job_id}"), // need to ensure this is a string
+        filter: package_name,
     )
 
-    run_app('mkdir', ['-p', dir])
-    run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C ' + dir])
-}
-
-
-//------------------------------------------------------------------------------
-def save_current_job_log(
-    name
-) {
-    // get the current job's log up to now. One day we should find a nicer way
-    // for this than downloading it
-    run_app(
-        'wget',
-        [
-            '-q',
-            '--no-check-certificate',
-            '-O ' + name,
-            BUILD_URL + 'consoleText'
-        ]
-    )
+    run_app('mkdir', ['-p', SDK_DIR])
+    run_app('tar', ['-xf ' + package_name, '-C ' + SDK_DIR])
 }
 
 
@@ -294,28 +440,32 @@ pipeline {
     options {
         skipDefaultCheckout()
 
-        buildDiscarder(strategy: [$class: 'EnhancedOldBuildDiscarder',
-                                    artifactDaysToKeepStr: '',
-                                    artifactNumToKeepStr: '',
-                                    daysToKeepStr: '1',
-                                    numToKeepStr: '1000',
-                                    discardOnlyOnSuccess: false,
-                                    holdMaxBuilds: false])
+        buildDiscarder(
+            strategy: [
+                $class: 'EnhancedOldBuildDiscarder',
+                artifactDaysToKeepStr: '',
+                artifactNumToKeepStr: '',
+                daysToKeepStr: '1',
+                numToKeepStr: '1000',
+                discardOnlyOnSuccess: false,
+                holdMaxBuilds: false
+            ]
+        )
     }
 
     stages {
 
         //----------------------------------------------------------------------
-        stage('init') {
+        stage('Init') {
             steps {
-                set_build_info()
+                do_pipeline_init()
             }
         }
 
         //----------------------------------------------------------------------
-        stage('Build_stage') {
+        stage('Build Stage') {
 
-            agent { label "build" }
+            agent { label NODE_LABEL_BUILD }
 
             stages {
 
@@ -323,86 +473,282 @@ pipeline {
                 stage('checkout') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         cleanWs()
-
-                        get_sdk('src/sdk')
-
-                        do_checkout(
-                            TEST_SYSTEM,
-                            BRANCH_OR_COMMIT,
-                            'src/system')
-
+                        script {
+                            if (IS_DEMO) {
+                                // The SDK demos must work out-of-the-box
+                                get_sdk(SDK_PACKAGE)
+                            } else {
+                                // systems use the dev SDK package, it contains
+                                // experimental things that don't get released.
+                                get_sdk(DEV_SDK_PACKAGE)
+                                do_checkout(TEST_SYSTEM, BRANCH_OR_COMMIT, SYSTEM_DIR)
+                            }
+                        }
                         do_notify_bitbucket()
                     }
                 }
 
                 //--------------------------------------------------------------
                 stage('build') {
-
                     agent {
                         docker {
                             reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
+                        tee('log-build.txt')
+                        {
+                            run_shell_script(
+                                SDK_DIR+'/build-system.sh',
+                                [
+                                    SYSTEM_DIR,
+                                    PLATFORM,
+                                    BUILD_DIR,
+                                    '-D CMAKE_BUILD_TYPE=' + MODE,
+                                    '-D CMAKE_C_FLAGS=-DDebug_Config_LOG_LEVEL=Debug_LOG_LEVEL_'+ ctx.debug_level) ,
 
-                        run_shell_script(
-                            'src/sdk/build-system.sh',
+
+                                    BUILD_PARAMS
+                                ]
+                            )
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('static_analyzer') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
+                        tee('log-analyzer.txt')
+                        {
+                            // Continue with the test run even on static analyzer
+                            // errors, but mark the stage and the build as failed
+                            // even if the tests are successful.
+                            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE')
+                            {
+                                run_shell_script(
+                                    TESTS_DIR+'/cppcheck/check_static_analyzer.sh',
+                                    [
+                                        BUILD_DIR+'/compile_commands.json',
+                                        SDK_DIR
+                                    ]
+                                )
+                            }
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('archive_build') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        archive_as_tar_bz2(
+                            SYSTEM_PACKAGE,
+                            // Keep the build artifacts minimal and don't
+                            // use BUILD_DIR+'/' to get everything
                             [
-                                'src/system', // PROJECT_DIR
-                                PLATFORM,
-                                'build', // BUILD_DIR
-                                '-D CMAKE_BUILD_TYPE=' + RELEASE_TYPE,
-                                BUILD_PARAMS
+                                'capdl/capdl-loader-app/gen_config/',
+                                'elfloader/elfloader',
+                                'images/os_image.elf',
+                                'kernel/kernel_all.c',
+                                'kernel/kernel_all.i',
+                                'kernel/kernel.elf',
+                                'kernel/kernel.dts',
+                                'kernel/gen_config/',
+                                'kernel/gen_headers/',
+                                'kernel/generated/',
+                                'graph.svg',
+                                'compile_commands.json'
+                            ].collect { BUILD_DIR + '/' + it } +
+                            [
+                                'log-build.txt',
+                                'log-analyzer.txt'
                             ]
                         )
                     }
                 }
 
-                 //----------------------------------------------------------------------
-                stage('package') {
+                //--------------------------------------------------------------
+                stage('cleanup') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        cleanWs()
+                    }
+                }
+
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test Stage') {
+
+            when {
+                beforeAgent true
+                expression { TEST_SCRIPT }
+            }
+
+            agent { label NODE_LABEL_TEST }
+
+            stages {
+
+                //--------------------------------------------------------------
+                stage('checkout') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        cleanWs()
+                        copyArtifacts(
+                            projectName: JOB_NAME,
+                            selector: specific("${BUILD_NUMBER}"), // must be a string
+                            filter: SYSTEM_PACKAGE
+                        )
+                        run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
+                        // The release SDK package lack some files needed for
+                        // our tests, thus there is a special dev package.
+                        get_sdk(DEV_SDK_PACKAGE)
+                        do_checkout('ta/common', BRANCH_OR_COMMIT, TEST_COMMON_DIR)
+                        do_checkout('ta/seos_tests', BRANCH_OR_COMMIT, TESTS_DIR)
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('test_doc') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
+                        tee('log-test-doc.txt')
+                        {
+                            dir('test-doc')
+                            {
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                                {
+                                    run_python_package(
+                                        ['-B',],
+                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        'pydoc',
+                                        ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT]
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('test') {
+                    options {
+                        // Limit the time the test can run. This also catches
+                        // the cases where the (buggy) test framework doesn't
+                        // kill all threads and these threads keep it from
+                        // terminating. The longest test execution time seen
+                        // so far was 310 seconds for test_uart, so double of
+                        // that looks like a good value to use for now.
+                        timeout(time: 620, unit: 'SECONDS')
+                    }
+
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
 
                     steps {
                         print_step_info(env.STAGE_NAME)
 
-                        save_current_job_log('build.log')
+                        tee('log-test-run.txt')
+                        {
+                            dir('test-logs')
+                            {
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                                {
+                                    script
+                                    {
+                                        def prepareTestSystem = '../'+SYSTEM_DIR+'/prepare_test.sh'
+                                        if (fileExists(prepareTestSystem))
+                                        {
+                                            run_shell_script(
+                                                prepareTestSystem,
+                                                ['../'+SDK_DIR])
+                                        }
+                                    }
 
-                        run_app(
-                            'tar',
+                                    run_python_package(
+                                        ['-B',],
+                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        'pytest',
+                                        [
+                                            // pytest options
+                                            '-p', 'no:cacheprovider',
+                                            '-v', // verbose output
+                                            '-o log_cli=True', // write logs to console
+                                            '--capture=no', // show printf() from python scripts in console
+                                            '--tb=short', // control traceback (long, short, line, native, no)
+                                            // test framework options
+                                            '--print_logs', // print system logs in console
+                                            '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
+                                            '--target=' + PLATFORM,
+                                            '--system_image=../'+BUILD_DIR+'/images/os_image.elf',
+                                            '--resource_dir=../'+SDK_DIR+'/resources',
+                                            '--junitxml=../test_results.xml',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
+                                            '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                            TEST_PARAMS,
+                                            '../'+TESTS_DIR+'/'+TEST_SCRIPT
+                                        ]
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('archive_test_results') {
+
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        archive_as_tar_bz2(
+                            TEST_RESULT_PACKAGE,
                             [
-                                '--ignore-failed-read',
-                                '-cjf ' + SYSTEM_PACKAGE,
-                                'build.log',
-                                'test-doc',
                                 'test_results.xml',
-                                'build/capdl/capdl-loader-app/gen_config/',
-                                'build/elfloader/elfloader',
-                                'build/images/os_image.elf',
-                                'build/kernel/kernel_all.c',
-                                'build/kernel/kernel_all.i',
-                                'build/kernel/kernel.elf',
-                                'build/kernel/kernel.dts',
-                                'build/kernel/gen_config/',
-                                'build/kernel/gen_headers/',
-                                'build/kernel/generated/',
-                                // ToDo: take all files from 'build/', but exclude subfolders
-                                'test-logs/'
+                                'test-doc/',
+                                'test-logs/',
+                                'log-test-doc.txt',
+                                'log-test-run.txt'
                             ]
-                        )
-
-                        archiveArtifacts(
-                            artifacts: SYSTEM_PACKAGE,
-                            fingerprint: true
                         )
 
                         cleanWs()
                     }
                 }
-
             }
         }
 

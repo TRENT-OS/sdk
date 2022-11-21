@@ -6,100 +6,47 @@
 //
 //------------------------------------------------------------------------------
 
+// Global variables defined with 'def' cannot be accessed in methods due to
+// different scoping. Without 'def', they can be accessed - however, that is bad
+// practice. Using 'def' and the '@groovy.transform.Field' annotation is the
+// best option. For details see https://stackoverflow.com/questions/50571316
 
-def DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
+@groovy.transform.Field
+def final NODE_LABEL_CONTROL = 'pipeline-control'
 
-//------------------------------------------------------------------------------
-// Test system list
-class TestCtx {
-    String      systemName;  // Name of the system to build.
-    String      repo;        // Repo location.
-    String      testScript;  // Test script to be executed. Defaults to
-                             // <systemName>.py.
-    ArrayList   platforms;   // List of supported platforms. `null` if full
-                             // support.
-    String      buildParams  // Additional build parameters.
+@groovy.transform.Field
+def final NODE_LABEL_BUILD = 'build'
 
-    //--------------------------------------------------------------------------
-    // Format of systemName is "name[@path/to/repo]". If no repo is given we
-    // assume it is taken from "ss/<systemName>". There is no ".git" extension
-    // here, this will be added internally.
-    public TestCtx(
-        String systemName,
-        String testScript = null,
-        ArrayList platforms = null,
-        String buildParams = null)
-    {
-        def repo = 'ss/' + systemName
-        def arr = systemName.split('@',2);
-        if (2 == arr.length) {
-            systemName = arr[0]
-            repo = arr[1]
-        }
+@groovy.transform.Field
+def final NODE_LABEL_PUBLISH_DOC = 'publish_doc'
 
-        if (null == testScript)
-        {
-            testScript = systemName + '.py'
-        }
+@groovy.transform.Field
+def final STASH_SDK_SCRIPT = 'sdk_script'
 
-        this.systemName  = systemName;
-        this.repo        = repo;
-        this.testScript  = testScript;
-        this.platforms   = platforms;
-        this.buildParams = buildParams;
-    }
-}
+@groovy.transform.Field
+def final STASH_SDK_DOC = 'sdk_doc'
 
-def TEST_CONFIG = [
+@groovy.transform.Field
+def final DEV_SDK_PACKAGE = 'dev-sdk-package.tar.bz2'
 
-    tests: [
-        new TestCtx('demo_hello_world@ss/demo_hello_world', 'test_demo_hello_world.py'),
-        new TestCtx('demo_iot_app',                         'test_demo_iot_app.py',       ['zynq7000']),
-        new TestCtx('demo_iot_app_rpi3',                    'test_demo_iot_app.py',       ['rpi3']),
-        new TestCtx('demo_tls_api',                         'test_demo_tls_api.py',       ['zynq7000']),
-        new TestCtx('test_timeserver'),
-        new TestCtx('test_uart',                            null,                         ['zynq7000', 'sabre']),
-        new TestCtx('test_chanmux',                         null,                         ['zynq7000']),
-        new TestCtx('test_proxy_nvm',                       null,                         ['zynq7000']),
-        new TestCtx('test_certparser',                      null,                         ['zynq7000']),
-        new TestCtx('test_certserver'),
-        new TestCtx('test_crypto_api',                      null,                         ['zynq7000']),
-        new TestCtx('test_cryptoserver',                    null,                         ['zynq7000']),
-        new TestCtx('test_entropysource',                   null,                         ['zynq7000']),
-        new TestCtx('test_storage_interface',               'test_storage_interface*.py', ['zynq7000', 'sabre']),
-        new TestCtx('test_filesystem',                      null,                         ['zynq7000']),
-        new TestCtx('test_config_server',                   null,                         ['zynq7000']),
-        new TestCtx('test_keystore',                        null,                         ['zynq7000']),
-        new TestCtx('test_logserver',                       null,                         ['zynq7000']),
-        new TestCtx('test_network_api',                     null,                         ['zynq7000']),
-        new TestCtx('test_tls_api',                         null,                         ['zynq7000']),
-        new TestCtx('test_tlsserver',                       null,                         ['zynq7000'])
-    ],
+@groovy.transform.Field
+def final SDK_PACKAGE = 'sdk-package.tar.bz2'
 
-    platforms: [
-        'zynq7000',
-        'sabre',
-        // 'migv',
-        // 'spike',
-        // 'rpi3',
-    ]
-]
+@groovy.transform.Field
+def final SYSTEM_PACKAGE = 'system-package.tar.bz2'
 
+@groovy.transform.Field
+def final TEST_RESULT_PACKAGE = 'test-result-package.tar.bz2'
 
-//------------------------------------------------------------------------------
-// Demos that the SDK builder will see and build. These are used independently
-// from the test systems above, which will be used in separate CI downstream
-// jobs.
+@groovy.transform.Field
+def final SYSTEM_PACKAGES = 'system-packages.tar.bz2'
 
-def DEMO_LIST = [
-    'demo_hello_world',
-    'demo_iot_app',
-    'demo_iot_app_rpi3',
-    'demo_raspi_ethernet',  // ToDo: add TestCtx()
-    'demo_tls_api',
-    'demo_i2c',             // ToDo: add TestCtx(), currently for sabre only
-]
+@groovy.transform.Field
+def final GENERIC_PROJECT_BUILDER_JOB = 'generic_jobs/generic_pipeline_sandbox'
 
+// Test systems, list is read from config
+@groovy.transform.Field
+def SYSTEM_CONFIGS = []
 
 //------------------------------------------------------------------------------
 // Docker
@@ -114,10 +61,14 @@ def DEMO_LIST = [
 // * why are sudo right needed in the test container
 //
 
-def DOCKER_BASE = 'hc-docker:5000'
-def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+@groovy.transform.Field
+def final DOCKER_BASE = 'hc-docker:5000'
 
-def DOCKER_BUILD_ENV = [
+@groovy.transform.Field
+def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+
+@groovy.transform.Field
+def final DOCKER_BUILD_ENV = [
     registry: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_build:20210503',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
@@ -125,7 +76,8 @@ def DOCKER_BUILD_ENV = [
               ].join(' ')
 ]
 
-def DOCKER_TEST_ENV  = [
+@groovy.transform.Field
+def final DOCKER_TEST_ENV  = [
     registry: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_test:20211217',
     args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
@@ -138,6 +90,243 @@ def DOCKER_TEST_ENV  = [
               ].join(' ')
 ]
 
+
+//------------------------------------------------------------------------------
+// System context
+class SystemCtx {
+    // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
+    //          values are always in sync.
+    static final FLAG_BUILD      = 1 << 0
+    static final FLAG_TEST       = 1 << 1
+    // For demos included in the SDK package, CI will checkout them from their
+    // default repo or use that the SDK package contains at the given location.
+    static final FLAG_SDK_DEMO   = 1 << 2
+
+    String      systemName   // Name of the system to build.
+    Map         platforms    // List of supported platforms.
+    Map         params       // Parameters
+
+    //--------------------------------------------------------------------------
+    public SystemCtx(systemName, platforms, params)
+    {
+        this.systemName = systemName
+        this.platforms = platforms
+        this.params = params ?: [:]
+
+        // ensure proper defaults exists
+        this.params.putIfAbsent('flags', 0)
+        this.params.putIfAbsent('testScript', systemName + '.py')
+        this.params.putIfAbsent('testSystem', 'ss/' + systemName)
+    }
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_flags(arg)
+{
+    def flags = 0
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            flags |= yaml_parse_flags(e)
+        }
+
+    } else if (arg instanceof String) {
+        flags = [
+            'BUILD':    SystemCtx.FLAG_BUILD,
+            'TEST':     SystemCtx.FLAG_TEST,
+            'SDK_DEMO': SystemCtx.FLAG_SDK_DEMO,
+        ].get(arg.toUpperCase())
+        if (!flags) {
+            error('unknown flag: ' + arg)
+        }
+
+    } else {
+        error('unsupported flag argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return flags
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_params(arg)
+{
+    def params = []
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.addAll(yaml_parse_params(e))
+        }
+
+    } else if (arg instanceof String) {
+        params.add(arg)
+
+    } else {
+        error('unsupported parameter argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return params
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_platform_params(arg)
+{
+    def params = [:]
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            params.putAll(yaml_parse_platform_params(e))
+        }
+
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            switch(e.key) {
+                case 'addFlags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('unknown platform attribute: ' + e.key)
+            }
+        }
+
+    } else {
+        error('unsupported platform parameter argument ' + arg.getClass() +
+              ': ' + arg)
+    }
+
+    return params
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_parse_platforms(arg)
+{
+    def platforms = [:]
+
+    if (null == arg) {
+        // do nothing
+
+    } else if (arg instanceof List) {
+        for (e in arg) {
+            platforms.putAll(yaml_parse_platforms(e))
+        }
+
+    } else if (arg instanceof Map) {
+        for (e in arg) {
+            platforms.putAt(e.key, yaml_parse_platform_params(e.value))
+        }
+
+    } else if (arg instanceof String) {
+        platforms.putAt(arg, null)
+
+    } else {
+        error('unsupported platform argument ' + arg.getClass() + ': ' + arg)
+    }
+
+    return platforms
+}
+
+
+//--------------------------------------------------------------------------
+def yaml_to_SystemCtx(systemName, yaml_data)
+{
+    def platforms = [:]
+    def params = [flags: 0]
+
+    for (attr in yaml_data) {
+        if (!(attr instanceof Map)) {
+            // Currently all items are maps, if we see a String here this likely
+            // indicates a wrong indention. Any other type indicates something
+            // is really broken.
+            error('system ' + systemName + ' with invalid attribute: ' + attr)
+        }
+        for (e in attr) {
+            switch (e.key) {
+                case 'flags':
+                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    break
+                case 'platforms':
+                    platforms = yaml_parse_platforms(e.value)
+                    break
+                case 'testSystem':
+                case 'testScript':
+                    assert e.value instanceof String
+                    params.putAt(e.key, e.value)
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    params.putAt(e.key, yaml_parse_params(e.value))
+                    break
+                default:
+                    error('system ' + systemName + ' with unsupported attribute: ' + attr)
+            }
+        }
+    }
+
+    return new SystemCtx(systemName, platforms, params)
+}
+
+
+//------------------------------------------------------------------------------
+def process_yaml_config(yaml_file, branch)
+{
+    def cfg = readYaml([file: yaml_file])
+
+    SYSTEM_CONFIGS = []
+    for (system in cfg) {
+        assert 1 == system.size()
+        for (item in system) {
+
+            def systemName = item.key
+
+            if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
+               error('invalid test system name: ' + systemName)
+            }
+
+            if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
+               error('duplicate test system: ' + systemName)
+            }
+
+            def systemCtx = yaml_to_SystemCtx(systemName, item.value)
+
+            if (0 != (systemCtx.params['flags'] & SystemCtx.FLAG_SDK_DEMO)) {
+                // Check against the well-known list. Adding new demos to the
+                // SDK package could have side effects that should be well
+                // unterstood.
+                assert systemName in [ 'demo_hello_world',
+                                       'demo_iot_app',
+                                       'demo_iot_app_imx6',
+                                       'demo_iot_app_rpi3',
+                                       'demo_network_filter',
+                                       'demo_tls_api' ]
+                // SDK demos are always build from the sources in SDK package,
+                // thus we check them out here already and then overwrite the
+                // 'testSystem' parameter with the location. The build job
+                // knows that for FLAG_SDK_DEMO it's a folder and not a repo.
+                def folder = 'demos/' + systemName
+                do_checkout(systemCtx.params['testSystem'], branch, 'src/'+folder)
+                systemCtx.params['testSystem'] = folder
+            }
+
+            SYSTEM_CONFIGS.add(systemCtx)
+        }
+    }
+}
 
 
 //------------------------------------------------------------------------------
@@ -156,7 +345,7 @@ def do_notify_bitbucket()
 
     if (env.NODE_NAME)
     {
-        notifyBitbucket();
+        notifyBitbucket()
     }
     else
     {
@@ -165,7 +354,7 @@ def do_notify_bitbucket()
         // exclusively for bound jobs. If all other executors are busy, the
         // whole job will stuck just for sending a notification. Thus we use the
         // master node for the notification.
-        node('pipeline-control') { notifyBitbucket() }
+        node(label: NODE_LABEL_CONTROL) { notifyBitbucket() }
     }
 }
 
@@ -176,26 +365,9 @@ def do_stash(name, file_list)
     println('stashing to ' + name)
     stash([
         name: name,
+        allowEmpty: true,
         includes: file_list.join(',')
     ])
-}
-
-
-//------------------------------------------------------------------------------
-def do_archiveArtifacts(
-    artifacts,
-    fingerprint = true
-) {
-    archiveArtifacts([
-        artifacts: artifacts,
-        fingerprint: fingerprint
-    ])
-
-    manager.createSummary("package.png").appendText(
-        '<hr>'+
-        'adding Artifact(s): <code><strong>' + artifacts + '</strong></code> '+
-        '(see <a href="artifact">artifact/</a>)'
-    )
 }
 
 
@@ -203,8 +375,12 @@ def do_archiveArtifacts(
 def save_current_job_log(
     name
 ) {
-    // get the current job's log up to now. One day we should find a nicer way
-    // for this than downloading it
+    // Get the current job's log up to now. One day we should find a nicer way
+    // for this than downloading it, because that requires read access for
+    // anonymous users to the Jenkins GUI. Accessing the log though the builds's
+    // RunWrapper object is not possible, because nothing is exposed there. The
+    // only option would be via rawBuild(), but this method must be whitelisted
+    // for usage in groovy pipelines then.
 
     run_app(
         'wget',
@@ -260,13 +436,16 @@ def run_app(
     {
         cmdLine += ' ' + param_array.join(' ')
     }
-    // Don't exit shell if wget returned an error code.
-    if (application == 'wget')
-    {
-        cmdLine = 'set +e;'+cmdLine+';set -e;'
-    }
 
-    sh(cmdLine)
+    try
+    {
+        sh(cmdLine)
+    }
+    catch (Exception e)
+    {
+        println('Exception running command: ' + e)
+        throw e
+    }
 }
 
 
@@ -276,6 +455,29 @@ def run_shell_script(
     param_array = null
 ) {
     run_app(script, param_array)
+}
+
+
+//------------------------------------------------------------------------------
+def archive_as_tar_bz2(name, files = null)
+{
+    def params = [
+        '-c',
+        '-j',
+        '-f ' + name,
+        '--ignore-failed-read',
+        '--sort=name',
+        '--numeric-owner',
+        '--owner=0',
+        '--group=0',
+    ]
+
+    if (files) {
+        params += files
+    }
+
+    run_app('tar', params)
+    archiveArtifacts(artifacts: name, fingerprint: true)
 }
 
 
@@ -304,6 +506,7 @@ def do_git_checkout(
 
         def scmVars = checkout([
                     poll: false,
+                    changelog: false,
                     scm: [
                         $class: 'GitSCM',
                         branches: [
@@ -332,8 +535,8 @@ def do_git_checkout(
                         ],
                         userRemoteConfigs: [
                             [
-                                 credentialsId: scm_cfg.credentialsId,
-                                 url: repo_url
+                                credentialsId: scm_cfg.credentialsId,
+                                url: repo_url
                             ]
                         ]
                     ]
@@ -346,7 +549,7 @@ def do_git_checkout(
     }
     catch (Exception e)
     {
-        println 'Exception: ' + e;
+        println 'Exception: ' + e
         return null
     }
 }
@@ -358,199 +561,259 @@ def do_checkout(
     branch,
     dir = '.'
 ) {
-    def summary = manager.createSummary("document.png")
-    summary.appendText('<hr>Repo: <code><strong>' + repo + '</strong></code>')
-
-    def scmVars = do_git_checkout(repo, branch, dir)
-
-    // if this is a custom branch, then fall back to integration
-    if ( (!scmVars) && ( !(branch in ['integration', 'master']) ) )
-    {
-        def fallback_branch = 'integration'
-        summary.appendText(
-            ' (using <code><strong>' + fallback_branch + '</strong></code>, '+
-            'no branch <code><strong>' + branch + '</strong></code>)'
-        )
-        scmVars = do_git_checkout(repo, fallback_branch, dir)
+    // if there is no branch with the give name, the fallback is 'integration'
+    // and then 'master'.
+    def branches = [branch]
+    if ('master' != branch) {
+        if ('integration' != branch) {
+            branches.add('integration')
+        }
+        branches.add('master')
     }
 
-    if (!scmVars)
+    for (try_branch in branches)
     {
-        echo 'checkout error'
-        return
+        if (do_git_checkout(repo, try_branch, dir))
+        {
+            return
+        }
     }
+
+    error('checkout error for ' + repo + ', no branches: ' + branches.join(', '))
 }
 
 
 //------------------------------------------------------------------------------
-def do_checkout_demos(demo_list, folder)
+def makeParamStr(Object... args)
 {
-    for (demo in demo_list)
-    {
-        do_checkout(
-            'ss/' + demo,
-            env.BRANCH_NAME,
-            folder + '/' + demo)
+    def paramList = []
+    for (arg in args) {
+        if (!arg) {
+            // ignore null elements
+        } else if (arg instanceof String) {
+            paramList.add(arg)
+        } else if (arg instanceof List) {
+            list = arg.flatten()
+            list.removeAll([null])
+            paramList.addAll(list)
+        } else {
+            error("Invalid parameter object: " + arg);
+            // ignore
+        }
     }
+
+    return paramList.join(' ')
 }
 
 
 //------------------------------------------------------------------------------
 def execute_build(ctx, stage_ctx)
 {
+    def flags = stage_ctx.getOrDefault('flags', 0)
+
     def jobBuild = build(
-        job: 'generic_jobs/nightly_pipeline_sandbox',
+        job: GENERIC_PROJECT_BUILDER_JOB,
         wait: true,   // block call until finished
         propagate: false, // don't throw exception on error
         parameters: [
-            string(name: 'PLATFORM',           value: stage_ctx.platform ?: ''),
-            string(name: 'BRANCH_OR_COMMIT',   value: ctx.branch),
-            string(name: 'RELEASE_TYPE',       value: ctx.release_type),
-            string(name: 'TEST_SYSTEM',        value: stage_ctx.test_ctx.repo),
-            string(name: 'BUILD_PARAMS',       value: (stage_ctx.test_ctx.buildParams ?: '') +' -DCMAKE_C_FLAGS=-DDebug_Config_LOG_LEVEL='+ ctx.debug_level) ,
-            string(name: 'TEST_SCRIPT',        value: stage_ctx.test_ctx.testScript),
-            string(name: 'UPSTREAM_JOB_NAME',  value: currentBuild.fullProjectName),
-            string(name: 'UPSTREAM_JOB_ID',    value: currentBuild.id),
+            string(
+                name:  'BRANCH_OR_COMMIT',
+                value: ctx.branch ?: ''
+            ),
+            string(
+                name: 'PARAMS_JSON',
+                value: writeJSON([
+                    returnText: true,
+                    json: [
+                        'PLATFORM': stage_ctx.get('platform'),
+                        'MODE', stage.ctx.get('mode'),
+                        'DEBUG_LEVEL', stage.ctx.get('dbglevel'),
+                        'TEST_SYSTEM':
+                            ((flags & SystemCtx.FLAG_SDK_DEMO) ? 'pkg://' : 'repo://') +
+                            stage_ctx.get('testSystem'),
+                        'BUILD_PARAMS': stage_ctx.get('buildParams'),
+                        'TEST_SCRIPT': stage_ctx.get('testScript'),
+                        'TEST_PARAMS': stage_ctx.get('testParams'),
+                        'SDK_SOURCE': "job://${currentBuild.fullProjectName}:${currentBuild.id}",
+                        'DOCKER_BUILD_ENV': DOCKER_BUILD_ENV,
+                        'DOCKER_TEST_ENV': DOCKER_TEST_ENV,
+                    ].findAll{ !(it.value in [null, '']) }
+                ])
+            ),
         ]
     )
 
-    // if we arrive here, the job has finished
+    // If we arrive here, the job has finished. Since propagate=false is set,
+    // unsuccessful builds don't throw an exception and we can deal with this
+    // manually. Even failed builds may have produced artifacts we want to save.
     stage_ctx.build = jobBuild
+    def idx = ctx.cnt - ctx.running.decrementAndGet()
     def result = jobBuild.getResult()
     def duration = jobBuild.getDurationString()
-    def cnt = ctx.jobStages.size()
 
-    lock('job-post-processing')
-    {
-        def num = cnt - (--ctx.running);
+    def operations = []
+    if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
+    if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
+    if (flags & SystemCtx.FLAG_SDK_DEMO) { operations += ['demo'] }
+    def op_str = operations ? operations.join(', ') : ''
 
-        println(num + '/' + cnt + ': ' +
-                stage_ctx.test_ctx.systemName + ' system build/test stage took '
-                + duration + ', result: ' + result)
-
-        ctx.summary.appendText(
-            stage_ctx.platform + ', ' + stage_ctx.test_ctx.systemName + ':' +
-            ' <a href="' + get_build_relative_url(jobBuild) + '">' +
-                '#' + jobBuild.getNumber() +
-            '</a>' +
-            ' <img src="' + get_result_ball_img_url(result) + '">' +
-            ' (' + duration + ')' +
-            '<br>',
-            false)
+    // propagate the result to the current state and build result, but catch the
+    // exception so we can continue
+    def msg = 'job ' + idx + '/' + ctx.cnt + ': ' + result + ' for ' +
+              stage_ctx.test_ctx.systemName + ', ' +
+              stage_ctx.platform + ', ' +
+              duration + ' [' + op_str + ']'
+    if ('SUCCESS' == result) {
+        println(msg)
+    } else if ('UNSTABLE' == result) {
+        unstable(msg) // will also set buildResult to UNSTABLE
+    } else { // anything else (FAILURE, ABORTED ...) is considered an error
+        catchError(
+            buildResult: 'UNSTABLE',
+            stageResult: result // propagate sub-job result
+        ) {
+            error(msg)
+        }
     }
+
+    ctx.summary.appendText(
+        stage_ctx.test_ctx.systemName + ', ' + stage_ctx.platform +
+        ' <a href="' + get_build_relative_url(jobBuild) + '">' +
+            '#' + jobBuild.getNumber() +
+        '</a>' +
+        ' <img src="' + get_result_ball_img_url(result) + '">' +
+        duration + ' [' + op_str + ']' +
+        '<br>',
+        false)
 
     // When CI is under heavy load, no free executor could be available to run
     // the artifact copy from the child job. In the worst case the child job
     // already got deleted. We could extend the time before the job is deleted,
-    // but this may overload CI also because the workspaces eat the disk space.
+    // but this may overload CI also, because the workspaces eat the disk space.
     // Better solution is running the copy job on a dedicated executor, which
     // exists on the master
-    node('pipeline-control')
+    node(label: NODE_LABEL_CONTROL)
     {
         cleanWs()
 
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
         {
             copyArtifacts(
-                filter: stage_ctx.system_pkg,
                 projectName: jobBuild.getFullProjectName(),
-                // need to ensure this is a string
-                selector: specific("${jobBuild.getNumber()}")
-            )
-
-            do_stash(
-                stage_ctx.stash_name,
-                [
-                    stage_ctx.system_pkg
-                ]
+                // need to ensure selector is a string
+                selector: specific("${jobBuild.getNumber()}"),
+                filter: [
+                    SYSTEM_PACKAGE,
+                    TEST_RESULT_PACKAGE
+                ].join(',')
             )
         }
+
+        do_stash(
+            stage_ctx.name,
+            [
+                SYSTEM_PACKAGE,
+                TEST_RESULT_PACKAGE
+            ]
+        )
 
         cleanWs()
     }
 
-    // We have set propagate=false above, so we have to deal with the failures
-    // here. Since all this runs in block wrapped by catchError(), we can't
-    // really fail the build here, but we can ensure a message is logged and
-    // the state is set properly.
-    if ('SUCCESS' != result)
-    {
-        def msg = 'test ' + result + ' for ' + stage_ctx.platform + ', ' +
-                  stage_ctx.test_ctx.systemName
-
-        if ('UNSTABLE' == result) {
-            // propagate unstable
-            unstable(msg)
-        }
-        else {
-            // 'FAILURE', 'ABORTED' is fatal
-            error(msg)
-        }
-    }
 }
 
 
 //------------------------------------------------------------------------------
-def do_jobs_for_test_systems(branch, testConfig, release_type, debug_level)
+def do_jobs_for_test_systems(branch, testConfigs)
 {
-    // downstream job create this package and finally we also pack all the
-    // collected results into a package with this name
-    def SYSTEM_PACKAGE = 'package.bz2'
-
     def summary = manager.createSummary("orange-square.png")
     summary.appendText('<hr>')
 
-    def sub_jobs_ctx = [
-        summary:   summary,
-        branch:    branch,
-        release_type: release_type,
-        debug_level: debug_level,
-        jobStages: [:],
-        running:   0
-    ]
+    def jobStages = []
+    for (test_ctx in testConfigs) {
 
-    // if we use a loop "for (test_ctx in testConfig.tests) ..." then only one
-    // instance of the variable test_ctx exists. When the closures are invoked
-    // after the loop, they all see the last value that the loop variable. When
-    // a loop "testConfig.tests.each { test_ctx -> ..." is used, a closure with
-    // a separate variable is create for each iteration, which can be used in
-    // further closures then also independently.
+        def baseFlags = test_ctx.params?.get('flags') ?: 0
+        def testSystem = test_ctx.params?.get('testSystem')
 
-    testConfig.tests.each { test_ctx ->
+        if (!testSystem) {
+            // Test system is initialized to 'null' in the constructor if a
+            // non-default repo is specified for an SDK demo, which is not
+            // supported.
+            error("SDK demo must use default repo: " + test_ctx.systemName)
+            continue // this is not a blocker for other tests
+        }
 
-        def test_system = test_ctx.systemName
+        for (plat in test_ctx.platforms) {
 
-        testConfig.platforms.each { platform ->
+            // for (mode in [
+            //     'Debug',
+            //     'Release',
+            //     'RelWithDebInfo',
+            //     'MinSizeRel',
+            // ]
+            // for (dbglevel in [
+            //     'NONE',
+            //     'ASSERT',
+            //     'FATAL',
+            //     'ERROR',
+            //     'WARNING',
+            //     'INFO',
+            //     'DEBUG',
+            //     'TRACE',
+            // ]
 
-            def pkg_name = platform + '-' + test_system + '-' + UUID.randomUUID().toString()
+            def platName = plat.key
+            def platParams = plat.value
+            def flags = baseFlags | (platParams?.get('addFlags') ?: 0)
+            def isBuild = (flags & SystemCtx.FLAG_BUILD)
+            def isTest = (flags & SystemCtx.FLAG_TEST)
 
-            def filter = test_ctx.platforms
-            if(filter == null
-            || filter.any{ it == platform} ){
-                def job_stage_ctx = [
-                    // do not try storing "sub_jobs_ctx" in here, this ends in a
-                    // stragen recursion when transforming the maps/lists
-                    test_ctx:     test_ctx,
-                    platform:     platform,
-                    system_pkg:   SYSTEM_PACKAGE,
-                    stash_name:   pkg_name,
-                    closure:      null,   // set below
-                    build:        null    // set in closure
-                ]
-
-                sub_jobs_ctx.jobStages[pkg_name] = job_stage_ctx
-
-                job_stage_ctx.closure = {
-                    stage(pkg_name) {
-                        execute_build(sub_jobs_ctx, job_stage_ctx)
-                    }
-                }
+            // Currently, a test always requires a build. But in the future,
+            // testing an existing system might also be supported.
+            if (!isBuild) {
+                error("no built requested for " + test_ctx.systemName)
+                continue
             }
+
+            jobStages.add([
+                name:        platName + '-' + test_ctx.systemName,
+                test_ctx:    test_ctx,
+                platform:    platName,
+                mode:        mode,
+                dbglevel:    dbglevel
+                flags:       flags,
+                testSystem:  testSystem,
+
+                // put platform params after test_ctx params
+                buildParams: makeParamStr(
+                                test_ctx.params?.get('buildParams'),
+                                platParams?.get('buildParams')),
+
+                // platform setting takes preference over test_ctx setting
+                testScript:  !isTest ? null :
+                             platParams?.get('testScript') ?:
+                             test_ctx.params?.get('testScript') ?:
+                             null,
+
+                // put platform params after test_ctx params
+                testParams:  !isTest ? null :
+                             makeParamStr(
+                                test_ctx.params?.get('testParams'),
+                                platParams?.get('testParams')),
+
+                build:       null // will be set once there is a build
+            ])
         }
     }
 
+    def num_jobs = jobStages.size()
+    def sub_jobs_ctx = [
+        summary:   summary,
+        branch:    branch,
+        cnt:       num_jobs,
+        running:   new java.util.concurrent.atomic.AtomicInteger(num_jobs),
+    ]
 
-    sub_jobs_ctx.running  = sub_jobs_ctx.jobStages.size()
     def build_start = new Date()
 
     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
@@ -564,7 +827,19 @@ def do_jobs_for_test_systems(branch, testConfig, release_type, debug_level)
         //      failFast: true|false // terminate all upon any one failing
 
         parallel(
-            sub_jobs_ctx.jobStages.collectEntries { k, v -> [(k): v.closure] }
+            // Create a map, where each key is an arbitrary name and the value
+            // is a closure with the code that will be executed in parallel
+            // (potentially distributed) jobs.
+            jobStages.collectEntries { stage_ctx ->
+                [
+                    ( stage_ctx.name ):
+                    { ->
+                        stage(stage_ctx.name) {
+                            execute_build(sub_jobs_ctx, stage_ctx)
+                        }
+                    }
+                ]
+            }
         )
     }
 
@@ -576,53 +851,65 @@ def do_jobs_for_test_systems(branch, testConfig, release_type, debug_level)
     // builds are done, now collect the results and artifacts. This needs a
     // workspace, so we have to allocate a node
 
-    def cnt = sub_jobs_ctx.jobStages.size()
     def was_build_error = false
 
-    node {
+    // Actually, this is a pipeline control an data management job that should
+    // run on NODE_LABEL_CONTROL. However, we can't do the work purely with
+    // Jenkins plugin, shell commands are needed to to create a bz2 archive.
+    // Since there is no guarantee any shell tools exist (especially not in the
+    // Jenkins master container) and we don't support docker-in-docker yet, we
+    // have to use a build slave here. Actually, maything that needs tools
+    // should run in a docker container (may busybox?) also.
+    node(label: NODE_LABEL_BUILD) {
         stage('process_results') {
 
             cleanWs()
 
-            sub_jobs_ctx.jobStages.eachWithIndex { e, idx ->
+            def tar_list = []
 
-                def pkg_name = e.key
-                def job_stage_ctx = e.value
+            jobStages.eachWithIndex { stage_ctx, idx ->
 
-                println('processing ' + (idx+1) + '/' + cnt + ': ' + pkg_name)
+                println('processing ' + (idx+1) + '/' + jobStages.size() + ': ' +
+                        stage_ctx.name)
 
-                // there might be no stash if something failed earlier
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                dir(stage_ctx.name)
                 {
-                    unstash(pkg_name)
-                    def pkg_dir = 'package-' + pkg_name
-                    run_app('mkdir', [pkg_dir])
-                    run_app('tar', ['-xf ' + SYSTEM_PACKAGE, '-C ' + pkg_dir])
-                    run_app('rm', [SYSTEM_PACKAGE])
+                    // there might be no stash if something failed earlier
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                    {
+                        unstash(stage_ctx.name)
+                    }
+
+                    if (fileExists(SYSTEM_PACKAGE)) {
+                        dir('system') {
+                            run_app('tar', ['-xf ../' + SYSTEM_PACKAGE])
+                        }
+                        tar_list.add(stage_ctx.name + '/system/')
+                    }
+                    if (fileExists(TEST_RESULT_PACKAGE)) {
+                        dir('test-result') {
+                            run_app('tar', ['-xf ../' + TEST_RESULT_PACKAGE])
+                            if (fileExists('test_results.xml')) {
+                                // TODO: Support different platforms in junit
+                                //       result processing. Currently seeing
+                                //       the same test cases multiple times is
+                                //       likely messing up the analysis.
+                                junit('test_results.xml')
+                            }
+                        }
+                        tar_list.add(stage_ctx.name + '/test-result/')
+                    }
                 }
 
-                def pkg_build = job_stage_ctx.build
+                def pkg_build = stage_ctx.build
                 was_build_error |= (!pkg_build) ||
                                    (pkg_build.getResult() in ['FAILURE','ABORTED'])
             }
 
             save_current_job_log('build.log')
 
-            // create a package of all files, so the next stage can process
-            // them. Ensure we never fail here if a file is missing, because
-            // there is not much we can do anyway. The next stage is supposed
-            // to handle this.
-            run_app(
-                'tar',
-                [
-                    '--ignore-failed-read',
-                    '-cjf '+SYSTEM_PACKAGE,
-                    'build.log',
-                    'package-*/'
-                ]
-            )
-
-            do_archiveArtifacts(SYSTEM_PACKAGE)
+            // Create a package of all files and make is available as artifact.
+            archive_as_tar_bz2(SYSTEM_PACKAGES, ['build.log'] + tar_list)
 
             cleanWs()
 
@@ -637,17 +924,14 @@ def do_jobs_for_test_systems(branch, testConfig, release_type, debug_level)
 
 
 //------------------------------------------------------------------------------
-
 pipeline {
 
     agent none
 
     options {
-
         skipDefaultCheckout()
-
-        // disableConcurrentBuilds()
-
+        // must prefix with '/' explicitly to make this an 'absolute' name
+        copyArtifactPermission('/' + GENERIC_PROJECT_BUILDER_JOB);
     }
 
     stages {
@@ -655,14 +939,14 @@ pipeline {
         //----------------------------------------------------------------------
         stage('Build SDK') {
 
-            agent { label "build" }
+            agent { label NODE_LABEL_BUILD }
 
             stages {
 
                 //--------------------------------------------------------------
                 stage('checkout') {
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         cleanWs()
                         checkout([
                             $class: 'GitSCM',
@@ -685,7 +969,10 @@ pipeline {
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
 
-                        do_checkout_demos(DEMO_LIST, 'src/demos')
+                        // this also checks out SDK demos
+                        process_yaml_config(
+                            'scm-src/test-cfg.yaml',
+                            env.BRANCH_NAME)
 
                         do_notify_bitbucket()
                     }
@@ -697,17 +984,18 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
                     }
                     steps {
-                        print_step_info env.STAGE_NAME
+                        print_step_info(env.STAGE_NAME)
                         run_shell_script(
                             'scm-src/build-sdk.sh',
                             [
                                 'package',    // mode
-                                'sdk-package' // base dir
+                                'sdk-package' // SDK package output base dir
                             ]
                         )
                     }
@@ -716,10 +1004,151 @@ pipeline {
                 //--------------------------------------------------------------
                 stage('archive') {
                     steps {
+                        print_step_info(env.STAGE_NAME)
+
+                        archiveArtifacts([
+                            artifacts: [
+                                DEV_SDK_PACKAGE,
+                                SDK_PACKAGE,
+                                'sdk-package/version.info'
+                            ].join(','),
+                            fingerprint: true
+                        ])
+
+                        do_stash(STASH_SDK_SCRIPT, ['scm-src/build-sdk.sh'])
+
+                        do_stash(
+                            STASH_SDK_DOC,
+                            [
+                                'scm-src/publish_doc.sh',
+                                'sdk-package/pkg/doc/'
+                            ]
+                        )
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('publish_docs') {
+                    agent { label NODE_LABEL_PUBLISH_DOC }
+                    when {
+                        beforeAgent true
+                        anyOf {
+                            branch 'master'
+                            branch 'integration'
+                        }
+                    }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        cleanWs()
+                        unstash(STASH_SDK_DOC)
+                        run_shell_script('scm-src/publish_doc.sh', [env.BRANCH_NAME])
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('cleanup') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        cleanWs()
+                    }
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+        stage('Test SDK') {
+
+            agent { label NODE_LABEL_BUILD }
+
+            stages {
+                //--------------------------------------------------------------
+                stage('prepare') {
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        cleanWs()
+                        unstash(STASH_SDK_SCRIPT)
+                        copyArtifacts(
+                            projectName: JOB_NAME,
+                            selector: specific("${BUILD_NUMBER}"), // must be a string
+                            filter: DEV_SDK_PACKAGE
+                        )
+                        // Extract the DEV_SDK_PACKAGE into the subfolder 'pkg',
+                        // the name is hard-coded in the SDK build script.
+                        run_app('mkdir', ['-p', 'pkg'])
+                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C pkg'])
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('astyle') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        // Continue with the SDK package build even on style
+                        // errors, but mark the stage and the build as failed
+                        // already.
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            run_shell_script('pkg/astyle_check_sdk.sh')
+                        }
+                    }
+                }
+
+                //--------------------------------------------------------------
+                stage('unit_test') {
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_TEST_ENV.registry
+                            image DOCKER_TEST_ENV.image
+                            args DOCKER_TEST_ENV.args
+                        }
+                    }
+                    steps {
                         print_step_info env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            run_shell_script(
+                                'scm-src/build-sdk.sh',
+                                [
+                                    'run-unit-tests', // mode
+                                    '.' // base dir
+                                ]
+                            )
+                        }
+                    }
+                }
 
-                        do_archiveArtifacts(DEV_SDK_PACKAGE)
-
+                //--------------------------------------------------------------
+                stage('sanity_check') {
+                    // Do a quick sanity test for the SDK package by building
+                    // the demo Hello World for zynq7000. Only if it works, the
+                    // time consuming builds and tests of all systems are done.
+                    agent {
+                        docker {
+                            reuseNode true
+                            alwaysPull true
+                            registryUrl DOCKER_BUILD_ENV.registry
+                            image DOCKER_BUILD_ENV.image
+                            args DOCKER_BUILD_ENV.args
+                        }
+                    }
+                    steps {
+                        print_step_info(env.STAGE_NAME)
+                        run_shell_script(
+                            'scm-src/build-sdk.sh',
+                            [
+                                'sanity-check', // mode
+                                '.' // base dir
+                            ]
+                        )
                     }
                 }
 
@@ -730,39 +1159,17 @@ pipeline {
                         cleanWs()
                     }
                 }
+
             }
         }
 
         //----------------------------------------------------------------------
-        stage('Build test systems') {
-            matrix {
-                axes {
-                    axis {
-                        name 'RELEASE_TYPE'
-                        values 'Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'
-                    }
-                    axis {
-                        name 'DEBUG_LEVEL'
-                        values 'Debug_LOG_LEVEL_NONE',
-                               'Debug_LOG_LEVEL_ASSERT',
-                               'Debug_LOG_LEVEL_FATAL',
-                               'Debug_LOG_LEVEL_ERROR',
-                               'Debug_LOG_LEVEL_WARNING',
-                               'Debug_LOG_LEVEL_INFO',
-                               'Debug_LOG_LEVEL_DEBUG',
-                               'Debug_LOG_LEVEL_TRACE'
-                    }
-                }
-                //--------------------------------------------------------------
-                stages {
-                    stage('System Tests') {
-                        steps {
-                            print_step_info env.STAGE_NAME
-
-                            do_jobs_for_test_systems('integration', TEST_CONFIG, "${RELEASE_TYPE}", "${DEBUG_LEVEL}")
-                        }
-                    }
-                }
+        stage('Test Systems') {
+            steps {
+                print_step_info(env.STAGE_NAME)
+                do_jobs_for_test_systems(
+                    env.BRANCH_NAME,
+                    SYSTEM_CONFIGS)
             }
         }
     }
