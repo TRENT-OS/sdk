@@ -96,6 +96,7 @@ shift 3
 # all remaining parameters will be passed to CMake
 BUILD_ARGS=("$@")
 CMAKE_PARAMS_FILE=cmake_params.txt
+BUILD_TARGETS_GRAPH=build-targets-graph
 
 #-------------------------------------------------------------------------------
 function print_new_section()
@@ -305,9 +306,12 @@ CMAKE_PARAMS=(
     -D SEL4_CACHE_DIR:PATH=cache-${BUILD_PLATFORM}
     -D CMAKE_MODULE_PATH:PATH="${OS_SDK_PATH}"
     "${BUILD_ARGS[@]}"
+    --graphviz=${BUILD_TARGETS_GRAPH}.dot
     -G Ninja
-    -S ${PROJECT_DIR}
-    -B ${BUILD_DIR}
+    # Use absolute path of PROJECT_DIR, because we change the current working
+    # folder to ${BUILD_DIR}/${BUILD_TARGETS_GRAPH} when invoking CMake.
+    -S "$(cd "${PROJECT_DIR}" >/dev/null 2>&1 && pwd)"
+    -B ..
 )
 
 
@@ -363,23 +367,16 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     mkdir -p ${BUILD_DIR}
     echo "${CMAKE_PARAMS[@]}" > ${BUILD_DIR}/${CMAKE_PARAMS_FILE}
     (
-        set -x
+        # Unfortunately, when CMake generates the build targets graph, a lot of
+        # *.dot files are created in the current working folder. There is no
+        # way to specify a custom sub folder for them. A workaround to avoid
+        # polluting the build folder root is invoking CMake from a dedicated
+        # sub folder.
+        cd ${BUILD_DIR}
+        mkdir ${BUILD_TARGETS_GRAPH}
+        cd ${BUILD_TARGETS_GRAPH}
         cmake "${CMAKE_PARAMS[@]}"
-    )
-
-    # CMake must run twice, so the config settings propagate properly. The
-    # first runs populates the cache and the second run will find the correct
-    # settings in the cache to set up the build.
-    # Create a dependency graph with all build targets also. Since this creates
-    # many *.dot files, the re-run is invoked from a subfolder and just the
-    # final picture is placed in the root folder.
-    # root folder.
-    print_new_section "re-run configure build ..."
-    BUILD_TARGETS_GRAPH=build-targets-graph
-    mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
-    (
-        cd ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
-        cmake --graphviz=${BUILD_TARGETS_GRAPH}.dot ..
+        # Create a picture with the build targets graph.
         dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
     )
 
