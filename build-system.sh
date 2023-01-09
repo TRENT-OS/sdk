@@ -98,6 +98,25 @@ BUILD_ARGS=("$@")
 CMAKE_PARAMS_FILE=cmake_params.txt
 
 #-------------------------------------------------------------------------------
+function print_new_section()
+{
+    echo "##------------------------------------------------------------------------------"
+    echo "## $1"
+    echo "##------------------------------------------------------------------------------"
+
+}
+
+#-------------------------------------------------------------------------------
+function print_error()
+{
+    echo ""
+    echo "##"
+    echo "## ERROR: $1"
+    echo "##"
+
+}
+
+#-------------------------------------------------------------------------------
 
 # Check requested toolchain or if analysis is enabled by environment variable
 if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
@@ -107,10 +126,7 @@ else
     # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
     TOOLCHAIN=${TOOLCHAIN:-axivion}
     if [[ "${TOOLCHAIN}" != "axivion" ]]; then
-        echo ""
-        echo "##"
-        echo "## ERROR: ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
-        echo "##"
+        print_error "ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
         exit 1
     fi
 fi
@@ -214,10 +230,7 @@ case "${BUILD_PLATFORM}" in
         ;;
     #-------------------------------------
     *)
-        echo ""
-        echo "##"
-        echo "## ERROR: invalid platform '${BUILD_PLATFORM}'"
-        echo "##"
+        print_error "invalid platform '${BUILD_PLATFORM}'"
         exit 1
         ;;
 esac
@@ -246,10 +259,7 @@ case "${BUILD_ARCH}" in
         TRIPLE=x86_64-linux-gnu
         ;;
     *)
-        echo ""
-        echo "##"
-        echo "## ERROR: invalid architecture '${BUILD_ARCH}'"
-        echo "##"
+        print_error "invalid architecture '${BUILD_ARCH}'"
         exit 1
         ;;
 esac
@@ -276,10 +286,7 @@ case "${TOOLCHAIN}" in
         ;;
 
     *)
-        echo ""
-        echo "##"
-        echo "## ERROR: unsupported toolchain '${TOOLCHAIN}'"
-        echo "##"
+        print_error "unsupported toolchain '${TOOLCHAIN}'"
         exit 1
         ;;
 esac
@@ -323,9 +330,8 @@ if [[ -d ${BUILD_DIR} ]]; then
         if [[ ! -e ${CMAKE_PARAMS_FILE} \
               || "$(< ${CMAKE_PARAMS_FILE})" != "${CMAKE_PARAMS[@]}" \
            ]]; then
-            echo "##------------------------------------------------------------------------------"
-            echo "## build parameters have changed: cleaning build dir"
-            echo "##------------------------------------------------------------------------------"
+            print_new_section "build parameters have changed: cleaning build dir"
+
             exit 1
         fi
 
@@ -334,9 +340,7 @@ if [[ -d ${BUILD_DIR} ]]; then
         # CMake 3.18, "rules.ninja" is no longer in the root folder, but in the
         # subfolder "CMakeFiles". Hence, both locations are checked.
         if [[ ! -e rules.ninja && ! -e CMakeFiles/rules.ninja ]]; then
-            echo "##------------------------------------------------------------------------------"
-            echo "## build folder broken: cleaning build dir"
-            echo "##------------------------------------------------------------------------------"
+            print_new_section "build folder broken: cleaning build dir"
             exit 1
         fi
 
@@ -346,9 +350,7 @@ fi
 
 if [[ ! -d ${BUILD_DIR} ]]; then
 
-    echo "##------------------------------------------------------------------------------"
-    echo "## configure build ..."
-    echo "##------------------------------------------------------------------------------"
+    print_new_section "configure build ..."
 
     if [[ ${TOOLCHAIN} == "axivion" ]]; then
         # Prepare axivion suite for CMake config
@@ -372,9 +374,7 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     # many *.dot files, the re-run is invoked from a subfolder and just the
     # final picture is placed in the root folder.
     # root folder.
-    echo "##------------------------------------------------------------------------------"
-    echo "## re-run configure build ..."
-    echo "##------------------------------------------------------------------------------"
+    print_new_section "re-run configure build ..."
     BUILD_TARGETS_GRAPH=build-targets-graph
     mkdir -p ${BUILD_DIR}/${BUILD_TARGETS_GRAPH}
     (
@@ -383,13 +383,9 @@ if [[ ! -d ${BUILD_DIR} ]]; then
         dot -Tsvg ${BUILD_TARGETS_GRAPH}.dot -o ../${BUILD_TARGETS_GRAPH}.svg
     )
 
-    echo "##------------------------------------------------------------------------------"
-    echo "## start clean build ..."
-    echo "##------------------------------------------------------------------------------"
+    print_new_section "start clean build ..."
 else
-    echo "##------------------------------------------------------------------------------"
-    echo "## start re-build ..."
-    echo "##------------------------------------------------------------------------------"
+    print_new_section "start re-build ..."
 fi
 
 
