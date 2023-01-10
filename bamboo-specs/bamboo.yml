@@ -1,0 +1,91 @@
+#-------------------------------------------------------------------------------
+#
+# SDK Bamboo Plan Configuration
+#
+# Copyright (C) 2023, HENSOLDT Cyber GmbH
+#
+#-------------------------------------------------------------------------------
+
+version: 2
+plan:
+  project-key: SEOS
+  key: TSDK
+  name: TRENTOS SDK
+  description: Build TRENTOS SDK Package
+repositories:
+- SEOS/sandbox:
+    scope: global
+triggers:
+- bitbucket-server-trigger
+branches:
+  create:
+    for-new-branch: master|integration-.*|(?:SEOS|CI|TOS)-\d+
+  delete:
+    after-deleted-days: 1
+    after-inactive-days: never
+  link-to-jira: true
+labels: []
+dependencies:
+  require-all-stages-passing: false
+  enabled-for-branches: true
+  block-strategy: none
+  plans: []
+other:
+  concurrent-build-plugin: system-default
+#-------------------------------------------------------------------------------
+notifications:
+- events:
+  - plan-failed:
+      failures: 1
+  recipients:
+  - committers
+#  - groups: [hensoldt_cyber_sw_team]
+- events:
+  - plan-completed
+  recipients:
+  - responsible
+#-------------------------------------------------------------------------------
+stages:
+- stage-checkout:
+    manual: false
+    final: false
+    jobs:
+    - job-checkout
+- stage-package:
+    manual: false
+    final: false
+    jobs:
+    - job-package
+#-------------------------------------------------------------------------------
+job-checkout:
+  key: JOB1
+  requirements:
+  - defaultagent
+  tasks:
+  - checkout:
+      path: scm-src
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  artifact-subscriptions: []
+#-------------------------------------------------------------------------------
+job-package:
+  key: JOB2
+  requirements:
+  - defaultagent
+  docker:
+    image: dtrng.cc.ebs.corp/hc/trentos_build:20220901
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+    docker-run-arguments: []
+  tasks:
+  - script:
+      interpreter: SHELL
+      file: scm-src/build-sdk.sh
+      argument: package sdk-package
+      description: Build SDK
+  artifacts:
+  - name: version.info
+    pattern: sdk-package/version.info
+    shared: true
+    required: true

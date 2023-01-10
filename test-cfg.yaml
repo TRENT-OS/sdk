@@ -34,14 +34,7 @@ demo_hello_world:
   platforms:
     sabre:
       addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
     qemu-arm-virt-a53:
     spike64:
-    spike32: # starting still fails
-      addFlags: [NO_TEST]
-    rpi3:
-    rpi4:
-    nitrogen6sx:
