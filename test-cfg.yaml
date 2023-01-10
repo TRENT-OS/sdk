@@ -70,9 +70,12 @@
   - flags: [BUILD, SDK_DEMO]
   - platforms: [sabre, nitrogen6sx]
 
-- demo_iot_app_rpi3:
-  - flags: [BUILD, SDK_DEMO]
-  - platforms: [rpi3]
+# This RasPi3 IoT Demo is broken because the component RPi_SPI_Flash conflicts
+# with latest seL4 libplatsupport changes
+#
+#   - demo_iot_app_rpi3:
+#     - flags: [BUILD, SDK_DEMO]
+#     - platforms: [rpi3]
 
 - demo_tls_api:
   - flags: [BUILD, SDK_DEMO]
