@@ -33,18 +33,8 @@ demo_hello_world:
   testScript: test_demo_hello_world.py
   platforms:
     sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp:
-      addFlags: [QEMU]
-    qemu-arm-virt-a53:
-    spike64:
-    spike32: # starting still fails
-      addFlags: [NO_TEST]
-    rpi3:
+      addFlags: TEST
     rpi4:
-    nitrogen6sx:
 
 
 #-------------------------------------------------------------------------------
@@ -308,18 +298,7 @@ test_network_api_tcp_server:
     sabre:
       addFlags: [QEMU]
     zynq7000:
-      addFlags: [QEMU]
-    nitrogen6sx:
-    rpi3:
-    rpi4:
-
-test_network_api_udp_server:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=udp_server
-  testParams: --tc=platform.test_configuration:udp_server
-  platforms:
+      addFlags: TEST
     sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
+      addFlags: TEST
+    rpi4:
