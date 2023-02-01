@@ -131,14 +131,27 @@ open_trentos_test_env()
     local DOCKER_PARAMS_TEST=(
         # allow sudo
         --group-add=sudo
+        # allow access to tty devices (USB/UART adapters)
+        --group-add=dialout
         # make the container run in a separate network namespace
         --network=bridge
         # allow the container to manage its interfaces, needed for TAP creation
         --cap-add=NET_ADMIN
         # allow the container to send/receive RAW packets, needed by tcpdump
         --cap-add=NET_RAW
-        # needed to create TAP devices
-        --device=/dev/net/tun
+        # Using "--privileged" gives access to all host devices. In case this is
+        # too powerful, "--device=</dev/...>[:/dev/...[:rwm]]" can be used to
+        # give access to specific devices. Where r=read, w=write, m=mknod. If
+        # nothing is given, "rwm" is default.
+        # Mapping via "-v /dev/bus/usb:/dev/bus/usb" is a rather cruse way to
+        # allow device access also.
+        # For example:
+        #  --device=/dev/net/tun (allow creating TUN/TAP devices)
+        #  --device=/dev/ttyUSB0
+        #  -v /dev/bus/usb:/dev/bus/usb (general USB access)
+        #
+        --privileged
+
     )
 
     do_run_docker ${TRENTOS_TEST_CONTAINER} "${DOCKER_PARAMS_TEST[@]}"
