@@ -278,7 +278,8 @@ function(os_sdk_postprocess_targets)
         get_target_property(IMAGE_NAME ${target} IMAGE_NAME)
         get_filename_component(IMAGE_DIR "${IMAGE_NAME}" DIRECTORY)
         # copy system image to generic file images/os_image.[bin|elf...]
-        set(OS_SYS_IMG "${IMAGE_DIR}/os_image.${ElfloaderImage}")
+        set(OS_SYS_IMG_BASENAME "${IMAGE_DIR}/os_image")
+        set(OS_SYS_IMG "${OS_SYS_IMG_BASENAME}.${ElfloaderImage}")
         add_custom_command(
             OUTPUT "${OS_SYS_IMG}"
             DEPENDS "${IMAGE_NAME}"
@@ -287,8 +288,28 @@ function(os_sdk_postprocess_targets)
             COMMENT "copy ${IMAGE_NAME} to ${OS_SYS_IMG}"
         )
         add_custom_target(${target}_copy ALL DEPENDS "${OS_SYS_IMG}")
+
         if("${ElfloaderImage}" STREQUAL "elf")
             os_sdk_create_disassembly("${OS_SYS_IMG}" ${target})
+
+            # create images/os_image_raw.bin containing that code+ro-data
+            set(OS_SYS_IMG_BIN "${OS_SYS_IMG_BASENAME}.bin")
+            add_custom_command(
+                OUTPUT "${OS_SYS_IMG_BIN}"
+                DEPENDS "${OS_SYS_IMG}"
+                COMMAND ${CROSS_COMPILER_PREFIX}objcopy -O binary "${OS_SYS_IMG}" "${OS_SYS_IMG_BIN}"
+            )
+            add_custom_target("elf2bin" ALL DEPENDS "${OS_SYS_IMG_BIN}")
+
+            # create images/os_image_raw.s19 containing that code+ro-data
+            set(OS_SYS_IMG_SREC "${OS_SYS_IMG_BASENAME}.srec")
+            add_custom_command(
+                OUTPUT "${OS_SYS_IMG_SREC}"
+                DEPENDS "${OS_SYS_IMG}"
+                COMMAND ${CROSS_COMPILER_PREFIX}objcopy -O srec --srec-len=28 --srec-forceS3 "${OS_SYS_IMG}" "${OS_SYS_IMG_SREC}"
+            )
+            add_custom_target("elf2srec" ALL DEPENDS "${OS_SYS_IMG_SREC}")
+
         endif()
     endif()
 
