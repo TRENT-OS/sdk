@@ -58,7 +58,7 @@ def SYSTEM_CONFIGS = []
 //   in the docker image
 //
 // ToDo
-// * why are sudo right needed in the test container
+// * why are sudo rights needed in the test container
 //
 
 @groovy.transform.Field
