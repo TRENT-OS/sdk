@@ -473,7 +473,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
+                            registryUrl DOCKER_BUILD_ENV.registryUrl
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -502,7 +502,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
+                            registryUrl DOCKER_BUILD_ENV.registryUrl
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -599,7 +599,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
+                            registryUrl DOCKER_TEST_ENV.registryUrl
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }
@@ -639,7 +639,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
+                            registryUrl DOCKER_TEST_ENV.registryUrl
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }

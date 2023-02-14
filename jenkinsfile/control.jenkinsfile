@@ -69,7 +69,7 @@ def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
 
 @groovy.transform.Field
 def final DOCKER_BUILD_ENV = [
-    registry: DOCKER_REGISTRY,
+    registryUrl: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_build:20210503',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
                '--group-add=stack',
@@ -78,7 +78,7 @@ def final DOCKER_BUILD_ENV = [
 
 @groovy.transform.Field
 def final DOCKER_TEST_ENV  = [
-    registry: DOCKER_REGISTRY,
+    registryUrl: DOCKER_REGISTRY,
     image:    DOCKER_BASE + '/trentos_test:20211217',
     args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
                '-v /etc/localtime:/etc/localtime:ro',
@@ -942,7 +942,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
+                            registryUrl DOCKER_BUILD_ENV.registryUrl
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -1043,7 +1043,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
+                            registryUrl DOCKER_BUILD_ENV.registryUrl
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -1065,7 +1065,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_TEST_ENV.registry
+                            registryUrl DOCKER_TEST_ENV.registryUrl
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }
@@ -1093,7 +1093,7 @@ pipeline {
                         docker {
                             reuseNode true
                             alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registry
+                            registryUrl DOCKER_BUILD_ENV.registryUrl
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
