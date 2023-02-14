@@ -98,9 +98,9 @@ def makeDockerAgentCfg(server, credentialsId, image, args)
 
 @groovy.transform.Field
 def final DOCKER_BUILD_ENV = makeDockerAgentCfg(
-        'hc-docker:5000',
-        null, // no credentials needed
-        'trentos_build:20210503',
+        'dtrng.cc.ebs.corp',
+        'ee98360f-5225-4ee9-b9c8-a72e22dd133b',
+        'hc/trentos_build:20210503',
         [
             '-v /etc/localtime:/etc/localtime:ro',
             '--group-add=stack',
@@ -109,9 +109,9 @@ def final DOCKER_BUILD_ENV = makeDockerAgentCfg(
 
 @groovy.transform.Field
 def final DOCKER_TEST_ENV = makeDockerAgentCfg(
-        'hc-docker:5000',
-        null, // no credentials needed
-        'trentos_test:20211217',
+        'dtrng.cc.ebs.corp',
+        'ee98360f-5225-4ee9-b9c8-a72e22dd133b',
+        'hc/trentos_test:20211217',
         [
             '-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
             '-v /etc/localtime:/etc/localtime:ro',
