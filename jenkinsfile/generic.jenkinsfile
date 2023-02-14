@@ -474,6 +474,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registryUrl
+                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -503,6 +504,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registryUrl
+                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -600,6 +602,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_TEST_ENV.registryUrl
+                            registryCredentialsId DOCKER_TEST_ENV.registryCredentialsId
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }
@@ -640,6 +643,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_TEST_ENV.registryUrl
+                            registryCredentialsId DOCKER_TEST_ENV.registryCredentialsId
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }

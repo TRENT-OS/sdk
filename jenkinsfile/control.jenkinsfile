@@ -70,6 +70,7 @@ def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
 @groovy.transform.Field
 def final DOCKER_BUILD_ENV = [
     registryUrl: DOCKER_REGISTRY,
+    registryCredentialsId: null, // no credentials needed
     image:    DOCKER_BASE + '/trentos_build:20210503',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
                '--group-add=stack',
@@ -79,6 +80,7 @@ def final DOCKER_BUILD_ENV = [
 @groovy.transform.Field
 def final DOCKER_TEST_ENV  = [
     registryUrl: DOCKER_REGISTRY,
+    registryCredentialsId: null, // no credentials needed
     image:    DOCKER_BASE + '/trentos_test:20211217',
     args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
                '-v /etc/localtime:/etc/localtime:ro',
@@ -943,6 +945,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registryUrl
+                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -1044,6 +1047,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registryUrl
+                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
@@ -1066,6 +1070,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_TEST_ENV.registryUrl
+                            registryCredentialsId DOCKER_TEST_ENV.registryCredentialsId
                             image DOCKER_TEST_ENV.image
                             args DOCKER_TEST_ENV.args
                         }
@@ -1094,6 +1099,7 @@ pipeline {
                             reuseNode true
                             alwaysPull true
                             registryUrl DOCKER_BUILD_ENV.registryUrl
+                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
                             image DOCKER_BUILD_ENV.image
                             args DOCKER_BUILD_ENV.args
                         }
