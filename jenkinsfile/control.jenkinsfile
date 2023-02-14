@@ -61,36 +61,67 @@ def SYSTEM_CONFIGS = []
 // * why are sudo rights needed in the test container
 //
 
-@groovy.transform.Field
-def final DOCKER_BASE = 'hc-docker:5000'
+// This helper function must be annotated with "@NonCPS", otherwise jenkins
+// fails with some unknown internal error. This seems to be related to passing a
+// list in the parameter 'args'. Details are unclear, the logs just say:
+//
+//      psCallableInvocation{
+//        methodName=makeDockerAgentCfg,
+//        call=com.cloudbees.groovy.cps.impl.CpsFunction@6e025e85,
+//        receiver=WorkflowScript@603646a9,
+//        arguments=[...]
+//      }
+//      Finished: FAILURE
+//
+@NonCPS
+def makeDockerAgentCfg(server, credentialsId, image, args)
+{
+    def m = (server =~ '(?:(.*)://)?([^/:]*)(?::([1-9][0-9]*))?(?:/(.*))?')
+    if (!m.matches()) {
+        throw new Exception('invalid server: ' + server)
+    }
+    def protocol = m.group(1) ?: "https"
+    def domain = m.group(2)
+    def port = m.group(3) ? Integer.parseInt(m.group(3)) : null
+    def path = m.group(4)
+
+    def registry = domain + ( port ? ":${port}" : '')
+
+    return [
+        registryUrl: "${protocol}://${registry}",
+        registryCredentialsId: credentialsId,
+        image: registry + (path ? "/${path}" : '') + "/${image}",
+        args: (args instanceof List) ? args.join(' ') : args,
+    ]
+}
+
 
 @groovy.transform.Field
-def final DOCKER_REGISTRY = 'https://' + DOCKER_BASE
+def final DOCKER_BUILD_ENV = makeDockerAgentCfg(
+        'hc-docker:5000',
+        null, // no credentials needed
+        'trentos_build:20210503',
+        [
+            '-v /etc/localtime:/etc/localtime:ro',
+            '--group-add=stack',
+        ]
+    )
 
 @groovy.transform.Field
-def final DOCKER_BUILD_ENV = [
-    registryUrl: DOCKER_REGISTRY,
-    registryCredentialsId: null, // no credentials needed
-    image:    DOCKER_BASE + '/trentos_build:20210503',
-    args:     ['-v /etc/localtime:/etc/localtime:ro',
-               '--group-add=stack',
-              ].join(' ')
-]
-
-@groovy.transform.Field
-def final DOCKER_TEST_ENV  = [
-    registryUrl: DOCKER_REGISTRY,
-    registryCredentialsId: null, // no credentials needed
-    image:    DOCKER_BASE + '/trentos_test:20211217',
-    args:     ['-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
-               '-v /etc/localtime:/etc/localtime:ro',
-               '--network=bridge',
-               '--cap-add=NET_ADMIN',
-               '--cap-add=NET_RAW',
-               '--device=/dev/net/tun',
-               '--group-add=sudo'
-              ].join(' ')
-]
+def final DOCKER_TEST_ENV = makeDockerAgentCfg(
+        'hc-docker:5000',
+        null, // no credentials needed
+        'trentos_test:20211217',
+        [
+            '-v /home/jenkins/.ssh/:/home/jenkins/.ssh:ro',
+            '-v /etc/localtime:/etc/localtime:ro',
+            '--network=bridge',
+            '--cap-add=NET_ADMIN',
+            '--cap-add=NET_RAW',
+            '--device=/dev/net/tun',
+            '--group-add=sudo'
+        ]
+    )
 
 
 //------------------------------------------------------------------------------
