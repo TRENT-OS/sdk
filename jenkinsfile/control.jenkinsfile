@@ -959,12 +959,7 @@ pipeline {
                             ],
                             userRemoteConfigs: scm.userRemoteConfigs
                         ])
-
-                        // this also checks out SDK demos
-                        process_yaml_config(
-                            'scm-src/test-cfg.yaml',
-                            env.BRANCH_NAME)
-
+                        process_yaml_config('scm-src/test-cfg.yaml', env.BRANCH_NAME)
                         do_notify_bitbucket()
                     }
                 }
@@ -983,12 +978,9 @@ pipeline {
                     }
                     steps {
                         print_step_info(env.STAGE_NAME)
+                        // mode=package, output into folder 'sdk-package'
                         run_shell_script(
-                            'scm-src/build-sdk.sh',
-                            [
-                                'package',    // mode
-                                'sdk-package' // SDK package output base dir
-                            ]
+                            'scm-src/build-sdk.sh', ['package', 'sdk-package']
                         )
                     }
                 }
@@ -997,7 +989,6 @@ pipeline {
                 stage('archive') {
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         archiveArtifacts([
                             artifacts: [
                                 DEV_SDK_PACKAGE,
@@ -1162,9 +1153,7 @@ pipeline {
         stage('Test Systems') {
             steps {
                 print_step_info(env.STAGE_NAME)
-                do_jobs_for_test_systems(
-                    env.BRANCH_NAME,
-                    SYSTEM_CONFIGS)
+                do_jobs_for_test_systems(env.BRANCH_NAME, SYSTEM_CONFIGS)
             }
         }
     }

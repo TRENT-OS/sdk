@@ -566,14 +566,11 @@ pipeline {
 
         //----------------------------------------------------------------------
         stage('Test Stage') {
-
             when {
                 beforeAgent true
                 expression { TEST_SCRIPT }
             }
-
             agent { label NODE_LABEL_TEST }
-
             stages {
 
                 //--------------------------------------------------------------
@@ -651,7 +648,6 @@ pipeline {
 
                     steps {
                         print_step_info(env.STAGE_NAME)
-
                         tee('log-test-run.txt')
                         {
                             dir('test-logs')
@@ -668,7 +664,6 @@ pipeline {
                                                 ['../'+SDK_DIR])
                                         }
                                     }
-
                                     run_python_package(
                                         ['-B',],
                                         ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
@@ -701,7 +696,6 @@ pipeline {
 
                 //--------------------------------------------------------------
                 stage('archive_test_results') {
-
                     steps {
                         print_step_info(env.STAGE_NAME)
 
@@ -715,7 +709,6 @@ pipeline {
                                 'log-test-run.txt'
                             ]
                         )
-
                         cleanWs()
                     }
                 }
