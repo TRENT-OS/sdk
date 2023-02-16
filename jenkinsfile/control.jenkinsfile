@@ -526,7 +526,7 @@ def do_git_checkout(
                         extensions: [
                             [
                                 $class: 'RelativeTargetDirectory',
-                                relativeTargetDir: (folder ? folder : '.')
+                                relativeTargetDir: (folder?:'.')
                             ],
 
                             [
