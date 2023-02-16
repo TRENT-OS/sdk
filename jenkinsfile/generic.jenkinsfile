@@ -612,7 +612,7 @@ pipeline {
                                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
                                 {
                                     run_python_package(
-                                        ['-B',],
+                                        ['-B'],
                                         ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
                                         'pydoc',
                                         ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT]
@@ -665,7 +665,7 @@ pipeline {
                                         }
                                     }
                                     run_python_package(
-                                        ['-B',],
+                                        ['-B'],
                                         ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
                                         'pytest',
                                         [
