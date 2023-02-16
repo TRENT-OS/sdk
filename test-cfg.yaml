@@ -32,18 +32,18 @@ demo_hello_world:
   flags: [BUILD, SDK_DEMO]
   testScript: test_demo_hello_world.py
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
+      addFlags: TEST
+    zynq7000:
       addFlags: TEST
     zynqmp:
       addFlags: TEST
     spike64:
       addFlags: TEST
+    spike32:
     rpi3:
     rpi4:
     nitrogen6sx:
-    spike32:
 
 
 #-------------------------------------------------------------------------------
@@ -112,9 +112,9 @@ demo_tls_server:
 test_timeserver:
   flags: [BUILD]
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
+      addFlags: TEST
+    zynq7000:
       addFlags: TEST
     zynqmp: # test still fails
     rpi3:
@@ -123,19 +123,19 @@ test_timeserver:
 test_certserver:
   flags: [BUILD]
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
       addFlags: TEST
-    rpi3:
+    zynq7000:
+      addFlags: TEST
     zynqmp:
+    rpi3:
 
 test_uart:
   flags: [BUILD]
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
+      addFlags: TEST
+    zynq7000:
       addFlags: TEST
     zynqmp:
       addFlags: TEST
@@ -189,9 +189,9 @@ test_storage_interface:
   flags: [BUILD]
   testScript: test_storage_interface*.py
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
+      addFlags: TEST
+    zynq7000:
       addFlags: TEST
     rpi3:
     rpi4:
@@ -227,18 +227,18 @@ test_logserver:
 test_tls_api:
   flags: [BUILD]
   platforms:
+    sabre:
     zynq7000:
       addFlags: TEST
-    sabre:
     nitrogen6sx:
     rpi3:
 
 test_tlsserver:
   flags: [BUILD]
   platforms:
+    sabre:
     zynq7000:
       addFlags: TEST
-    sabre:
     nitrogen6sx:
     rpi3:
 
@@ -248,7 +248,7 @@ test_network_api_tcp_client_single_socket:
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_single_socket
   testParams: --tc=platform.test_configuration:tcp_client_single_socket
-  platforms: [zynq7000, sabre]
+  platforms: [sabre, zynq7000]
 
 test_network_api_tcp_client_multiple_sockets:
   flags: [BUILD, TEST]
@@ -256,7 +256,7 @@ test_network_api_tcp_client_multiple_sockets:
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_sockets
   testParams: --tc=platform.test_configuration:tcp_client_multiple_sockets
-  platforms: [zynq7000, sabre]
+  platforms: [sabre, zynq7000]
 
 test_network_api_tcp_client_multiple_clients:
   flags: [BUILD, TEST]
@@ -264,7 +264,7 @@ test_network_api_tcp_client_multiple_clients:
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_clients
   testParams: --tc=platform.test_configuration:tcp_client_multiple_clients
-  platforms: [zynq7000, sabre]
+  platforms: [sabre, zynq7000]
 
 test_network_api_tcp_server:
   flags: [BUILD]
@@ -273,9 +273,9 @@ test_network_api_tcp_server:
   buildParams: -D TEST_CONFIGURATION=tcp_server
   testParams: --tc=platform.test_configuration:tcp_server
   platforms:
-    zynq7000:
-      addFlags: TEST
     sabre:
+      addFlags: TEST
+    zynq7000:
       addFlags: TEST
     nitrogen6sx:
     rpi3:
@@ -286,4 +286,4 @@ test_network_api_udp_server:
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=udp_server
   testParams: --tc=platform.test_configuration:udp_server
-  platforms: [zynq7000, sabre]
+  platforms: [sabre, zynq7000]
