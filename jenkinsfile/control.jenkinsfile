@@ -433,7 +433,7 @@ def get_result_ball_img_url(result)
 
     return Jenkins.RESOURCE_PATH +
             '/images/16x16/' +
-            states.get(result, 'help.png')
+            states.getOrDefault(result, 'help.png')
 }
 
 
