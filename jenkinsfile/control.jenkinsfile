@@ -698,6 +698,7 @@ def execute_build(ctx, stage_ctx)
                 value: writeJSON([
                     returnText: true,
                     json: [
+                        'FLAGS': stage_ctx.get('flags').flag_list,
                         'PLATFORM': stage_ctx.get('platform'),
                         'TEST_SYSTEM': stage_ctx.get('testSystem'),
                         'BUILD_PARAMS': stage_ctx.get('buildParams'),
@@ -836,14 +837,12 @@ def do_jobs_for_test_systems(branch, testConfigs)
                                 platParams?.get('buildParams')),
 
                 // platform setting takes preference over test_ctx setting
-                testScript:  !flags.is_test() ? null :
-                             platParams?.get('testScript') ?:
+                testScript:  platParams?.get('testScript') ?:
                              test_ctx.params?.get('testScript') ?:
                              null,
 
                 // put platform params after test_ctx params
-                testParams:  !flags.is_test() ? null :
-                             makeParamStr(
+                testParams:  makeParamStr(
                                 test_ctx.params?.get('testParams'),
                                 platParams?.get('testParams')),
 

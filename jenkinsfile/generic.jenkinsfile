@@ -44,6 +44,9 @@ def SYSTEM_DIR = null  // internal parameter only
 @groovy.transform.Field
 def IS_DEMO = false  // internal parameter only
 
+@groovy.transform.Field
+def IS_TEST = false  // internal parameter only
+
 
 //------------------------------------------------------------------------------
 // Constants
@@ -105,6 +108,9 @@ def do_pipeline_init() {
 
     // json_params.each { println("JSON: ${it.key} = ${it.value}") }
 
+    flags = json_params.getOrDefault('FLAGS', [])
+    assert(flags instanceof List)
+
     PLATFORM = json_params.get('PLATFORM')
     assert(PLATFORM instanceof String)
 
@@ -120,13 +126,11 @@ def do_pipeline_init() {
             // a relative path within SDK_DIR
             TEST_SYSTEM = m.group(2)
             SYSTEM_DIR = "${SDK_DIR}/${TEST_SYSTEM}"
-            IS_DEMO = true
             break
         case 'repo':
             // a repo location to checkout from
             TEST_SYSTEM = m.group(2)
             SYSTEM_DIR = 'src/system'
-            IS_DEMO = false
             break
         default:
             error("invalid parameter TEST_SYSTEM: ${TEST_SYSTEM}")
@@ -143,9 +147,19 @@ def do_pipeline_init() {
     BUILD_PARAMS = json_params.getOrDefault('BUILD_PARAMS','')
     TEST_PARAMS = json_params.getOrDefault('TEST_PARAMS','')
 
-    currentBuild.displayName = "${BRANCH_OR_COMMIT}, ${TEST_SYSTEM}, " +
-                               "${PLATFORM} [build${TEST_SCRIPT?'+test':''}" +
-                               "${IS_DEMO?'+demo':''}]"
+    IS_DEMO = 'SDK_DEMO' in flags
+    IS_TEST = 'TEST' in flags
+
+    if (IS_TEST && !TEST_SCRIPT) {
+        error("missing TEST_SCRIPT")
+    }
+
+    def info = "${BRANCH_OR_COMMIT}, ${TEST_SYSTEM}, ${PLATFORM}"
+    def ops = []
+    if (IS_DEMO) { ops.add('demo') }
+    if (IS_TEST) { ops.add('test') }
+    if (ops) { info += " [${ops.join(', ')}]" }
+    currentBuild.displayName = info
 
     manager.createSummary("text.gif").appendText(
         '<table style="border: 1px solid black; border-collapse: collapse;">'+
@@ -561,7 +575,7 @@ pipeline {
         stage('Test Stage') {
             when {
                 beforeAgent true
-                expression { TEST_SCRIPT }
+                expression { IS_TEST }
             }
             agent { label NODE_LABEL_TEST }
             stages {
