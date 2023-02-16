@@ -224,9 +224,11 @@ function collect_sdk_demos()
         local DEMO_SRC_DIR=${DEMOS_DIR}/${SDK_DEMO_NAME}
         local DEMO_DST_DIR=${SDK_PACKAGE_DEMOS}/${SDK_DEMO_NAME}
 
-        # Record git revision of demo.
-        echo " $(cd ${DEMO_SRC_DIR}; git rev-parse HEAD) ${SDK_DEMO_NAME}" \
-             >> ${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
+        # Record git revision of demo. Add a leading space to align the format
+        # with the output of the data from "git submodule status --recursive"
+        # that is already in this file.
+        local REV=$(cd ${DEMO_SRC_DIR} && git rev-parse HEAD)
+        echo " ${REV} ${SDK_DEMO_NAME}" >> ${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
         #-----------------------------------------------------------------------
         # Prepare basic demo excludes.
