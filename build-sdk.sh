@@ -108,13 +108,10 @@ function collect_sdk_sandbox()
     # Create version file with git submodule infos.
     #---------------------------------------------------------------------------
 
-    local VERSION_INFO_FILE=${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
-
-    local ABS_VERSION_INFO_FILE=$(realpath ${VERSION_INFO_FILE})
     (
-        cd ${SDK_SRC_DIR}
-        git submodule status --recursive > ${ABS_VERSION_INFO_FILE}
-    )
+        cd ${SDK_SRC_DIR} \
+        && git submodule status --recursive
+    ) > ${OUT_BASE_DIR}/${VERSION_INFO_FILENAME}
 
     #---------------------------------------------------------------------------
     # Prepare basic sandbox excludes.
