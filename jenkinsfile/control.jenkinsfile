@@ -879,11 +879,18 @@ def do_jobs_for_test_systems(branch, testConfigs)
                         dir('test-result') {
                             run_app('tar', ['-xf ../' + TEST_RESULT_PACKAGE])
                             if (fileExists('test_results.xml')) {
-                                // TODO: Support different platforms in junit
-                                //       result processing. Currently seeing
-                                //       the same test cases multiple times is
-                                //       likely messing up the analysis.
-                                junit('test_results.xml')
+                                // In some cases the processing fails, e.g.
+                                // when there are zero test results in the file
+                                // because there was a platform init problem
+                                // already.
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                                {
+                                    // TODO: Support different platforms in junit
+                                    //       result processing. Currently seeing
+                                    //       the same test cases multiple times is
+                                    //       likely messing up the analysis.
+                                    junit('test_results.xml')
+                                }
                             }
                         }
                         tar_list.add(stage_ctx.name + '/test-result/')
