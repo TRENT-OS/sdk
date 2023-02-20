@@ -925,6 +925,7 @@ pipeline {
     agent none
 
     options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
         skipDefaultCheckout()
         // must prefix with '/' explicitly to make this an 'absolute' name
         copyArtifactPermission('/' + GENERIC_PROJECT_BUILDER_JOB);
