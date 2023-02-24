@@ -78,7 +78,7 @@ def makeDockerAgentCfg(server, credentialsId, image, args)
 {
     def m = (server =~ '(?:(.*)://)?([^/:]*)(?::([1-9][0-9]*))?(?:/(.*))?')
     if (!m.matches()) {
-        throw new Exception('invalid server: ' + server)
+        throw new Exception("invalid server: ${server}")
     }
     def protocol = m.group(1) ?: "https"
     def domain = m.group(2)
@@ -148,8 +148,8 @@ class SystemCtx {
 
         // ensure proper defaults exists
         this.params.putIfAbsent('flags', 0)
-        this.params.putIfAbsent('testScript', systemName + '.py')
-        this.params.putIfAbsent('testSystem', 'ss/' + systemName)
+        this.params.putIfAbsent('testScript', "${systemName}.py")
+        this.params.putIfAbsent('testSystem', "ss/${systemName}")
     }
 }
 
@@ -174,11 +174,11 @@ def yaml_parse_flags(arg)
             'SDK_DEMO': SystemCtx.FLAG_SDK_DEMO,
         ].get(arg.toUpperCase())
         if (!flags) {
-            error('unknown flag: ' + arg)
+            error("unknown flag: ${arg}")
         }
 
     } else {
-        error('unsupported flag argument ' + arg.getClass() + ': ' + arg)
+        error("unsupported flag argument ${arg.getClass()}: ${arg}")
     }
 
     return flags
@@ -202,7 +202,7 @@ def yaml_parse_params(arg)
         params.add(arg)
 
     } else {
-        error('unsupported parameter argument ' + arg.getClass() + ': ' + arg)
+        error("unsupported parameter argument ${arg.getClass()}: ${arg}")
     }
 
     return params
@@ -228,13 +228,12 @@ def yaml_parse_platform_params(arg)
                     params.putAt(e.key, yaml_parse_params(e.value))
                     break
                 default:
-                    error('unknown platform attribute: ' + e.key)
+                    error("unknown platform attribute: ${e.key}")
             }
         }
 
     } else {
-        error('unsupported platform parameter argument ' + arg.getClass() +
-              ': ' + arg)
+        error("unsupported platform parameter argument ${arg.getClass()}: ${arg}")
     }
 
     return params
@@ -263,7 +262,7 @@ def yaml_parse_platforms(arg)
         platforms.putAt(arg, null)
 
     } else {
-        error('unsupported platform argument ' + arg.getClass() + ': ' + arg)
+        error("unsupported platform argument ${arg.getClass()}: ${arg}")
     }
 
     return platforms
@@ -280,15 +279,15 @@ def process_yaml_config(yaml_file, branch)
         def systemName = system.key
 
         if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
-            error('invalid test system name: ' + systemName)
+            error("invalid test system name: ${systemName}")
         }
 
         if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
-            error('duplicate test system: ' + systemName)
+            error("duplicate test system: ${systemName}")
         }
 
         if (!(system.value instanceof Map)) {
-            error('system with invalid data:' + systemName)
+            error("system with invalid data: ${systemName}")
         }
 
         def platforms = [:]
@@ -304,7 +303,7 @@ def process_yaml_config(yaml_file, branch)
                 case 'testSystem':
                 case 'testScript':
                     if (!(e.value instanceof String))
-                        error('testScript invalid for system:' + systemName)
+                        error("testScript invalid for system: ${systemName}")
                     params.putAt(e.key, e.value)
                     break
                 case 'buildParams':
@@ -312,7 +311,7 @@ def process_yaml_config(yaml_file, branch)
                     params.putAt(e.key, yaml_parse_params(e.value))
                     break
                 default:
-                    error('system ' + systemName + ' with unsupported attribute: ' + attr)
+                    error("system ${systemName} with unsupported attribute: ${attr}")
             }
         }
 
@@ -332,8 +331,8 @@ def process_yaml_config(yaml_file, branch)
             // thus we check them out here already and then overwrite the
             // 'testSystem' parameter with the location. The build job
             // knows that for FLAG_SDK_DEMO it's a folder and not a repo.
-            def folder = 'demos/' + systemName
-            do_checkout(systemCtx.params['testSystem'], branch, 'src/'+folder)
+            def folder = "demos/${systemName}"
+            do_checkout(systemCtx.params['testSystem'], branch, "src/${folder}")
             systemCtx.params['testSystem'] = folder
         }
 
@@ -345,7 +344,7 @@ def process_yaml_config(yaml_file, branch)
 //------------------------------------------------------------------------------
 def print_step_info(name)
 {
-    println('######## ' + name)
+    println("######## ${name}")
 }
 
 
@@ -375,7 +374,7 @@ def do_notify_bitbucket()
 //------------------------------------------------------------------------------
 def do_stash(name, file_list)
 {
-    println('stashing to ' + name)
+    println("stashing to ${name}")
     stash([
         name: name,
         allowEmpty: true,
@@ -400,8 +399,8 @@ def save_current_job_log(
         [
             '-q',
             '--no-check-certificate',
-            '-O ' + name,
-            BUILD_URL + 'consoleText'
+            "-O ${name}",
+            "${BUILD_URL}consoleText"
         ]
     )
 }
@@ -414,10 +413,8 @@ def get_build_relative_url(build)
     // generating HTML page content. This workaround avoids accessing the raw
     // build, which can't be done by scripts by default
 
-    return '/job/' +
-            build.getFullProjectName().replace("/", "/job/") +
-            '/' +
-            build.getNumber()
+    fpn = build.getFullProjectName().replace('/', '/job/')
+    return "/job/${fpn}/${build.getNumber()}"
 
 }
 
@@ -432,7 +429,7 @@ def get_result_ball_img_url(result)
         'ABORTED':  'aborted.png'
     ].getOrDefault(result, 'help.png')
 
-    return Jenkins.RESOURCE_PATH + '/images/16x16/' + img
+    return "${Jenkins.RESOURCE_PATH}/images/16x16/${img}"
 }
 
 
@@ -445,7 +442,7 @@ def run_app(
 
     if (param_array)
     {
-        cmdLine += ' ' + param_array.join(' ')
+        cmdLine += " ${param_array.join(' ')}"
     }
 
     try
@@ -454,7 +451,7 @@ def run_app(
     }
     catch (Exception e)
     {
-        println('Exception running command: ' + e)
+        println("Exception running command: ${e}")
         throw e
     }
 }
@@ -475,7 +472,7 @@ def archive_as_tar_bz2(name, files = null)
     def params = [
         '-c',
         '-j',
-        '-f ' + name,
+        "-f ${name}",
         '--ignore-failed-read',
         '--sort=name',
         '--numeric-owner',
@@ -498,11 +495,8 @@ def do_git_checkout(
     branch,
     folder = NULL
 ) {
-    println(
-        'checkout ' + repo + '@' + branch +
-        ( folder ? (' into ' + folder) : '' ) +
-        ' ...'
-    )
+    println("checkout ${repo}@${branch}" +
+            (folder ? " into ${folder}" : '') + ' ...')
 
     try
     {
@@ -511,9 +505,9 @@ def do_git_checkout(
         // use project URL to build repo URL
         def m = (scm_cfg.url =~ '(.*)://([^/]*)(?:/(.*))?')
         if (!m.matches()) {
-            throw new Exception('could not parse url: ' + url)
+            throw new Exception("could not parse url: ${url}")
         }
-        def repo_url = m.group(1) + '://' + m.group(2) + '/' + repo + '.git'
+        def repo_url = "${m.group(1)}://${m.group(2)}/${repo}.git"
 
         def scmVars = checkout([
                     poll: false,
@@ -554,13 +548,13 @@ def do_git_checkout(
                 ])
 
         // clean up some strange folders jenkins creates for an unknown reason
-        if (folder) { run_app('rmdir', [folder+'@tmp']) }
+        if (folder) { run_app('rmdir', ["${folder}@tmp"]) }
 
         return scmVars
     }
     catch (Exception e)
     {
-        println 'Exception: ' + e
+        println "Exception: ${e}"
         return null
     }
 }
@@ -590,7 +584,7 @@ def do_checkout(
         }
     }
 
-    error('checkout error for ' + repo + ', no branches: ' + branches.join(', '))
+    error("checkout error for ${repo}, no branches: ${branches.join(', ')}")
 }
 
 
@@ -668,10 +662,9 @@ def execute_build(ctx, stage_ctx)
 
     // propagate the result to the current state and build result, but catch the
     // exception so we can continue
-    def msg = 'job ' + idx + '/' + ctx.cnt + ': ' + result + ' for ' +
-              stage_ctx.test_ctx.systemName + ', ' +
-              stage_ctx.platform + ', ' +
-              duration + ' [' + op_str + ']'
+    def msg = "job ${idx}/${ctx.cnt}: ${result} for " +
+              "${stage_ctx.test_ctx.systemName}, " +
+              "${stage_ctx.platform}, ${duration}  [${op_str}]"
     if ('SUCCESS' == result) {
         println(msg)
     } else if ('UNSTABLE' == result) {
@@ -686,13 +679,10 @@ def execute_build(ctx, stage_ctx)
     }
 
     ctx.summary.appendText(
-        stage_ctx.test_ctx.systemName + ', ' + stage_ctx.platform +
-        ' <a href="' + get_build_relative_url(jobBuild) + '">' +
-            '#' + jobBuild.getNumber() +
-        '</a>' +
-        ' <img src="' + get_result_ball_img_url(result) + '">' +
-        duration + ' [' + op_str + ']' +
-        '<br>',
+        "${stage_ctx.test_ctx.systemName}, ${stage_ctx.platform}" +
+        " <a href=\"${get_build_relative_url(jobBuild)}\">#${jobBuild.getNumber()}</a>" +
+        " <img src=\"${get_result_ball_img_url(result)}\">" +
+        "${duration} [${op_str}]<br>",
         false)
 
     // When CI is under heavy load, no free executor could be available to run
@@ -748,7 +738,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
             // Test system is initialized to 'null' in the constructor if a
             // non-default repo is specified for an SDK demo, which is not
             // supported.
-            error("SDK demo must use default repo: " + test_ctx.systemName)
+            error("SDK demo must use default repo: ${test_ctx.systemName}")
             continue // this is not a blocker for other tests
         }
 
@@ -763,12 +753,12 @@ def do_jobs_for_test_systems(branch, testConfigs)
             // Currently, a test always requires a build. But in the future,
             // testing an existing system might also be supported.
             if (!isBuild) {
-                error("no built requested for " + test_ctx.systemName)
+                error("no built requested for ${test_ctx.systemName}")
                 continue
             }
 
             jobStages.add([
-                name:        platName + '-' + test_ctx.systemName,
+                name:        "${platName}-${test_ctx.systemName}",
                 test_ctx:    test_ctx,
                 platform:    platName,
                 flags:       flags,
@@ -834,9 +824,9 @@ def do_jobs_for_test_systems(branch, testConfigs)
     }
 
     duration = groovy.time.TimeCategory.minus(new Date(), build_start)
-    def duration_msg = 'all system build/test stages took ' + duration
+    def duration_msg = "all system build/test stages took ${duration}"
     println(duration_msg)
-    summary.appendText('<hr>' + duration_msg, false)
+    summary.appendText("<hr>${duration_msg}", false)
 
     // builds are done, now collect the results and artifacts. This needs a
     // workspace, so we have to allocate a node
@@ -859,8 +849,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             jobStages.eachWithIndex { stage_ctx, idx ->
 
-                println('processing ' + (idx+1) + '/' + jobStages.size() + ': ' +
-                        stage_ctx.name)
+                println("processing ${idx+1}/${jobStages.size()}: ${stage_ctx.name}")
 
                 dir(stage_ctx.name)
                 {
@@ -872,13 +861,13 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
                     if (fileExists(SYSTEM_PACKAGE)) {
                         dir('system') {
-                            run_app('tar', ['-xf ../' + SYSTEM_PACKAGE])
+                            run_app('tar', ["-xf ../${SYSTEM_PACKAGE}"])
                         }
-                        tar_list.add(stage_ctx.name + '/system/')
+                        tar_list.add("${stage_ctx.name}/system/")
                     }
                     if (fileExists(TEST_RESULT_PACKAGE)) {
                         dir('test-result') {
-                            run_app('tar', ['-xf ../' + TEST_RESULT_PACKAGE])
+                            run_app('tar', ["-xf ../${TEST_RESULT_PACKAGE}"])
                             if (fileExists('test_results.xml')) {
                                 // In some cases the processing fails, e.g.
                                 // when there are zero test results in the file
@@ -894,7 +883,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
                                 }
                             }
                         }
-                        tar_list.add(stage_ctx.name + '/test-result/')
+                        tar_list.add("${stage_ctx.name}/test-result/")
                     }
                 }
 
@@ -929,7 +918,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         skipDefaultCheckout()
         // must prefix with '/' explicitly to make this an 'absolute' name
-        copyArtifactPermission('/' + GENERIC_PROJECT_BUILDER_JOB);
+        copyArtifactPermission("/${GENERIC_PROJECT_BUILDER_JOB}");
     }
 
     stages {
@@ -1065,7 +1054,7 @@ pipeline {
                         // Extract the DEV_SDK_PACKAGE into the subfolder 'pkg',
                         // the name is hard-coded in the SDK build script.
                         run_app('mkdir', ['-p', 'pkg'])
-                        run_app('tar', ['-xf ' + DEV_SDK_PACKAGE, '-C pkg'])
+                        run_app('tar', ["-xf ${DEV_SDK_PACKAGE}", '-C pkg'])
                     }
                 }
 

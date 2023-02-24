@@ -95,7 +95,7 @@ def do_pipeline_init() {
     // arbitrary parameters without having to make the jenkins job aware of any
     // details.
 
-    // params.each { println(it.key + ' = ' + it.value) }
+    // params.each { println("${it.key} = ${it.value}") }
 
     assert(BRANCH_OR_COMMIT)
 
@@ -103,7 +103,7 @@ def do_pipeline_init() {
         text: params.get('PARAMS_JSON'),
         returnPojo: true])
 
-    // json_params.each { println('JSON: ' + it.key + ' = ' + it.value) }
+    // json_params.each { println("JSON: ${it.key} = ${it.value}") }
 
     PLATFORM = json_params.get('PLATFORM')
     assert(PLATFORM instanceof String)
@@ -119,7 +119,7 @@ def do_pipeline_init() {
         case 'pkg':
             // a relative path within SDK_DIR
             TEST_SYSTEM = m.group(2)
-            SYSTEM_DIR = SDK_DIR + '/' + TEST_SYSTEM
+            SYSTEM_DIR = "${SDK_DIR}/${TEST_SYSTEM}"
             IS_DEMO = true
             break
         case 'repo':
@@ -129,7 +129,7 @@ def do_pipeline_init() {
             IS_DEMO = false
             break
         default:
-            error('invalid parameter TEST_SYSTEM: ' + TEST_SYSTEM)
+            error("invalid parameter TEST_SYSTEM: ${TEST_SYSTEM}")
     }
 
     DOCKER_BUILD_ENV = json_params.get('DOCKER_BUILD_ENV')
@@ -143,13 +143,9 @@ def do_pipeline_init() {
     BUILD_PARAMS = json_params.getOrDefault('BUILD_PARAMS','')
     TEST_PARAMS = json_params.getOrDefault('TEST_PARAMS','')
 
-    currentBuild.displayName = BRANCH_OR_COMMIT + ', ' +
-                               TEST_SYSTEM + ', ' +
-                               PLATFORM +
-                               ' [build' +
-                               (TEST_SCRIPT ? '+test' : '') +
-                               (IS_DEMO ? '+demo' : '') +
-                               ']'
+    currentBuild.displayName = "${BRANCH_OR_COMMIT}, ${TEST_SYSTEM}, " +
+                               "${PLATFORM} [build${TEST_SCRIPT?'+test':''}" +
+                               "${IS_DEMO?'+demo':''}]"
 
     manager.createSummary("text.gif").appendText(
         '<table style="border: 1px solid black; border-collapse: collapse;">'+
@@ -200,7 +196,7 @@ def run_app(
 
     if (param_array)
     {
-        cmdLine += ' ' + param_array.join(' ')
+        cmdLine += " ${param_array.join(' ')}"
     }
 
     try
@@ -209,7 +205,7 @@ def run_app(
     }
     catch (Exception e)
     {
-        println('Exception running command: ' + e)
+        println("Exception running command: ${e}")
         throw e
     }
 }
@@ -230,7 +226,7 @@ def archive_as_tar_bz2(name, files = null)
     def params = [
         '-c',
         '-j',
-        '-f ' + name,
+        "-f ${name}",
         '--ignore-failed-read',
         '--sort=name',
         '--numeric-owner',
@@ -259,7 +255,7 @@ def run_python_package(
 
     if (python_paths)
     {
-       env += ['PYTHONPATH=' + python_paths.join(':')]
+       env += ["PYTHONPATH=${python_paths.join(':')}"]
     }
 
     if (python_params)
@@ -287,11 +283,8 @@ def do_git_checkout(
     branch,
     folder = NULL
 ) {
-    println(
-        'checkout: ' + repo + '@' + branch +
-        ( folder ? (' into ' + folder) : '' ) +
-        ' ...'
-    )
+    println("checkout ${repo}@${branch}" +
+            (folder ? " into ${folder}" : '') + ' ...')
 
     try
     {
@@ -300,9 +293,9 @@ def do_git_checkout(
         // use project URL to build repo URL
         def m = (scm_cfg.url =~ '(.*?)://([^/]*)(?:/(.*))?')
         if (!m.matches()) {
-            throw new Exception('could not parse url: ' + url)
+            throw new Exception("could not parse url: ${url}")
         }
-        def repo_url = m.group(1) + '://' + m.group(2) + '/' + repo + '.git'
+        def repo_url = "${m.group(1)}://${m.group(2)}/${repo}.git"
 
         def scmVars = checkout([
                     poll: false,
@@ -343,13 +336,13 @@ def do_git_checkout(
                 ])
 
         // delete additional folder that is created by the checkout
-        if (folder) { run_app('rmdir', [folder+'@tmp']) }
+        if (folder) { run_app('rmdir', ["${folder}@tmp"]) }
 
         return scmVars
     }
     catch (Exception e)
     {
-        println('Exception: ' + e)
+        println("Exception: ${e}")
         return null
     }
 }
@@ -379,7 +372,7 @@ def do_checkout(
         }
     }
 
-    error('checkout error for ' + repo + ', no branches: ' + branches.join(', '))
+    error("checkout error for ${repo} no branches: ${branches.join(', ')}")
 }
 
 
@@ -389,7 +382,7 @@ def get_sdk(
 ) {
     def m = (SDK_SOURCE =~ 'job://(.*):(.*)')
     if (!m.matches()) {
-        throw new Exception('unsupported SDK source: ' + SDK_SOURCE)
+        throw new Exception("unsupported SDK source: ${SDK_SOURCE}")
         // ToDo: if the parameter is left empty, we could add a convenience
         //       feature that currentBuild.getBuildCauses() is checked. If it is
         //       a BuildUpstreamCause then the fields 'upstreamProject' and
@@ -408,7 +401,7 @@ def get_sdk(
     )
 
     run_app('mkdir', ['-p', SDK_DIR])
-    run_app('tar', ['-xf ' + package_name, '-C ' + SDK_DIR])
+    run_app('tar', ["-xf ${package_name}", "-C ${SDK_DIR}"])
 }
 
 
@@ -416,7 +409,7 @@ def get_sdk(
 def print_step_info(
     name
 ) {
-    println('#################### ' + name)
+    println("#################### ${name}")
 }
 
 
@@ -544,7 +537,7 @@ pipeline {
                                 'images/os_image.elf',
                                 'graph.svg',
                                 'compile_commands.json'
-                            ].collect { BUILD_DIR + '/' + it } +
+                            ].collect { "${BUILD_DIR}/${it}" } +
                             [
                                 'log-build.txt',
                                 'log-analyzer.txt'
@@ -583,7 +576,7 @@ pipeline {
                             selector: specific("${BUILD_NUMBER}"), // must be a string
                             filter: SYSTEM_PACKAGE
                         )
-                        run_app('tar', ['-xf ' + SYSTEM_PACKAGE])
+                        run_app('tar', ["-xf ${SYSTEM_PACKAGE}"])
                         // The release SDK package lack some files needed for
                         // our tests, thus there is a special dev package.
                         get_sdk(DEV_SDK_PACKAGE)
@@ -613,9 +606,9 @@ pipeline {
                                 {
                                     run_python_package(
                                         ['-B'],
-                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        ["../${TEST_COMMON_DIR}", "../${TESTS_DIR}"],
                                         'pydoc',
-                                        ['-w', '../'+TESTS_DIR+'/'+TEST_SCRIPT]
+                                        ['-w', "../${TESTS_DIR}/${TEST_SCRIPT}"]
                                     )
                                 }
                             }
@@ -656,7 +649,7 @@ pipeline {
                                 {
                                     script
                                     {
-                                        def prepareTestSystem = '../'+SYSTEM_DIR+'/prepare_test.sh'
+                                        def prepareTestSystem = "../${SYSTEM_DIR}/prepare_test.sh"
                                         if (fileExists(prepareTestSystem))
                                         {
                                             run_shell_script(
@@ -666,7 +659,7 @@ pipeline {
                                     }
                                     run_python_package(
                                         ['-B'],
-                                        ['../'+TEST_COMMON_DIR, '../'+TESTS_DIR],
+                                        ["../${TEST_COMMON_DIR}", "../${TESTS_DIR}"],
                                         'pytest',
                                         [
                                             // pytest options
@@ -677,13 +670,13 @@ pipeline {
                                             '--tb=short', // control traceback (long, short, line, native, no)
                                             // test framework options
                                             '--print_logs', // print system logs in console
-                                            '--proxy=../'+SDK_DIR+'/bin/proxy_app,TCP',
-                                            '--target=' + PLATFORM,
-                                            '--system_image=../'+BUILD_DIR+'/images/os_image.elf',
-                                            '--resource_dir=../'+SDK_DIR+'/resources',
+                                            "--proxy=../${SDK_DIR}/bin/proxy_app,TCP",
+                                            "--target=${PLATFORM}",
+                                            "--system_image=../${BUILD_DIR}/images/os_image.elf",
+                                            "--resource_dir=../${SDK_DIR}/resources",
                                             '--junitxml=../test_results.xml',
-                                            '--tc-file=../'+TESTS_DIR+'/platform_config/default.ini',
-                                            '--tc-file=../'+TESTS_DIR+'/platform_config/' + PLATFORM + '.ini',
+                                            "--tc-file=../${TESTS_DIR}/platform_config/default.ini",
+                                            "--tc-file=../${TESTS_DIR}/platform_config/${PLATFORM}.ini",
                                             TEST_PARAMS,
                                             '../'+TESTS_DIR+'/'+TEST_SCRIPT
                                         ]
