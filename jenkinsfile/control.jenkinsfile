@@ -280,15 +280,16 @@ def process_yaml_config(yaml_file, branch)
         def systemName = system.key
 
         if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
-           error('invalid test system name: ' + systemName)
+            error('invalid test system name: ' + systemName)
         }
 
         if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
-           error('duplicate test system: ' + systemName)
+            error('duplicate test system: ' + systemName)
         }
 
-        if (!(system.value instanceof Map))
-          error('system with invalid data:' + systemName)
+        if (!(system.value instanceof Map)) {
+            error('system with invalid data:' + systemName)
+        }
 
         def platforms = [:]
         def params = [flags: 0]
