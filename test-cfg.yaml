@@ -38,6 +38,7 @@ demo_hello_world:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    qemu-arm-virt-a53:
     spike64:
     spike32: # starting still fails
       addFlags: [NO_TEST]
@@ -49,6 +50,22 @@ demo_hello_world:
 #-------------------------------------------------------------------------------
 # Additional Official Demo System
 #-------------------------------------------------------------------------------
+
+demo_vm_minimal:
+  testScript: test_demo_vm_minimal.py
+  platforms:
+    qemu-arm-virt-a53:
+
+# This needs a TimeServer, which QEMU currently does not provide
+#demo_vm_serialserver:
+#  testScript: test_demo_vm_serialserver.py
+#  platforms:
+#    qemu-arm-virt-a53:
+
+demo_vm_virtio_net:
+  testScript: test_demo_vm_virtio_net.py
+  platforms:
+    qemu-arm-virt-a53:
 
 demo_iot_app:
   flags: [SDK_DEMO]
