@@ -129,16 +129,17 @@ class SystemFlags {
 
     // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
     //          strings checked there are in sync.
-    static final FLAG_BUILD    = 'BUILD'
-    static final FLAG_TEST     = 'TEST'
+    static final FLAG_NO_TEST  = 'NO_TEST'
     // For demos included in the SDK package, CI will checkout them from their
     // default repo or use that the SDK package contains at the given location.
     static final FLAG_SDK_DEMO = 'SDK_DEMO'
+    // Run test on QEMU instead of real hardware
+    static final FLAG_QEMU     = 'QEMU'
 
     static final KNOWN_FLAGS = [
-        this.FLAG_BUILD,
-        this.FLAG_TEST,
+        this.FLAG_NO_TEST,
         this.FLAG_SDK_DEMO,
+        this.FLAG_QEMU,
     ]
 
     List flag_list
@@ -165,16 +166,9 @@ class SystemFlags {
 
     //--------------------------------------------------------------------------
     @NonCPS
-    public boolean is_build()
-    {
-        return this.contains(this.FLAG_BUILD)
-    }
-
-    //--------------------------------------------------------------------------
-    @NonCPS
     public boolean is_test()
     {
-        return this.contains(this.FLAG_TEST)
+        return !this.contains(this.FLAG_NO_TEST)
     }
 
     //--------------------------------------------------------------------------
@@ -230,6 +224,20 @@ class SystemCtx {
         'demo_iot_app_rpi3',
         'demo_network_filter',
         'demo_tls_api',
+    ]
+
+    static final QEMU_PLATFORMS = [
+        'qemu-arm-virt',
+        'qemu-arm-virt-a15',
+        'qemu-arm-virt-a53',
+        'qemu-arm-virt-a57',
+        'qemu-arm-virt-a72',
+        'qemu-riscv-virt',
+        'qemu-riscv-virt32',
+        'qemu-riscv-virt64',
+        'spike',
+        'spike32',
+        'spike64',
     ]
 
     String      systemName   // Name of the system to build.
@@ -810,12 +818,8 @@ def do_jobs_for_test_systems(branch, testConfigs)
                             test_ctx.params?.get('flags'),
                             platParams?.get('addFlags'),
                         ])
-
-            // Currently, a test always requires a build. But in the future,
-            // testing an existing system might also be supported.
-            if (!flags.is_build()) {
-                error("no built requested for ${test_ctx.systemName}")
-                continue
+            if (platName in SystemCtx.QEMU_PLATFORMS) {
+                flags.add(SystemFlags.FLAG_QEMU)
             }
 
             jobStages.add([

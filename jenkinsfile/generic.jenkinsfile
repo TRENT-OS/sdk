@@ -45,7 +45,7 @@ def SYSTEM_DIR = null  // internal parameter only
 def IS_DEMO = false  // internal parameter only
 
 @groovy.transform.Field
-def IS_TEST = false  // internal parameter only
+def TEST_NODE = null  // internal parameter only
 
 
 //------------------------------------------------------------------------------
@@ -86,6 +86,14 @@ def final TEST_COMMON_DIR = 'src/test-common'
 
 @groovy.transform.Field
 def final STASH_TEST_PACKAGE = 'test_package'
+
+@groovy.transform.Field
+def final CI_HW_BOARDS = [
+    // 'sabre',
+    // 'nitrogen6sx',
+    // 'rpi3',
+    // 'rpi4',
+]
 
 
 //------------------------------------------------------------------------------
@@ -148,16 +156,32 @@ def do_pipeline_init() {
     TEST_PARAMS = json_params.getOrDefault('TEST_PARAMS','')
 
     IS_DEMO = 'SDK_DEMO' in flags
-    IS_TEST = 'TEST' in flags
 
-    if (IS_TEST && !TEST_SCRIPT) {
+    if ('NO_TEST' in flags) {
+        // The test is explicitly disabled.
+        assert TEST_NODE == null
+    } else if (!TEST_SCRIPT) {
+        // Running a test requires a test script.
         error("missing TEST_SCRIPT")
+    } else if ('QEMU' in flags) {
+        // QEMU tests can run on generic test nodes
+        TEST_NODE = NODE_LABEL_TEST
+    } else if (PLATFORM in CI_HW_BOARDS) {
+        TEST_NODE = PLATFORM
+    } else {
+        // We can't run a test if it's not running in QEMU and there is no
+        // board. Don't raise an error here, as we can still do a build. Just
+        // the test will fail then. Since there are no boards in CI so far,
+        // just consider all board tests as implicitly disabled.
+        assert(CI_HW_BOARDS.size() == 0)
+        assert(TEST_NODE == null)
     }
 
     def info = "${BRANCH_OR_COMMIT}, ${TEST_SYSTEM}, ${PLATFORM}"
     def ops = []
     if (IS_DEMO) { ops.add('demo') }
-    if (IS_TEST) { ops.add('test') }
+    if (TEST_NODE) { ops.add('test') }
+    if ('QEMU' in flags) { ops.add('qemu') }
     if (ops) { info += " [${ops.join(', ')}]" }
     currentBuild.displayName = info
 
@@ -575,9 +599,18 @@ pipeline {
         stage('Test Stage') {
             when {
                 beforeAgent true
-                expression { IS_TEST }
+                expression {
+                    if (!TEST_NODE) {
+                        return false; // test are not enabled
+                    }
+                    if (0 == nodesByLabel(TEST_NODE).size()) {
+                        unstable("no test node online with label '${TEST_NODE}'")
+                        return false
+                    }
+                    return true
+                }
             }
-            agent { label NODE_LABEL_TEST }
+            agent { label TEST_NODE }
             stages {
 
                 //--------------------------------------------------------------

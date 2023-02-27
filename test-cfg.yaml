@@ -9,7 +9,7 @@
 # Format for test configurations:
 #
 # <system name>
-#   flags: [BUILD, TEST, SDK_DEMO]
+#   flags: [SDK_DEMO]
 #   testSystem: <repo>
 #   testScript: <name, defaults to <system name>.py >
 #   buildParams:
@@ -19,7 +19,7 @@
 #   platforms: # can be a simple array or a map
 #     <name1>:
 #     <name2>:
-#       addFlags: [BUILD, TEST, SDK_DEMO]
+#       addFlags: [SDK_DEMO]
 #       buildParams: <array>
 #       testParams: <array>
 
@@ -29,18 +29,18 @@
 #-------------------------------------------------------------------------------
 
 demo_hello_world:
-  flags: [BUILD, SDK_DEMO]
+  flags: [SDK_DEMO]
   testScript: test_demo_hello_world.py
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynqmp:
-      addFlags: TEST
+      addFlags: [QEMU]
     spike64:
-      addFlags: TEST
-    spike32:
+    spike32: # starting still fails
+      addFlags: [NO_TEST]
     rpi3:
     rpi4:
     nitrogen6sx:
@@ -51,46 +51,55 @@ demo_hello_world:
 #-------------------------------------------------------------------------------
 
 demo_iot_app:
-  flags: [BUILD, SDK_DEMO]
+  flags: [SDK_DEMO]
   testScript: test_demo_iot_app.py
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # ToDO: Clarify why test fails
+      addFlags: [QEMU, NO_TEST]
 
 demo_iot_app_imx6:
-  flags: [BUILD, SDK_DEMO]
-  platforms: [sabre, nitrogen6sx]
+  flags: [SDK_DEMO]
+  testScript: test_demo_iot_app.py
+  platforms:
+    sabre: # ToDO: fix test failures
+      addFlags: [QEMU, NO_TEST]
+    nitrogen6sx:
 
 demo_iot_app_rpi3:
-  flags: [BUILD, SDK_DEMO]
+  flags: [SDK_DEMO]
   platforms: [rpi3]
 
 demo_tls_api:
-  flags: [BUILD, SDK_DEMO]
+  flags: [SDK_DEMO]
   testScript: test_demo_tls_api.py
   platforms:
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
 
+# Currently there is no test.
 demo_network_filter:
-  flags: [BUILD, SDK_DEMO]
-  platforms: [zynq7000, nitrogen6sx]
+  flags: [SDK_DEMO, NO_TEST]
+  platforms:
+    zynq7000:
+      addFlags: [QEMU]
+    nitrogen6sx:
 
 #-------------------------------------------------------------------------------
 # Unofficial Demo Systems
 #-------------------------------------------------------------------------------
 
+# This needs to run on real hardware. Currently there is no test.
 demo_i2c:
-  flags: [BUILD]
   platforms: [sabre]
 
+# This needs to run on real hardware. Currently there is no test.
 demo_tls_server:
-  flags: [BUILD]
   platforms: [zynq7000]
 
 # This test was used during porting the RPi Ethernet driver only. The RasPi3
@@ -99,7 +108,6 @@ demo_tls_server:
 # parts were integrated into test_network_api.
 #
 #   demo_raspi_ethernet:
-#     flags: [BUILD]
 #     platforms: [rpi3]
 
 #------------------------------------------------------------------------------
@@ -110,180 +118,187 @@ demo_tls_server:
 #------------------------------------------------------------------------------
 
 test_timeserver:
-  flags: [BUILD]
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
-    zynqmp: # test still fails
+      addFlags: [QEMU]
+    zynqmp: # ToDO: fix failing test
+      addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
 
 test_certserver:
-  flags: [BUILD]
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
     rpi3:
 
 test_uart:
-  flags: [BUILD]
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynqmp:
-      addFlags: TEST
+      addFlags: [QEMU]
 
 test_chanmux:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_proxy_nvm:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_certparser:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_crypto_api:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynqmp:
-      addFlags: TEST
+      addFlags: [QEMU]
     spike64:
-      addFlags: TEST
 
 test_cryptoserver:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_entropysource:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_storage_interface:
-  flags: [BUILD]
   testScript: test_storage_interface*.py
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     rpi3:
     rpi4:
 
 test_filesystem:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_config_server:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_keystore:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_logserver:
-  flags: [BUILD]
   platforms:
     zynq7000:
-      addFlags: TEST
-    zynqmp:
+      addFlags: [QEMU]
+    zynqmp: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
 
 test_tls_api:
-  flags: [BUILD]
   platforms:
-    sabre:
+    sabre: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
 
 test_tlsserver:
-  flags: [BUILD]
   platforms:
-    sabre:
+    sabre: # no test to reduce CI load?
+      addFlags: [QEMU, NO_TEST]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
 
 test_network_api_tcp_client_single_socket:
-  flags: [BUILD, TEST]
   testScript: test_network_api.py
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_single_socket
   testParams: --tc=platform.test_configuration:tcp_client_single_socket
-  platforms: [sabre, zynq7000]
+  platforms:
+    sabre:
+      addFlags: [QEMU]
+    zynq7000:
+      addFlags: [QEMU]
 
 test_network_api_tcp_client_multiple_sockets:
-  flags: [BUILD, TEST]
   testScript: test_network_api.py
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_sockets
   testParams: --tc=platform.test_configuration:tcp_client_multiple_sockets
-  platforms: [sabre, zynq7000]
+  platforms:
+    sabre:
+      addFlags: [QEMU]
+    zynq7000:
+      addFlags: [QEMU]
 
 test_network_api_tcp_client_multiple_clients:
-  flags: [BUILD, TEST]
   testScript: test_network_api.py
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_clients
   testParams: --tc=platform.test_configuration:tcp_client_multiple_clients
-  platforms: [sabre, zynq7000]
+  platforms:
+    sabre:
+      addFlags: [QEMU]
+    zynq7000:
+      addFlags: [QEMU]
 
 test_network_api_tcp_server:
-  flags: [BUILD]
   testScript: test_network_api.py
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=tcp_server
   testParams: --tc=platform.test_configuration:tcp_server
   platforms:
     sabre:
-      addFlags: TEST
+      addFlags: [QEMU]
     zynq7000:
-      addFlags: TEST
+      addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
 
 test_network_api_udp_server:
-  flags: [BUILD, TEST]
   testScript: test_network_api.py
   testSystem: ss/test_network_api
   buildParams: -D TEST_CONFIGURATION=udp_server
   testParams: --tc=platform.test_configuration:udp_server
-  platforms: [sabre, zynq7000]
+  platforms:
+    sabre:
+      addFlags: [QEMU]
+    zynq7000:
+      addFlags: [QEMU]
