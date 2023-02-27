@@ -627,8 +627,6 @@ def makeParamStr(Object... args)
 //------------------------------------------------------------------------------
 def execute_build(ctx, stage_ctx)
 {
-    def flags = stage_ctx.getOrDefault('flags', 0)
-
     def jobBuild = build(
         job: GENERIC_PROJECT_BUILDER_JOB,
         wait: true,   // block call until finished
@@ -644,9 +642,7 @@ def execute_build(ctx, stage_ctx)
                     returnText: true,
                     json: [
                         'PLATFORM': stage_ctx.get('platform'),
-                        'TEST_SYSTEM':
-                            ((flags & SystemCtx.FLAG_SDK_DEMO) ? 'pkg://' : 'repo://') +
-                            stage_ctx.get('testSystem'),
+                        'TEST_SYSTEM': stage_ctx.get('testSystem'),
                         'BUILD_PARAMS': stage_ctx.get('buildParams'),
                         'TEST_SCRIPT': stage_ctx.get('testScript'),
                         'TEST_PARAMS': stage_ctx.get('testParams'),
@@ -668,6 +664,7 @@ def execute_build(ctx, stage_ctx)
     def duration = jobBuild.getDurationString()
 
     def operations = []
+    def flags = stage_ctx.getOrDefault('flags', 0)
     if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
     if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
     if (flags & SystemCtx.FLAG_SDK_DEMO) { operations += ['demo'] }
@@ -775,7 +772,10 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 test_ctx:    test_ctx,
                 platform:    platName,
                 flags:       flags,
-                testSystem:  testSystem,
+
+                // get demos from package and test systems from repo
+                testSystem:  ((flags & SystemCtx.FLAG_SDK_DEMO) ? 'pkg' : 'repo') +
+                             '://' + testSystem,
 
                 // put platform params after test_ctx params
                 buildParams: makeParamStr(
