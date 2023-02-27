@@ -237,11 +237,42 @@ class SystemCtx {
     Map         params       // Parameters
 
     //--------------------------------------------------------------------------
-    public SystemCtx(systemName, platforms, params)
+    public SystemCtx(systemName, yaml_map)
     {
+        if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
+           error("invalid test system name: ${systemName}")
+        }
+
         this.systemName = systemName
-        this.platforms = platforms
-        this.params = params ?: [:]
+        this.platforms = [:]
+        this.params = [:]
+
+        for (e in yaml_map) {
+            switch (e.key) {
+                case 'flags':
+                    this.params.putAt(e.key, new SystemFlags(e.value))
+                    break
+                case 'platforms':
+                    this.parse_platforms(e.value)
+                    break
+                case 'testSystem':
+                case 'testScript':
+                    if (!(e.value instanceof String)) {
+                        error("testScript invalid for system: ${systemName}")
+                    }
+                    this.params.putAt(e.key, e.value)
+                    break
+                case 'buildParams':
+                case 'testParams':
+                    def param_list = this.parse_params(e.value)
+                    if (param_list) {
+                        this.params.putAt(e.key, param_list)
+                    }
+                    break
+                default:
+                    error("system ${systemName} with unsupported attribute: ${attr}")
+            }
+        }
 
         // ensure proper defaults exists
         this.params.putIfAbsent('flags', new SystemFlags())
@@ -261,92 +292,86 @@ class SystemCtx {
     {
         return this.params.get('flags').is_demo()
     }
-}
 
+    //--------------------------------------------------------------------------
+    @NonCPS
+    private List parse_params(arg)
+    {
+        def params = []
 
-//--------------------------------------------------------------------------
-def yaml_parse_params(arg)
-{
-    def params = []
+        if (!null == arg) {
+            // do nothing
 
-    if (null == arg) {
-        // do nothing
-
-    } else if (arg instanceof List) {
-        for (e in arg) {
-            params.addAll(yaml_parse_params(e))
-        }
-
-    } else if (arg instanceof String) {
-        params.add(arg)
-
-    } else {
-        error("unsupported parameter argument ${arg.getClass()}: ${arg}")
-    }
-
-    return params
-}
-
-
-//--------------------------------------------------------------------------
-def yaml_parse_platform_params(arg)
-{
-    def params = [:]
-
-    if (null == arg) {
-        // do nothing
-
-    } else if (arg instanceof Map) {
-        for (e in arg) {
-            switch(e.key) {
-                case 'addFlags':
-                    params.putAt(e.key, new SystemFlags(e.value))
-                    break
-                case 'buildParams':
-                case 'testParams':
-                    params.putAt(e.key, yaml_parse_params(e.value))
-                    break
-                default:
-                    error("unknown platform attribute: ${e.key}")
+        } else if (arg instanceof List) {
+            for (e in arg) {
+                params.addAll(this.parse_params(e))
             }
+
+        } else if (arg instanceof String) {
+            params.add(arg)
+
+        } else {
+            error("unsupported parameter argument ${arg.getClass()}: ${arg}")
         }
 
-    } else {
-        error("unsupported platform parameter argument ${arg.getClass()}: ${arg}")
+        return params
     }
 
-    return params
-}
+    //--------------------------------------------------------------------------
+    @NonCPS
+    private void parse_platforms(arg)
+    {
+        if (!arg) {
+            // do nothing
 
+        } else if (arg instanceof List) {
+            for (e in arg) {
+                this.parse_platforms(e)
+            }
 
-//--------------------------------------------------------------------------
-def yaml_parse_platforms(arg)
-{
-    def platforms = [:]
+        } else if (arg instanceof Map) {
+            for (e in arg) {
+                def platform = e.key
+                def params = e.value
+                if (this.platforms.containsKey(platform)) {
+                    error("duplicate platform: ${platform}")
+                }
+                if (params && !(params instanceof Map)) {
+                    error("unsupported platform parameter argument ${params.getClass()}: ${params}")
+                }
+                def plat_map = params? [:] : null
+                for (p in params) {
+                    def val = null
+                    switch(p.key) {
+                        case 'addFlags':
+                            plat_map.putAt(p.key, new SystemFlags(p.value))
+                            break
+                        case 'buildParams':
+                        case 'testParams':
+                            def param_list = this.parse_params(p.value)
+                            if (param_list) {
+                                plat_map.putAt(p.key, param_list)
+                            }
+                            break
+                        default:
+                            error("unknown platform attribute: ${p.key}")
+                    }
+                }
+                this.platforms.putAt(platform, plat_map ?: null)
+            }
 
-    if (null == arg) {
-        // do nothing
+        } else if (arg instanceof String) {
+            if (this.platforms.containsKey(arg)) {
+                error("duplicate platform ${arg}")
+            }
+            this.platforms.putAt(arg, null)
 
-    } else if (arg instanceof List) {
-        for (e in arg) {
-            platforms.putAll(yaml_parse_platforms(e))
+        } else {
+            error("unsupported platform argument ${arg.getClass()}: ${arg}")
         }
-
-    } else if (arg instanceof Map) {
-        for (e in arg) {
-            platforms.putAt(e.key, yaml_parse_platform_params(e.value))
-        }
-
-    } else if (arg instanceof String) {
-        platforms.putAt(arg, null)
-
-    } else {
-        error("unsupported platform argument ${arg.getClass()}: ${arg}")
     }
 
-    return platforms
 }
-
 
 //------------------------------------------------------------------------------
 def process_yaml_config(yaml_file, branch)
@@ -357,10 +382,6 @@ def process_yaml_config(yaml_file, branch)
     for (system in cfg) {
         def systemName = system.key
 
-        if (!(systemName ==~ /[a-zA-Z_][a-zA-Z0-9_\-]*/ )) {
-            error("invalid test system name: ${systemName}")
-        }
-
         if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
             error("duplicate test system: ${systemName}")
         }
@@ -369,32 +390,8 @@ def process_yaml_config(yaml_file, branch)
             error("system with invalid data: ${systemName}")
         }
 
-        def platforms = [:]
-        def params = [:]
-        for (e in system.value) {
-            switch (e.key) {
-                case 'flags':
-                    params.putAt(e.key, new SystemFlags(e.value))
-                    break
-                case 'platforms':
-                    platforms = yaml_parse_platforms(e.value)
-                    break
-                case 'testSystem':
-                case 'testScript':
-                    if (!(e.value instanceof String))
-                        error("testScript invalid for system: ${systemName}")
-                    params.putAt(e.key, e.value)
-                    break
-                case 'buildParams':
-                case 'testParams':
-                    params.putAt(e.key, yaml_parse_params(e.value))
-                    break
-                default:
-                    error("system ${systemName} with unsupported attribute: ${attr}")
-            }
-        }
+        systemCtx = new SystemCtx(systemName, system.value)
 
-        systemCtx = new SystemCtx(systemName, platforms, params)
 
         if (systemCtx.is_demo()) {
             // SDK demos are always build from the sources in SDK package,
