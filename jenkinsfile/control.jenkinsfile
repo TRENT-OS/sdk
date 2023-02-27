@@ -125,15 +125,103 @@ def final DOCKER_TEST_ENV = makeDockerAgentCfg(
 
 
 //------------------------------------------------------------------------------
-// System context
-class SystemCtx {
+class SystemFlags {
+
     // WARNING: the flags are used in jenkinsfile-generic also, so ensure the
-    //          values are always in sync.
-    static final FLAG_BUILD      = 1 << 0
-    static final FLAG_TEST       = 1 << 1
+    //          strings checked there are in sync.
+    static final FLAG_BUILD    = 'BUILD'
+    static final FLAG_TEST     = 'TEST'
     // For demos included in the SDK package, CI will checkout them from their
     // default repo or use that the SDK package contains at the given location.
-    static final FLAG_SDK_DEMO   = 1 << 2
+    static final FLAG_SDK_DEMO = 'SDK_DEMO'
+
+    static final KNOWN_FLAGS = [
+        this.FLAG_BUILD,
+        this.FLAG_TEST,
+        this.FLAG_SDK_DEMO,
+    ]
+
+    List flag_list
+
+    //--------------------------------------------------------------------------
+    public SystemFlags()
+    {
+        flag_list = []
+    }
+
+    //--------------------------------------------------------------------------
+    public SystemFlags(arg)
+    {
+        this()
+        this.add(arg)
+    }
+
+    //--------------------------------------------------------------------------
+    @NonCPS
+    public boolean contains(flag)
+    {
+        return (flag in this.flag_list)
+    }
+
+    //--------------------------------------------------------------------------
+    @NonCPS
+    public boolean is_build()
+    {
+        return this.contains(this.FLAG_BUILD)
+    }
+
+    //--------------------------------------------------------------------------
+    @NonCPS
+    public boolean is_test()
+    {
+        return this.contains(this.FLAG_TEST)
+    }
+
+    //--------------------------------------------------------------------------
+    @NonCPS
+    public boolean is_demo()
+    {
+        return this.contains(this.FLAG_SDK_DEMO)
+    }
+
+    //--------------------------------------------------------------------------
+    @NonCPS
+    public void add(arg)
+    {
+        if (!arg) {
+            return
+        }
+
+        if (arg instanceof SystemFlags) {
+            arg = arg.flag_list
+        }
+
+        if (arg instanceof List) {
+            for (f in arg) {
+                this.add(f)
+            }
+            return
+        }
+
+        if (arg instanceof String) {
+            def flag = arg.toUpperCase()
+            if (this.contains(flag)) {
+                return
+            }
+            if (!(flag in this.KNOWN_FLAGS)) {
+                throw new Exception("unknown flag: ${arg}")
+            }
+            this.flag_list.add(flag)
+            return
+        }
+
+        throw new Exception("unsupported argument: ${arg}")
+    }
+}
+
+//------------------------------------------------------------------------------
+// System context
+class SystemCtx {
 
     static final KNOWN_DEMOS = [
         'demo_hello_world',
@@ -156,7 +244,7 @@ class SystemCtx {
         this.params = params ?: [:]
 
         // ensure proper defaults exists
-        this.params.putIfAbsent('flags', 0)
+        this.params.putIfAbsent('flags', new SystemFlags())
         this.params.putIfAbsent('testScript', "${systemName}.py")
         this.params.putIfAbsent('testSystem', "ss/${systemName}")
 
@@ -171,39 +259,8 @@ class SystemCtx {
     @NonCPS
     public boolean is_demo()
     {
-        return (0 != (this.params['flags'] & this.FLAG_SDK_DEMO))
+        return this.params.get('flags').is_demo()
     }
-}
-
-
-//--------------------------------------------------------------------------
-def yaml_parse_flags(arg)
-{
-    def flags = 0
-
-    if (null == arg) {
-        // do nothing
-
-    } else if (arg instanceof List) {
-        for (e in arg) {
-            flags |= yaml_parse_flags(e)
-        }
-
-    } else if (arg instanceof String) {
-        flags = [
-            'BUILD':    SystemCtx.FLAG_BUILD,
-            'TEST':     SystemCtx.FLAG_TEST,
-            'SDK_DEMO': SystemCtx.FLAG_SDK_DEMO,
-        ].get(arg.toUpperCase())
-        if (!flags) {
-            error("unknown flag: ${arg}")
-        }
-
-    } else {
-        error("unsupported flag argument ${arg.getClass()}: ${arg}")
-    }
-
-    return flags
 }
 
 
@@ -243,7 +300,7 @@ def yaml_parse_platform_params(arg)
         for (e in arg) {
             switch(e.key) {
                 case 'addFlags':
-                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    params.putAt(e.key, new SystemFlags(e.value))
                     break
                 case 'buildParams':
                 case 'testParams':
@@ -313,11 +370,11 @@ def process_yaml_config(yaml_file, branch)
         }
 
         def platforms = [:]
-        def params = [flags: 0]
+        def params = [:]
         for (e in system.value) {
             switch (e.key) {
                 case 'flags':
-                    params.putAt(e.key, yaml_parse_flags(e.value))
+                    params.putAt(e.key, new SystemFlags(e.value))
                     break
                 case 'platforms':
                     platforms = yaml_parse_platforms(e.value)
@@ -343,7 +400,7 @@ def process_yaml_config(yaml_file, branch)
             // SDK demos are always build from the sources in SDK package,
             // thus we check them out here already and then overwrite the
             // 'testSystem' parameter with the location. The build job
-            // knows that for FLAG_SDK_DEMO it's a folder and not a repo.
+            // knows that for demos it's a folder and not a repo.
             def folder = "demos/${systemName}"
             do_checkout(systemCtx.params['testSystem'], branch, "src/${folder}")
             systemCtx.params['testSystem'] = folder
@@ -663,18 +720,13 @@ def execute_build(ctx, stage_ctx)
     def result = jobBuild.getResult()
     def duration = jobBuild.getDurationString()
 
-    def operations = []
-    def flags = stage_ctx.getOrDefault('flags', 0)
-    if (flags & SystemCtx.FLAG_BUILD) { operations += ['build'] }
-    if (flags & SystemCtx.FLAG_TEST) { operations += ['test'] }
-    if (flags & SystemCtx.FLAG_SDK_DEMO) { operations += ['demo'] }
-    def op_str = operations ? operations.join(', ') : ''
-
+    def flag_list = stage_ctx.get('flags').flag_list
+    def flag_str = flag_list ? " [${flag_list.join(', ')}]" : ""
     // propagate the result to the current state and build result, but catch the
     // exception so we can continue
     def msg = "job ${idx}/${ctx.cnt}: ${result} for " +
               "${stage_ctx.test_ctx.systemName}, " +
-              "${stage_ctx.platform}, ${duration}  [${op_str}]"
+              "${stage_ctx.platform}, ${duration}${flag_str}"
     if ('SUCCESS' == result) {
         println(msg)
     } else if ('UNSTABLE' == result) {
@@ -692,7 +744,7 @@ def execute_build(ctx, stage_ctx)
         "${stage_ctx.test_ctx.systemName}, ${stage_ctx.platform}" +
         " <a href=\"${get_build_relative_url(jobBuild)}\">#${jobBuild.getNumber()}</a>" +
         " <img src=\"${get_result_ball_img_url(result)}\">" +
-        "${duration} [${op_str}]<br>",
+        "${duration}${flag_str}<br>",
         false)
 
     // When CI is under heavy load, no free executor could be available to run
@@ -741,7 +793,6 @@ def do_jobs_for_test_systems(branch, testConfigs)
     def jobStages = []
     for (test_ctx in testConfigs) {
 
-        def baseFlags = test_ctx.params?.get('flags') ?: 0
         def testSystem = test_ctx.params?.get('testSystem')
 
         if (!testSystem) {
@@ -756,13 +807,15 @@ def do_jobs_for_test_systems(branch, testConfigs)
 
             def platName = plat.key
             def platParams = plat.value
-            def flags = baseFlags | (platParams?.get('addFlags') ?: 0)
-            def isBuild = (flags & SystemCtx.FLAG_BUILD)
-            def isTest = (flags & SystemCtx.FLAG_TEST)
+
+            def flags = new SystemFlags([
+                            test_ctx.params?.get('flags'),
+                            platParams?.get('addFlags'),
+                        ])
 
             // Currently, a test always requires a build. But in the future,
             // testing an existing system might also be supported.
-            if (!isBuild) {
+            if (!flags.is_build()) {
                 error("no built requested for ${test_ctx.systemName}")
                 continue
             }
@@ -774,7 +827,7 @@ def do_jobs_for_test_systems(branch, testConfigs)
                 flags:       flags,
 
                 // get demos from package and test systems from repo
-                testSystem:  ((flags & SystemCtx.FLAG_SDK_DEMO) ? 'pkg' : 'repo') +
+                testSystem:  (flags.is_demo() ? 'pkg' : 'repo') +
                              '://' + testSystem,
 
                 // put platform params after test_ctx params
@@ -783,13 +836,13 @@ def do_jobs_for_test_systems(branch, testConfigs)
                                 platParams?.get('buildParams')),
 
                 // platform setting takes preference over test_ctx setting
-                testScript:  !isTest ? null :
+                testScript:  !flags.is_test() ? null :
                              platParams?.get('testScript') ?:
                              test_ctx.params?.get('testScript') ?:
                              null,
 
                 // put platform params after test_ctx params
-                testParams:  !isTest ? null :
+                testParams:  !flags.is_test() ? null :
                              makeParamStr(
                                 test_ctx.params?.get('testParams'),
                                 platParams?.get('testParams')),
