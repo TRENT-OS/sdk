@@ -38,10 +38,12 @@ demo_hello_world:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    qemu-arm-virt-a15:
     qemu-arm-virt-a53:
+    qemu-riscv-virt32:
+    qemu-riscv-virt64:
     spike64:
-    spike32: # starting still fails
-      addFlags: [NO_TEST]
+    spike32: # ToDo: starting still fails
     rpi3:
     rpi4:
     nitrogen6sx:
@@ -54,7 +56,11 @@ demo_hello_world:
 demo_vm_minimal:
   testScript: test_demo_vm_minimal.py
   platforms:
+    qemu-arm-virt-a15:
     qemu-arm-virt-a53:
+    qemu-riscv-virt32:
+    qemu-riscv-virt64:
+
 
 # This needs a TimeServer, which QEMU currently does not provide
 #demo_vm_serialserver:
@@ -74,14 +80,14 @@ demo_iot_app:
     zynq7000:
       addFlags: [QEMU]
     zynqmp: # ToDO: Clarify why test fails
-      addFlags: [QEMU, NO_TEST]
+      addFlags: [QEMU]
 
 demo_iot_app_imx6:
   flags: [SDK_DEMO]
   testScript: test_demo_iot_app.py
   platforms:
     sabre: # ToDO: fix test failures
-      addFlags: [QEMU, NO_TEST]
+      addFlags: [QEMU]
     nitrogen6sx:
 
 # This RasPi3 IoT Demo is broken because the component RPi_SPI_Flash conflicts
@@ -104,7 +110,7 @@ demo_tls_api:
 
 # Currently there is no test.
 demo_network_filter:
-  flags: [SDK_DEMO, NO_TEST]
+  flags: [SDK_DEMO]
   platforms:
     zynq7000:
       addFlags: [QEMU]
@@ -144,7 +150,8 @@ test_timeserver:
     zynq7000:
       addFlags: [QEMU]
     zynqmp: # ToDO: fix failing test
-      addFlags: [QEMU, NO_TEST]
+      addFlags: [QEMU]
+    spike64:
     rpi3:
     rpi4:
 
@@ -154,8 +161,9 @@ test_certserver:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
     rpi3:
 
 test_uart:
@@ -169,27 +177,38 @@ test_uart:
 
 test_chanmux:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    # spike64 has not additional UART
 
 test_proxy_nvm:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    # spike64 has not additional UART
 
 test_certparser:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_crypto_api:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
     zynqmp:
@@ -198,17 +217,23 @@ test_crypto_api:
 
 test_cryptoserver:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_entropysource:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_storage_interface:
   testScript: test_storage_interface*.py
@@ -217,52 +242,69 @@ test_storage_interface:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    zynqmp: # ToDo: fix broken test
+      addFlags: [QEMU]
+    spike64:
     rpi3:
     rpi4:
 
 test_filesystem:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_config_server:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_keystore:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_logserver:
   platforms:
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    zynqmp:
+      addFlags: [QEMU]
+    spike64:
 
 test_tls_api:
   platforms:
-    sabre: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
     nitrogen6sx:
     rpi3:
 
 test_tlsserver:
   platforms:
-    sabre: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
+    sabre:
+      addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
     nitrogen6sx:
     rpi3:
 
@@ -276,6 +318,7 @@ test_network_api_tcp_client_single_socket:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
 
 test_network_api_tcp_client_multiple_sockets:
   testScript: test_network_api.py
@@ -287,6 +330,7 @@ test_network_api_tcp_client_multiple_sockets:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
 
 test_network_api_tcp_client_multiple_clients:
   testScript: test_network_api.py
@@ -298,6 +342,7 @@ test_network_api_tcp_client_multiple_clients:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
 
 test_network_api_tcp_server:
   testScript: test_network_api.py
@@ -309,6 +354,7 @@ test_network_api_tcp_server:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
     nitrogen6sx:
     rpi3:
 
@@ -322,3 +368,4 @@ test_network_api_udp_server:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    # no network support: zynqmp/QEMU, spike64
