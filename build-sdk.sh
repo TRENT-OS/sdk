@@ -415,29 +415,6 @@ function build_sdk_tools()
         cp ${TOOLS_BUILD_DIR}/rdgen ${OUT_DIR}/rdgen
     )
 
-    # build RPi3 flasher tool using a dummy file
-    print_info "Building SDK tool: rpi3_flasher"
-    local FLASHER_SRC_TEST=${BUILD_DIR}/rpi3_flasher_src_test
-    copy_files_via_tar ${SDK_SRC_DIR}/tools/rpi3_flasher ${FLASHER_SRC_TEST} --exclude-vcs
-
-    # create a dummy file with a RLE-compressed RAM-Disk containing 0x42
-    cat <<EOF >${FLASHER_SRC_TEST}/flash.c
-// auto generated file
-#include <stdint.h>
-#include <stddef.h>
-uint8_t RAMDISK_IMAGE[] = { 0x52, 0x4c, 0x45, 0x00, 0x00, 0x00, 0x01, 0x01, 0x42 };
-size_t RAMDISK_IMAGE_SIZE = sizeof(RAMDISK_IMAGE);
-
-EOF
-
-    local BUILD_PARAMS=(
-        ${FLASHER_SRC_TEST}
-        rpi3
-        ${BUILD_DIR}/rpi3_flasher_test
-        -D CMAKE_BUILD_TYPE=Debug
-    )
-    ${SDK_SRC_DIR}/build-system.sh ${BUILD_PARAMS[@]}
-
 }
 
 
