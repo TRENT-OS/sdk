@@ -394,6 +394,29 @@ def process_yaml_config(yaml_file, branch)
     for (system in cfg) {
         def systemName = system.key
 
+        if (systemName == 'global')
+        {
+            // parse_global(system.value)
+            //
+            //   docker-containers:
+            //     build:
+            //       image: trentos_build:20220901
+            //       groups: [stack]
+            //     test:
+            //       image: trentos_build:20211217
+            //       groups: [sudo]
+            //       devices: [/dev/net/tun]
+            //       caps: [NET_ADMIN, NET_RAW]
+            //       mappings: [/home/jenkins/.ssh:/home/jenkins/.ssh:ro]
+            //       params:
+            //           - --network=bridge
+
+            continue
+        }
+
+
+
+
         if (SYSTEM_CONFIGS.any { it.systemName == systemName }) {
             error("duplicate test system: ${systemName}")
         }
