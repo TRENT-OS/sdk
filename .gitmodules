@@ -145,3 +145,9 @@
 [submodule "libs/os_socket"]
 	path = libs/os_socket
 	url = ../../seos/networkstack.git
+[submodule "components/SystemController"]
+	path = components/SystemController
+	url = ../../sc/systemcontroller.git
+[submodule "components/BPMPServer"]
+	path = components/BPMPServer
+	url = ../../sc/bpmpserver.git

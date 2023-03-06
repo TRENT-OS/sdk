@@ -1174,33 +1174,6 @@ pipeline {
                 }
 
                 //--------------------------------------------------------------
-                stage('sanity_check') {
-                    // Do a quick sanity test for the SDK package by building
-                    // the demo Hello World for zynq7000. Only if it works, the
-                    // time consuming builds and tests of all systems are done.
-                    agent {
-                        docker {
-                            reuseNode true
-                            alwaysPull true
-                            registryUrl DOCKER_BUILD_ENV.registryUrl
-                            registryCredentialsId DOCKER_BUILD_ENV.registryCredentialsId
-                            image DOCKER_BUILD_ENV.image
-                            args DOCKER_BUILD_ENV.args
-                        }
-                    }
-                    steps {
-                        print_step_info(env.STAGE_NAME)
-                        run_shell_script(
-                            'scm-src/build-sdk.sh',
-                            [
-                                'sanity-check', // mode
-                                '.' // base dir
-                            ]
-                        )
-                    }
-                }
-
-                //--------------------------------------------------------------
                 stage('cleanup') {
                     steps {
                         print_step_info env.STAGE_NAME

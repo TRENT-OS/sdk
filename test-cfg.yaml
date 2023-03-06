@@ -45,6 +45,10 @@ demo_hello_world:
     rpi3:
     rpi4:
     nitrogen6sx:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 
 #-------------------------------------------------------------------------------
@@ -55,6 +59,10 @@ demo_vm_minimal:
   testScript: test_demo_vm_minimal.py
   platforms:
     qemu-arm-virt-a53:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 # This needs a TimeServer, which QEMU currently does not provide
 #demo_vm_serialserver:
@@ -66,6 +74,10 @@ demo_vm_virtio_net:
   testScript: test_demo_vm_virtio_net.py
   platforms:
     qemu-arm-virt-a53:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 demo_iot_app:
   flags: [SDK_DEMO]
@@ -147,6 +159,10 @@ test_timeserver:
       addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_certserver:
   platforms:
@@ -157,6 +173,10 @@ test_certserver:
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
     rpi3:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_uart:
   platforms:
@@ -166,6 +186,10 @@ test_uart:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_chanmux:
   platforms:
@@ -173,6 +197,10 @@ test_chanmux:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_proxy_nvm:
   platforms:
@@ -180,6 +208,10 @@ test_proxy_nvm:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_certparser:
   platforms:
@@ -187,6 +219,10 @@ test_certparser:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_crypto_api:
   platforms:
@@ -195,6 +231,10 @@ test_crypto_api:
     zynqmp:
       addFlags: [QEMU]
     spike64:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_cryptoserver:
   platforms:
@@ -202,6 +242,10 @@ test_cryptoserver:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_entropysource:
   platforms:
@@ -209,6 +253,10 @@ test_entropysource:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_storage_interface:
   testScript: test_storage_interface*.py
@@ -219,6 +267,10 @@ test_storage_interface:
       addFlags: [QEMU]
     rpi3:
     rpi4:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_filesystem:
   platforms:
@@ -226,6 +278,10 @@ test_filesystem:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_config_server:
   platforms:
@@ -233,6 +289,10 @@ test_config_server:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_keystore:
   platforms:
@@ -240,6 +300,10 @@ test_keystore:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_logserver:
   platforms:
@@ -247,6 +311,10 @@ test_logserver:
       addFlags: [QEMU]
     zynqmp: # no test to reduce CI load?
       addFlags: [QEMU, NO_TEST]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_tls_api:
   platforms:
@@ -256,6 +324,10 @@ test_tls_api:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_tlsserver:
   platforms:
@@ -265,6 +337,10 @@ test_tlsserver:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_network_api_tcp_client_single_socket:
   testScript: test_network_api.py
@@ -276,6 +352,10 @@ test_network_api_tcp_client_single_socket:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_network_api_tcp_client_multiple_sockets:
   testScript: test_network_api.py
@@ -287,6 +367,10 @@ test_network_api_tcp_client_multiple_sockets:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_network_api_tcp_client_multiple_clients:
   testScript: test_network_api.py
@@ -298,6 +382,10 @@ test_network_api_tcp_client_multiple_clients:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_network_api_tcp_server:
   testScript: test_network_api.py
@@ -311,6 +399,10 @@ test_network_api_tcp_server:
       addFlags: [QEMU]
     nitrogen6sx:
     rpi3:
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
 
 test_network_api_udp_server:
   testScript: test_network_api.py
@@ -322,3 +414,7 @@ test_network_api_udp_server:
       addFlags: [QEMU]
     zynq7000:
       addFlags: [QEMU]
+    jetson-nano-2gb-dev-kit:
+    jetson-tx2-nx-a206:
+    jetson-xavier-nx-dev-kit:
+    aetina-an110-xnx:
