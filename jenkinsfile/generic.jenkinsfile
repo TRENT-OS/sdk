@@ -717,7 +717,7 @@ pipeline {
                                             '--tb=short', // control traceback (long, short, line, native, no)
                                             // test framework options
                                             '--print_logs', // print system logs in console
-                                            "--proxy=../${SDK_DIR}/bin/proxy_app,TCP",
+                                            "--proxy=../${SDK_DIR}/bin/proxy_app",
                                             "--target=${PLATFORM}",
                                             "--system_image=../${BUILD_DIR}/images/os_image.elf",
                                             "--resource_dir=../${SDK_DIR}/resources",
