@@ -139,6 +139,10 @@ open_trentos_test_env()
         --cap-add=NET_RAW
         # needed to create TAP devices
         --device=/dev/net/tun
+        # allow access to USB for UART-to-USB connection
+        #--device=/dev/ttyUSB0
+        #--device=/dev/ttyUSB1
+        --privileged -v /dev/bus/usb:/dev/bus/usb
     )
 
     do_run_docker ${TRENTOS_TEST_CONTAINER} "${DOCKER_PARAMS_TEST[@]}"
