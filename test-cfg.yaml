@@ -39,93 +39,33 @@ demo_hello_world:
     zynqmp:
       addFlags: [QEMU]
     qemu-arm-virt-a53:
+    qemu-riscv-virt32:
+    qemu-riscv-virt64:
+    spike32:
     spike64:
-    spike32: # starting still fails
-      addFlags: [NO_TEST]
-    rpi3:
-    rpi4:
-    nitrogen6sx:
 
 
 #-------------------------------------------------------------------------------
-# Additional Official Demo System
+# seL4test verifies that seL4 works as expected on each platform
 #-------------------------------------------------------------------------------
 
-demo_vm_minimal:
-  testScript: test_demo_vm_minimal.py
-  platforms:
-    qemu-arm-virt-a53:
-
-# This needs a TimeServer, which QEMU currently does not provide
-#demo_vm_serialserver:
-#  testScript: test_demo_vm_serialserver.py
-#  platforms:
-#    qemu-arm-virt-a53:
-
-demo_vm_virtio_net:
-  testScript: test_demo_vm_virtio_net.py
-  platforms:
-    qemu-arm-virt-a53:
-
-demo_iot_app:
-  flags: [SDK_DEMO]
-  testScript: test_demo_iot_app.py
+sel4test:
+  testSystem: ext/sel4test
+  testScript: test_native_sel4test.py
+  buildParams:
+    # SDK build settings
+    -D SDK_USE_CAMKES=0
+    -D SEL4TEST_DONT_USE_SEL4_DEFAULT_BUILD_SYSTEM=1
   platforms:
     zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # ToDO: Clarify why test fails
-      addFlags: [QEMU, NO_TEST]
-
-demo_iot_app_imx6:
-  flags: [SDK_DEMO]
-  testScript: test_demo_iot_app.py
-  platforms:
-    sabre: # ToDO: fix test failures
-      addFlags: [QEMU, NO_TEST]
-    nitrogen6sx:
-
-demo_iot_app_rpi3:
-  flags: [SDK_DEMO]
-  platforms: [rpi3]
-
-demo_tls_api:
-  flags: [SDK_DEMO]
-  testScript: test_demo_tls_api.py
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
     sabre:
-      addFlags: [QEMU]
-    nitrogen6sx:
-    rpi3:
+    qemu-riscv-virt64:
+      buildParams:
+        # no timer peripheral
+        -D Sel4testHaveTimer=0
+        # QEMU does not emulate a cache, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+        -D Sel4testHaveCache=0
 
-# Currently there is no test.
-demo_network_filter:
-  flags: [SDK_DEMO, NO_TEST]
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    nitrogen6sx:
-
-#-------------------------------------------------------------------------------
-# Unofficial Demo Systems
-#-------------------------------------------------------------------------------
-
-# This needs to run on real hardware. Currently there is no test.
-demo_i2c:
-  platforms: [sabre]
-
-# This needs to run on real hardware. Currently there is no test.
-demo_tls_server:
-  platforms: [zynq7000]
-
-# This test was used during porting the RPi Ethernet driver only. The RasPi3
-# Socket API of this test needs to be adapted to the recent changes. But this
-# test system is to be deleted anyway, once it's confirmed that all relevant
-# parts were integrated into test_network_api.
-#
-#   demo_raspi_ethernet:
-#     platforms: [rpi3]
 
 #------------------------------------------------------------------------------
 # Test Systems
@@ -139,21 +79,10 @@ test_timeserver:
     sabre:
       addFlags: [QEMU]
     zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # ToDO: fix failing test
-      addFlags: [QEMU, NO_TEST]
-    rpi3:
-    rpi4:
-
-test_certserver:
-  platforms:
+        addFlags: [QEMU]
     sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-    rpi3:
+        addFlags: [QEMU]
+    qemu-riscv-virt64:
 
 test_uart:
   platforms:
@@ -162,160 +91,4 @@ test_uart:
     zynq7000:
       addFlags: [QEMU]
     zynqmp:
-      addFlags: [QEMU]
-
-test_chanmux:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_proxy_nvm:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_certparser:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_crypto_api:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp:
-      addFlags: [QEMU]
-    spike64:
-
-test_cryptoserver:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_entropysource:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_storage_interface:
-  testScript: test_storage_interface*.py
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-    rpi3:
-    rpi4:
-
-test_filesystem:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_config_server:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_keystore:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_logserver:
-  platforms:
-    zynq7000:
-      addFlags: [QEMU]
-    zynqmp: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-
-test_tls_api:
-  platforms:
-    sabre: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-    zynq7000:
-      addFlags: [QEMU]
-    nitrogen6sx:
-    rpi3:
-
-test_tlsserver:
-  platforms:
-    sabre: # no test to reduce CI load?
-      addFlags: [QEMU, NO_TEST]
-    zynq7000:
-      addFlags: [QEMU]
-    nitrogen6sx:
-    rpi3:
-
-test_network_api_tcp_client_single_socket:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=tcp_client_single_socket
-  testParams: --tc=platform.test_configuration:tcp_client_single_socket
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-
-test_network_api_tcp_client_multiple_sockets:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_sockets
-  testParams: --tc=platform.test_configuration:tcp_client_multiple_sockets
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-
-test_network_api_tcp_client_multiple_clients:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=tcp_client_multiple_clients
-  testParams: --tc=platform.test_configuration:tcp_client_multiple_clients
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-
-test_network_api_tcp_server:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=tcp_server
-  testParams: --tc=platform.test_configuration:tcp_server
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
-    nitrogen6sx:
-    rpi3:
-
-test_network_api_udp_server:
-  testScript: test_network_api.py
-  testSystem: ss/test_network_api
-  buildParams: -D TEST_CONFIGURATION=udp_server
-  testParams: --tc=platform.test_configuration:udp_server
-  platforms:
-    sabre:
-      addFlags: [QEMU]
-    zynq7000:
-      addFlags: [QEMU]
+    qemu-riscv-virt64:
