@@ -250,11 +250,11 @@ case "${BUILD_ARCH}" in
     riscv32)
         CMAKE_PARAMS_PLATFORM+=( -D RISCV32=TRUE )
         # 64-bit toolchain can build 32 targets also
-        TRIPLE=riscv64-unknown-linux-gnu
+        TRIPLE=riscv64-unknown-elf
         ;;
     riscv64)
         CMAKE_PARAMS_PLATFORM+=( -D RISCV64=TRUE )
-        TRIPLE=riscv64-unknown-linux-gnu
+        TRIPLE=riscv64-unknown-elf
         ;;
 
     pc99 | ia32 | x86_64)
