@@ -44,7 +44,13 @@ demo_hello_world:
       addFlags: [NO_TEST]
     rpi3:
     rpi4:
+    odroidc2:
+    odroidc4:
     nitrogen6sx:
+    zcu102:
+    ultra96:
+    ultra96v2:
+    fvp:
 
 
 #-------------------------------------------------------------------------------
@@ -147,6 +153,8 @@ test_timeserver:
       addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
+    odroidc2:
+    odroidc4:
 
 test_certserver:
   platforms:
@@ -166,6 +174,8 @@ test_uart:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    odroidc2:
+    odroidc4:
 
 test_chanmux:
   platforms:
@@ -195,6 +205,8 @@ test_crypto_api:
     zynqmp:
       addFlags: [QEMU]
     spike64:
+    odroidc2:
+    odroidc4:
 
 test_cryptoserver:
   platforms:

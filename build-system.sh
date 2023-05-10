@@ -216,7 +216,7 @@ case "${BUILD_PLATFORM}" in
     rpi4 |\
     tx1 |\
     tx2 |\
-    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
+    zynqmp | zcu102 | ultra96 | ultra96v2 )
         BUILD_ARCH=aarch64
         ;;
     #-------------------------------------
