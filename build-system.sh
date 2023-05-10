@@ -211,11 +211,12 @@ case "${BUILD_PLATFORM}" in
     fvp |\
     imx8mq-evk | imx8mm-evk |\
     odroidc2 |\
+    odroidc4 |\
     rockpro64 |\
     rpi4 |\
     tx1 |\
     tx2 |\
-    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 )
+    zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
         BUILD_ARCH=aarch64
         ;;
     #-------------------------------------
