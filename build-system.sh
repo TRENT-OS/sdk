@@ -80,6 +80,10 @@ function print_new_section()
 
 
 # read parameters
+if [ "$#" -lt 3 ]; then
+    print_error "required parameters are <PROJECT_DIR> <BUILD_PLATFORM> <BUILD_DIR>"
+    return 1
+fi
 PROJECT_DIR=$1
 BUILD_PLATFORM=$2
 BUILD_DIR=$3
