@@ -59,7 +59,44 @@
 #
 #-------------------------------------------------------------------------------
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+
 #-------------------------------------------------------------------------------
+function print_error()
+{
+    echo ""
+    echo "##"
+    echo "## ERROR: $1"
+    echo "##"
+}
+
+#-------------------------------------------------------------------------------
+function print_new_section()
+{
+    echo "##------------------------------------------------------------------------------"
+    echo "## $1"
+    echo "##------------------------------------------------------------------------------"
+}
+
+
+# read parameters
+PROJECT_DIR=$1
+BUILD_PLATFORM=$2
+BUILD_DIR=$3
+shift 3
+# all remaining parameters will be passed to CMake
+BUILD_ARGS=("$@")
+
+# By definition, this script is located in the SDK root folder.
+OS_SDK_PATH="${SCRIPT_DIR}"
+
+# Check if an individual CMake build target is set in the environment variable,
+# for example used for analysis (default: all).
+BUILD_TARGET=${BUILD_TARGET:-all}
+
+CMAKE_PARAMS_FILE=cmake_params.txt
+BUILD_TARGETS_GRAPH=build-targets-graph
+
 # When this script is executed from Jenkins in a docker environment, a race
 # condition in the Jenkins docker agent plugin could make it run before the
 # container's entrypoint script has finished. This bug is tracked in
@@ -81,44 +118,6 @@ if [ -e "/usr/local/bin/fixuid" ]; then
     fi
 fi
 
-#-------------------------------------------------------------------------------
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
-
-# By definition, this script is located in the SDK root folder.
-OS_SDK_PATH="${SCRIPT_DIR}"
-
-# read parameters
-PROJECT_DIR=$1
-BUILD_PLATFORM=$2
-BUILD_DIR=$3
-shift 3
-# all remaining parameters will be passed to CMake
-BUILD_ARGS=("$@")
-CMAKE_PARAMS_FILE=cmake_params.txt
-BUILD_TARGETS_GRAPH=build-targets-graph
-
-#-------------------------------------------------------------------------------
-function print_new_section()
-{
-    echo "##------------------------------------------------------------------------------"
-    echo "## $1"
-    echo "##------------------------------------------------------------------------------"
-
-}
-
-#-------------------------------------------------------------------------------
-function print_error()
-{
-    echo ""
-    echo "##"
-    echo "## ERROR: $1"
-    echo "##"
-
-}
-
-#-------------------------------------------------------------------------------
-
 # Check requested toolchain or if analysis is enabled by environment variable
 if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
     # Default to "gcc" if TOOLCHAIN is not set.
@@ -131,19 +130,6 @@ else
         exit 1
     fi
 fi
-
-# Check if an individual CMake build target is set in the environment variable,
-# for example used for analysis (default: all).
-BUILD_TARGET=${BUILD_TARGET:-all}
-
-#-------------------------------------------------------------------------------
-
-echo ""
-echo "##=============================================================================="
-echo "## Project:   ${PROJECT_DIR}"
-echo "## Platform:  ${BUILD_PLATFORM}"
-echo "## Toolchain: ${TOOLCHAIN}"
-echo "## Output:    ${BUILD_DIR}"
 
 CMAKE_PARAMS_PLATFORM=()
 
@@ -293,6 +279,13 @@ case "${TOOLCHAIN}" in
         exit 1
         ;;
 esac
+
+echo ""
+echo "##=============================================================================="
+echo "## Project:   ${PROJECT_DIR}"
+echo "## Platform:  ${BUILD_PLATFORM}"
+echo "## Toolchain: ${TOOLCHAIN} (${TRIPLE})"
+echo "## Output:    ${BUILD_DIR}"
 
 # Set CMake parameters
 CMAKE_PARAMS=(
