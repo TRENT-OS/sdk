@@ -93,6 +93,7 @@ def final CI_HW_BOARDS = [
     // 'nitrogen6sx',
     // 'rpi3',
     // 'rpi4',
+    // 'odroidc2',
 ]
 
 

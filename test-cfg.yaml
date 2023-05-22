@@ -45,6 +45,7 @@ demo_hello_world:
     rpi3:
     rpi4:
     nitrogen6sx:
+    odroidc2:
 
 
 #-------------------------------------------------------------------------------
@@ -55,17 +56,19 @@ demo_vm_minimal:
   testScript: test_demo_vm_minimal.py
   platforms:
     qemu-arm-virt-a53:
+    odroidc2:
 
-# This needs a TimeServer, which QEMU currently does not provide
-#demo_vm_serialserver:
-#  testScript: test_demo_vm_serialserver.py
-#  platforms:
-#    qemu-arm-virt-a53:
+demo_vm_serialserver:
+  testScript: test_demo_vm_serialserver.py
+  platforms:
+    # qemu-arm-virt-a53:
+    odroidc2:
 
 demo_vm_virtio_net:
   testScript: test_demo_vm_virtio_net.py
   platforms:
     qemu-arm-virt-a53:
+    odroidc2:
 
 demo_iot_app:
   flags: [SDK_DEMO]
@@ -147,6 +150,7 @@ test_timeserver:
       addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
+    odroidc2:
 
 test_certserver:
   platforms:
@@ -166,6 +170,7 @@ test_uart:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    odroidc2:
 
 test_chanmux:
   platforms:
@@ -195,6 +200,7 @@ test_crypto_api:
     zynqmp:
       addFlags: [QEMU]
     spike64:
+    odroidc2:
 
 test_cryptoserver:
   platforms:
