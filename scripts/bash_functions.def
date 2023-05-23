@@ -157,5 +157,5 @@ open_trentos_test_env()
 
     )
 
-    do_run_docker ${TRENTOS_TEST_CONTAINER} "${DOCKER_PARAMS_TEST[@]}"
+    do_run_docker ${TRENTOS_TEST_CONTAINER} --name=trentos "${DOCKER_PARAMS_TEST[@]}"
 }
