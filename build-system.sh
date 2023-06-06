@@ -183,6 +183,11 @@ case "${BUILD_PLATFORM}" in
         BUILD_ARCH=riscv64
         ;;
     #-------------------------------------
+    rpi4 )
+        BUILD_ARCH=aarch64
+        RPI4_MEMORY=4096
+        ;;
+    #-------------------------------------
     am335x | am335x-boneblack | am335x-boneblue | \
     apq8064 |\
     bcm2837 | rpi3 | bcm2837-rpi3 |\
@@ -203,7 +208,6 @@ case "${BUILD_PLATFORM}" in
     odroidc2 |\
     odroidc4 |\
     rockpro64 |\
-    rpi4 |\
     tx1 |\
     tx2 |\
     zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
@@ -313,6 +317,11 @@ CMAKE_PARAMS=(
     -B ..
 )
 
+if [ "${BUILD_PLATFORM}" == "rpi4" ]; then
+    CMAKE_PARAMS+=(
+        -D RPI4_MEMORY="4096"
+    )
+fi
 
 # If a build directory exists, check if we can just do a quicker rebuild based
 # on the changes
