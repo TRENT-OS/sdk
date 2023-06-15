@@ -43,7 +43,7 @@ def DOCKER_REGISTRY = 'https://' + DOCKER_BASE
 
 def DOCKER_BUILD_ENV = [
     registry: DOCKER_REGISTRY,
-    image:    DOCKER_BASE + '/trentos_build:20210503',
+    image:    DOCKER_BASE + '/trentos_build:20230615',
     args:     ['-v /etc/localtime:/etc/localtime:ro',
                '--group-add=stack',
               ].join(' ')

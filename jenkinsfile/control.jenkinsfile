@@ -100,7 +100,7 @@ def makeDockerAgentCfg(server, credentialsId, image, args)
 def final DOCKER_BUILD_ENV = makeDockerAgentCfg(
         'hc-docker:5000',
         null, // no credentials needed
-        'trentos_build:20210503',
+        'trentos_build:20230615',
         [
             '-v /etc/localtime:/etc/localtime:ro',
             '--group-add=stack',
