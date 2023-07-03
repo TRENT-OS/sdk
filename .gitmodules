@@ -145,3 +145,6 @@
 [submodule "libs/os_socket"]
 	path = libs/os_socket
 	url = ../../seos/networkstack.git
+[submodule "components/NIC_Zynq"]
+	path = components/NIC_Zynq
+	url = ../../sc/nic_zynq.git

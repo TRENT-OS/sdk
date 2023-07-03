@@ -154,7 +154,7 @@ function collect_sdk_sandbox()
         # remove unwanted resources
         ./resources/rpi4_sd_card
         ./resources/scripts
-        ./resources/zcu102_sd_card
+        # ./resources/zcu102_sd_card
 
         # remove imx6_sd_card resources, requires special handling
         ./resources/imx6_sd_card
