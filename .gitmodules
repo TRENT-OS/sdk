@@ -148,3 +148,6 @@
 [submodule "components/NIC_Zynq"]
 	path = components/NIC_Zynq
 	url = ../../sc/nic_zynq.git
+[submodule "components/NIC_VirtioNetVm"]
+	path = components/NIC_VirtioNetVm
+	url = ../../sc/nic_virtionetvm.git
