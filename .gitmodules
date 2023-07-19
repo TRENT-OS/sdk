@@ -10,6 +10,9 @@
 [submodule "tools/kpt"]
 	path = tools/kpt
 	url = ../../ssdk/keystore_provisioning_tool.git
+[submodule "tools/gazebo-proxy"]
+	path = tools/gazebo-proxy
+	url = ../../ssdk/gazebo-proxy.git
 [submodule "sdk-pdfs"]
 	path = sdk-pdfs
 	url = ../../ssdk/sdk-pdfs.git
