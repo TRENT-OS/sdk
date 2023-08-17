@@ -145,3 +145,6 @@
 [submodule "libs/os_socket"]
 	path = libs/os_socket
 	url = ../../seos/networkstack.git
+[submodule "components/Rng_Prg260"]
+	path = components/Rng_Prg260
+	url = ../../sc/rng_prg260.git
