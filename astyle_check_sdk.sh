@@ -129,6 +129,11 @@ function run_astyle_check()
         # Analyse each file
         for IN_FILE in "${FILES[@]}"; do
 
+            # Continue if file does not exist
+            if [ ! -f "$IN_FILE" ]; then
+                continue
+            fi
+
             OUT_FILE="${IN_FILE}.astyle"
 
             # Run astyle with project/default options file on IN_FILE and create
