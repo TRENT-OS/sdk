@@ -39,12 +39,36 @@ demo_hello_world:
     zynqmp:
       addFlags: [QEMU]
     qemu-arm-virt-a53:
+    qemu-riscv-virt32:
+    qemu-riscv-virt64:
     spike64:
     spike32: # starting still fails
       addFlags: [NO_TEST]
     rpi3:
     rpi4:
     nitrogen6sx:
+
+
+#-------------------------------------------------------------------------------
+# seL4test verifies that seL4 works as expected on each platform
+#-------------------------------------------------------------------------------
+
+sel4test:
+  testSystem: ext/sel4test
+  testScript: test_native_sel4test.py
+  buildParams:
+    # SDK build settings
+    -D SDK_USE_CAMKES=0
+    -D SEL4TEST_DONT_USE_SEL4_DEFAULT_BUILD_SYSTEM=1
+  platforms:
+    zynq7000:
+    sabre:
+    qemu-riscv-virt64:
+      buildParams:
+        # no timer peripheral
+        -D Sel4testHaveTimer=0
+        # QEMU does not emulate a cache, CACHEFLUSH0001 and CACHEFLUSH0002 fail
+        -D Sel4testHaveCache=0
 
 
 #-------------------------------------------------------------------------------
@@ -147,6 +171,7 @@ test_timeserver:
       addFlags: [QEMU, NO_TEST]
     rpi3:
     rpi4:
+    qemu-riscv-virt64:
 
 test_certserver:
   platforms:
@@ -166,6 +191,7 @@ test_uart:
       addFlags: [QEMU]
     zynqmp:
       addFlags: [QEMU]
+    qemu-riscv-virt64:
 
 test_chanmux:
   platforms:
