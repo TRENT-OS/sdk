@@ -105,6 +105,21 @@ do_run_docker()
         ${DOCKER_ARGS[@]}
     )
 
+    # the --network docker argument can only exists once. 
+    # If the user specifies its own, the default should be overwritten
+    NETWORK_PARAMS=()
+    # find each occurrence of the network param
+    for i in "${!DOCKER_PARAMS[@]}"; do
+        if [[ "${DOCKER_PARAMS[i]}" == "--network="* ]]; then
+            NETWORK_PARAMS+=("$i")
+        fi
+    done
+
+    # remove the first default network argument
+    if [ ${#NETWORK_PARAMS[@]} -gt 1 ]; then
+        unset 'DOCKER_PARAMS[${NETWORK_PARAMS[0]}]'
+    fi
+
     (
         set -x
         docker run "${DOCKER_PARAMS[@]}" ${CONTAINER} "${ARGS[@]}"
@@ -148,7 +163,7 @@ open_trentos_test_env()
         # too powerful, "--device=</dev/...>[:/dev/...[:rwm]]" can be used to
         # give access to specific devices. Where r=read, w=write, m=mknod. If
         # nothing is given, "rwm" is default.
-        # Mapping via "-v /dev/bus/usb:/dev/bus/usb" is a rather cruse way to
+        # Mapping via "-v /dev/bus/usb:/dev/bus/usb" is a rather crude way to
         # allow device access also.
         # For example:
         #  --device=/dev/net/tun (allow creating TUN/TAP devices)
