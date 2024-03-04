@@ -84,7 +84,7 @@ do_run_docker()
 
     local DOCKER_PARAMS=(
         # --interactive: keep STDIN open even if not attached
-        -i
+        #-i
         # tty setting
         ${TTY}
         # discard any changes on container exit
