@@ -99,6 +99,8 @@ do_run_docker()
         -v $(pwd):/host
         # set the current directory in the container to /host
         -w /host
+        # name the container consistently
+        --name ${DOCKER_HOSTNAME}
         # caller's docker params
         $@
         # docker parameters passed on the command line
@@ -119,6 +121,8 @@ do_run_docker()
     if [ ${#NETWORK_PARAMS[@]} -gt 1 ]; then
         unset 'DOCKER_PARAMS[${NETWORK_PARAMS[0]}]'
     fi
+
+    echo "Docker Host name: " $DOCKER_HOSTNAME
 
     (
         set -x
