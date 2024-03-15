@@ -151,3 +151,9 @@
 [submodule "components/NIC_RPi4"]
 	path = components/NIC_RPi4
 	url = ../../sc/nic_rpi4.git
+[submodule "components/SystemController"]
+	path = components/SystemController
+	url = ../../sc/systemcontroller.git
+[submodule "components/BPMPServer"]
+	path = components/BPMPServer
+	url = ../../sc/bpmpserver.git

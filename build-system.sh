@@ -208,8 +208,9 @@ case "${BUILD_PLATFORM}" in
     odroidc2 |\
     odroidc4 |\
     rockpro64 |\
-    tx1 |\
-    tx2 |\
+    tx1 | jetson-tx1-dev-kit | jetson-nano-2gb-dev-kit |\
+    tx2 | jetson-tx2-asg001 | jetson-tx2-nx-a206 |\
+    xavier | jetson-xavier-nx-dev-kit | aetina-an110-xnx |\
     zynqmp | zynqmp-zcu102 | zynqmp-ultra96 | ultra96 | ultra96v2 )
         BUILD_ARCH=aarch64
         ;;

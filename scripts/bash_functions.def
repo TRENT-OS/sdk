@@ -151,7 +151,7 @@ open_trentos_test_env()
         # For example:
         #  --device=/dev/net/tun (allow creating TUN/TAP devices)
         #  --device=/dev/ttyUSB0
-        #  -v /dev/bus/usb:/dev/bus/usb (general USB access)
+        -v /dev/bus/usb:/dev/bus/usb # (general USB access)
         #
         --privileged
 
