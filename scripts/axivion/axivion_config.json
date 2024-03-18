@@ -1,7 +1,0 @@
-{
-    "#": "NOTE: Evaluation order is from bottom to top",
-    "_Layers": [
-        "rules_config_axivion_template.json",
-        "project_config.json"
-    ]
-}

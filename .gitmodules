@@ -10,9 +10,6 @@
 [submodule "tools/kpt"]
 	path = tools/kpt
 	url = ../../ssdk/keystore_provisioning_tool.git
-[submodule "sdk-pdfs"]
-	path = sdk-pdfs
-	url = ../../ssdk/sdk-pdfs.git
 [submodule "components/CryptoServer"]
 	path = components/CryptoServer
 	url = ../../sc/cryptoserver.git

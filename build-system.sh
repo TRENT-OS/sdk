@@ -41,15 +41,10 @@
 #
 # Supported environment variables:
 #
-#    TOOLCHAIN=[gcc|clang|axivion]
+#    TOOLCHAIN=[gcc|clang]
 #        Toolchain to be used, currently supported are:
 #          "gcc"      use GCC toolchain, used as default if nothing is set.
 #          "clang"    use LLVM/clang toolchain.
-#          "axivion"  use Axivion suite to run code analysis.
-#
-#    ENABLE_ANALYSIS=ON
-#        Currently this is basically an alias for "TOOLCHAIN=axivion" to run
-#        analysis with the Axivion suite.
 #
 #    BUILD_TARGET=<target>
 #       Specify the CMake build configuration target, defaults to "all" if
@@ -122,18 +117,7 @@ if [ -e "/usr/local/bin/fixuid" ]; then
     fi
 fi
 
-# Check requested toolchain or if analysis is enabled by environment variable
-if [[ "${ENABLE_ANALYSIS:-OFF}" != "ON" ]]; then
-    # Default to "gcc" if TOOLCHAIN is not set.
-    TOOLCHAIN=${TOOLCHAIN:-gcc}
-else
-    # Default to "axivion" if analysis is enabled and TOOLCHAIN is not set.
-    TOOLCHAIN=${TOOLCHAIN:-axivion}
-    if [[ "${TOOLCHAIN}" != "axivion" ]]; then
-        print_error "ENABLE_ANALYSIS=ON does not support TOOLCHAIN '${TOOLCHAIN}'"
-        exit 1
-    fi
-fi
+TOOLCHAIN=${TOOLCHAIN:-gcc}
 
 CMAKE_PARAMS_PLATFORM=()
 
@@ -275,14 +259,6 @@ case "${TOOLCHAIN}" in
         CMAKE_PARAMS_PLATFORM+=( -D TRIPLE=${TRIPLE} )
         ;;
 
-    axivion)
-        TOOLCHAIN_FILE="${OS_SDK_PATH}/scripts/axivion/axivion-sel4-toolchain.cmake"
-        CMAKE_PARAMS_PLATFORM+=(
-            -D PARENT_TOOLCHAIN_FILE:FILEPATH="${OS_SDK_PATH}/sdk-sel4-camkes/kernel/gcc.cmake"
-            -D CROSS_COMPILER_PREFIX=${TRIPLE}
-        )
-        ;;
-
     *)
         print_error "unsupported toolchain '${TOOLCHAIN}'"
         exit 1
@@ -367,12 +343,6 @@ if [[ ! -d ${BUILD_DIR} ]]; then
 
     print_new_section "configure build ..."
 
-    if [[ ${TOOLCHAIN} == "axivion" ]]; then
-        # Prepare axivion suite for CMake config
-        export COMPILE_ONLY=yes
-        unset COMPILE_ONLYIR
-    fi
-
     # Create the build workspace manually, so configuration parameters can be
     # stored there
     mkdir -p ${BUILD_DIR}
@@ -394,13 +364,6 @@ if [[ ! -d ${BUILD_DIR} ]]; then
     print_new_section "start clean build ..."
 else
     print_new_section "start re-build ..."
-fi
-
-
-if [[ ${TOOLCHAIN} == "axivion" ]]; then
-    # Prepare axivion suite for CMake build
-    unset COMPILE_ONLY
-    export COMPILE_ONLYIR=yes
 fi
 
 cmake --build ${BUILD_DIR} --target ${BUILD_TARGET}

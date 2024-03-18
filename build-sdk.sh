@@ -74,7 +74,6 @@ function copy_files_via_tar()
     #       --exclude='.git' \
     #       --exclude='.gitmodules' \
     #       --exclude='.gitignore' \
-    #       --exclude 'astyle_prepare_submodule.sh' \
     #       ${SDK_SRC_DIR}/ \
     #       ${OUT_DIR}/
     #
@@ -120,8 +119,6 @@ function collect_sdk_sandbox()
     #---------------------------------------------------------------------------
 
     local BASIC_SANDBOX_EXCLUDES=(
-        # remove all astyle prepare scripts
-        astyle_prepare_submodule.sh
 
         # remove internal files in the sandbox root folder
         ./build-sdk.sh
@@ -130,10 +127,6 @@ function collect_sdk_sandbox()
         # remove jenkins files and test confguration
         ./jenkinsfile
         ./test-cfg.yaml
-
-        # remove axivion scripts
-        ./scripts/axivion
-        ./scripts/open_trentos_analysis_env.sh
 
         # remove unwanted repos
         ./sdk-pdfs
@@ -234,7 +227,6 @@ function collect_sdk_demos()
         #-----------------------------------------------------------------------
 
         local BASIC_DEMO_EXCLUDES=(
-            ./axivion
             ./README.md
         )
 
@@ -509,11 +501,6 @@ function package_sdk()
     # Create the release SDK package where certain files are filtered out
     echo "Creating release SDK package ${SDK_PACKAGE} ..."
     local SDK_PACKAGE_EXCLUDES=(
-        # remove astyle scripts
-        ./astyle_check_sdk.sh
-        ./astyle_check_submodule.sh
-        ./astyle_options_default
-        astyle_prepare_submodule.sh
         # remove development components
         ./components/SysLogger
         # remove files from documentation

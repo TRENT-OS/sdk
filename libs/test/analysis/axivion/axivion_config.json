@@ -1,7 +1,0 @@
-{
-    "#": "NOTE: Evaluation order is from bottom to top",
-    "_Layers": [
-        "compiler_config.json",
-        "analysis_config.json"
-    ]
-}
