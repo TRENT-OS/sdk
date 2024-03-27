@@ -1,156 +1,156 @@
 [submodule "sdk-sel4-camkes"]
 	path = sdk-sel4-camkes
-	url = ../../ssdk/sdk-sel4-camkes.git
+	url = ../sdk-sel4-camkes.git
 [submodule "os_core_api"]
 	path = os_core_api
-	url = ../../seos/core-api.git
+	url = ../os_core_api.git
 [submodule "tools/proxy"]
 	path = tools/proxy
-	url = ../../ssdk/proxy.git
+	url = ../proxy.git
 [submodule "tools/kpt"]
 	path = tools/kpt
-	url = ../../ssdk/keystore_provisioning_tool.git
+	url = ../keystore_provisioning_tool.git
 [submodule "components/CryptoServer"]
 	path = components/CryptoServer
-	url = ../../sc/cryptoserver.git
+	url = ../cryptoserver.git
 [submodule "components/TlsServer"]
 	path = components/TlsServer
-	url = ../../sc/tlsserver.git
+	url = ../tlsserver.git
 [submodule "libs/3rdParty/mbedtls"]
 	path = libs/3rdParty/mbedtls
-	url = ../../ext/mbedtls.git
+	url = ../mbedtls.git
 [submodule "libs/3rdParty/tinyframe"]
 	path = libs/3rdParty/tinyframe
-	url = ../../ext/tinyframe.git
+	url = ../tinyframe.git
 [submodule "libs/chanmux"]
 	path = libs/chanmux
-	url = ../../seos/chanmux.git
+	url = ../chanmux.git
 [submodule "libs/chanmux_nic_driver"]
 	path = libs/chanmux_nic_driver
-	url = ../../seos/seos_network_driver_tap_proxy_lib.git
+	url = ../lib_chanmux_nic_driver.git
 [submodule "libs/os_cert"]
 	path = libs/os_cert
-	url = ../../seos/cert.git
+	url = ../os_cert.git
 [submodule "libs/os_configuration"]
 	path = libs/os_configuration
-	url = ../../seos/configuration_lib.git
+	url = ../os_configuration.git
 [submodule "libs/os_crypto"]
 	path = libs/os_crypto
-	url = ../../seos/crypto.git
-[submodule "libs/os_keystore"]
-	path = libs/os_keystore
-	url = ../../seos/keystore.git
-[submodule "libs/os_logger"]
-	path = libs/os_logger
-	url = ../../seos/logger.git
+	url = ../os_crypto.git
 [submodule "libs/os_tls"]
 	path = libs/os_tls
-	url = ../../seos/tls.git
+	url = ../os_tls.git
 [submodule "components/EntropySource"]
 	path = components/EntropySource
-	url = ../../sc/entropysource.git
+	url = ../entropysource.git
 [submodule "tools/cpt"]
 	path = tools/cpt
-	url = ../../ssdk/config_provisioning_tool.git
+	url = ../config_provisioning_tool.git
 [submodule "tools/rdgen"]
 	path = tools/rdgen
-	url = ../../ssdk/ramdisk_generator.git
+	url = ../ramdisk_generator.git
 [submodule "components/TimeServer"]
 	path = components/TimeServer
-	url = ../../sc/timeserver.git
+	url = ../timeserver.git
 [submodule "libs/os_filesystem"]
 	path = libs/os_filesystem
-	url = ../../seos/filesystem.git
+	url = ../os_filesystem.git
 [submodule "components/StorageServer"]
 	path = components/StorageServer
-	url = ../../sc/storageserver.git
-[submodule "components/NIC_RPi"]
-	path = components/NIC_RPi
-	url = ../../sc/nic_rpi.git
-[submodule "tools/rpi3_flasher"]
-	path = tools/rpi3_flasher
-	url = ../../ss/rpi3_flasher.git
+	url = ../storageserver.git
+[submodule "components/NIC_RPi3Bplus"]
+	path = components/NIC_RPi3Bplus
+	url = ../nic_rpi3bplus.git
+[submodule "tools/spi_nor_flasher"]
+	path = tools/spi_nor_flasher
+	url = ../spi_nor_flasher.git
 [submodule "components/UART"]
 	path = components/UART
-	url = ../../sc/uart.git
+	url = ../uart.git
 [submodule "components/SdHostController"]
 	path = components/SdHostController
-	url = ../../sc/sdhostcontroller.git
+	url = ../sdhostcontroller.git
 [submodule "components/NIC_iMX6"]
 	path = components/NIC_iMX6
-	url = ../../sc/nic_imx6.git
+	url = ../nic_imx6.git
 [submodule "components/RamDisk"]
 	path = components/RamDisk
-	url = ../../sc/ramdisk.git
+	url = ../ramdisk.git
 [submodule "components/ChanMux"]
 	path = components/ChanMux
-	url = ../../sc/chanmux.git
+	url = ../chanmux.git
 [submodule "components/NIC_ChanMux"]
 	path = components/NIC_ChanMux
-	url = ../../sc/nic_chanmux.git
+	url = ../nic_chanmux.git
 [submodule "components/Storage_ChanMux"]
 	path = components/Storage_ChanMux
-	url = ../../sc/storage_chanmux.git
+	url = ../storage_chanmux.git
 [submodule "components/NIC_Dummy"]
 	path = components/NIC_Dummy
-	url = ../../sc/nic_dummy.git
+	url = ../nic_dummy.git
 [submodule "components/RPi_SPI_Flash"]
 	path = components/RPi_SPI_Flash
-	url = ../../sc/rpi_spi_flash.git
+	url = ../rpi_spi_flash.git
 [submodule "components/CertServer"]
 	path = components/CertServer
-	url = ../../sc/certserver.git
+	url = ../certserver.git
 [submodule "libs/lib_compiler"]
 	path = libs/lib_compiler
-	url = ../../seos/lib_compiler.git
+	url = ../lib_compiler.git
 [submodule "libs/lib_macros"]
 	path = libs/lib_macros
-	url = ../../seos/lib_macros.git
+	url = ../lib_macros.git
 [submodule "libs/lib_debug"]
 	path = libs/lib_debug
-	url = ../../seos/lib_debug.git
+	url = ../lib_debug.git
 [submodule "libs/lib_host"]
 	path = libs/lib_host
-	url = ../../seos/lib_host.git
+	url = ../lib_host.git
 [submodule "libs/lib_io"]
 	path = libs/lib_io
-	url = ../../seos/lib_io.git
+	url = ../lib_io.git
 [submodule "libs/lib_osal"]
 	path = libs/lib_osal
-	url = ../../seos/lib_osal.git
+	url = ../lib_osal.git
 [submodule "libs/lib_logs"]
 	path = libs/lib_logs
-	url = ../../seos/lib_logs.git
+	url = ../lib_logs.git
 [submodule "libs/lib_mem"]
 	path = libs/lib_mem
-	url = ../../seos/lib_mem.git
+	url = ../lib_mem.git
 [submodule "libs/lib_server"]
 	path = libs/lib_server
-	url = ../../seos/lib_server.git
+	url = ../lib_server.git
 [submodule "libs/lib_utils"]
 	path = libs/lib_utils
-	url = ../../seos/lib_utils.git
+	url = ../lib_utils.git
 [submodule "resources"]
 	path = resources
-	url = ../../ssdk/sdk-resources.git
+	url = ../sdk-resources.git
 [submodule "components/SysLogger"]
 	path = components/SysLogger
-	url = ../../sc/syslogger.git
+	url = ../syslogger.git
 [submodule "components/NetworkStack_PicoTcp"]
 	path = components/NetworkStack_PicoTcp
-	url = ../../sc/networkstack_picotcp.git
-[submodule "libs/os_socket"]
-	path = libs/os_socket
-	url = ../../seos/networkstack.git
+	url = ../networkstack_picotcp.git
 [submodule "components/NIC_Zynq"]
 	path = components/NIC_Zynq
-	url = ../../sc/nic_zynq.git
+	url = ../nic_zynq.git
 [submodule "components/NIC_RPi4"]
 	path = components/NIC_RPi4
-	url = ../../sc/nic_rpi4.git
+	url = ../nic_rpi4.git
 [submodule "components/SystemController"]
 	path = components/SystemController
-	url = ../../sc/systemcontroller.git
+	url = ../systemcontroller.git
 [submodule "components/BPMPServer"]
 	path = components/BPMPServer
-	url = ../../sc/bpmpserver.git
+	url = ../bpmpserver.git
+[submodule "libs/os_logger"]
+	path = libs/os_logger
+	url = ../os_logger.git
+[submodule "libs/os_socket"]
+	path = libs/os_socket
+	url = ../os_socket.git
+[submodule "libs/os_keystore"]
+	path = libs/os_keystore
+	url = ../os_keystore.git
